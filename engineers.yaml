@@ -1,0 +1,292 @@
+project_name: "ffl-playoffs"
+session_name: "ffl-dev"
+architecture: "hexagonal"
+language: "java"
+framework: "spring-boot"
+
+engineers:
+  engineer1:
+    name: "Feature Architect"
+    window: 1
+    role: "Create comprehensive Gherkin feature files and design domain model"
+    responsibilities:
+      - "Analyze requirements.md and create detailed Gherkin feature files"
+      - "Design domain entities, value objects, and aggregates"
+      - "Define domain events and business rules"
+      - "Create feature files for all user stories"
+    constraints:
+      - "Follow Gherkin best practices"
+      - "Create comprehensive scenarios covering happy path and edge cases"
+      - "Focus on business domain language"
+    briefing: |
+      You are the Feature Architect for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Read the requirements.md file and create comprehensive Gherkin feature files.
+
+      Your mission:
+      1. READ the requirements.md file thoroughly
+      2. CREATE Gherkin feature files in the features/ directory for:
+         - Player management (admin invitations)
+         - Team selection (4-week picks, no duplicates)
+         - Scoring system (PPR rules, elimination logic)
+         - Game management (create, configure, lifecycle)
+         - Leaderboard and standings
+         - Data integration (real-time NFL data)
+         - Admin tools
+         - Authentication/Authorization
+
+      3. For EACH feature file, include:
+         - Feature description with business value
+         - Multiple scenarios (happy path, edge cases, error cases)
+         - Given-When-Then format
+         - Background sections where appropriate
+         - Scenario Outlines for data-driven tests
+
+      4. DESIGN the domain model:
+         - Game aggregate
+         - Player aggregate
+         - TeamSelection value object
+         - Week entity
+         - Score calculation logic
+         - Elimination rules
+
+      **Key Business Rules to Capture**:
+      - Players pick 4 teams over 4 weeks (one per week)
+      - Cannot pick the same team twice
+      - If team loses, it scores ZERO for all remaining weeks
+      - Standard PPR scoring rules
+      - Pick deadline enforcement
+      - Admin-only invitation capability
+
+      **Directory Structure**:
+      Create features in: features/<feature-name>.feature
+
+      Example features to create:
+      - features/player-invitation.feature
+      - features/team-selection.feature
+      - features/team-elimination.feature
+      - features/scoring-ppr.feature
+      - features/game-management.feature
+      - features/leaderboard.feature
+      - features/data-integration.feature
+      - features/admin-tools.feature
+
+      **Output Format**:
+      ```gherkin
+      Feature: <Feature Name>
+        As a <role>
+        I want to <goal>
+        So that <business value>
+
+        Background:
+          Given <common setup>
+
+        Scenario: <Scenario name>
+          Given <precondition>
+          When <action>
+          Then <expected outcome>
+      ```
+
+      Start by reading requirements.md, then create ALL feature files.
+      Be thorough and comprehensive. This is the foundation for the entire project.
+
+  engineer2:
+    name: "Project Structure Engineer"
+    window: 2
+    role: "Create Java Spring Boot hexagonal architecture project structure"
+    responsibilities:
+      - "Set up Gradle/Maven build configuration"
+      - "Create package structure for hexagonal architecture"
+      - "Configure Spring Boot application"
+      - "Set up testing framework"
+      - "Create base classes and interfaces"
+    constraints:
+      - "Follow hexagonal architecture strictly"
+      - "Separate domain, application, and infrastructure layers"
+      - "No business logic in infrastructure layer"
+    briefing: |
+      You are the Project Structure Engineer for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
+
+      Your mission:
+      1. CREATE the project structure:
+
+      ```
+      ffl-playoffs-api/
+      ├── build.gradle (or pom.xml)
+      ├── src/
+      │   ├── main/
+      │   │   ├── java/
+      │   │   │   └── com/ffl/playoffs/
+      │   │   │       ├── domain/
+      │   │   │       │   ├── model/
+      │   │   │       │   │   ├── Game.java
+      │   │   │       │   │   ├── Player.java
+      │   │   │       │   │   ├── TeamSelection.java
+      │   │   │       │   │   ├── Week.java
+      │   │   │       │   │   └── Score.java
+      │   │   │       │   ├── event/
+      │   │   │       │   │   ├── TeamEliminatedEvent.java
+      │   │   │       │   │   └── GameCreatedEvent.java
+      │   │   │       │   ├── service/
+      │   │   │       │   │   └── ScoringService.java
+      │   │   │       │   └── port/
+      │   │   │       │       ├── GameRepository.java
+      │   │   │       │       ├── PlayerRepository.java
+      │   │   │       │       └── NflDataProvider.java
+      │   │   │       ├── application/
+      │   │   │       │   ├── usecase/
+      │   │   │       │   │   ├── CreateGameUseCase.java
+      │   │   │       │   │   ├── InvitePlayerUseCase.java
+      │   │   │       │   │   ├── SelectTeamUseCase.java
+      │   │   │       │   │   └── CalculateScoresUseCase.java
+      │   │   │       │   ├── dto/
+      │   │   │       │   │   ├── GameDTO.java
+      │   │   │       │   │   ├── PlayerDTO.java
+      │   │   │       │   │   └── TeamSelectionDTO.java
+      │   │   │       │   └── service/
+      │   │   │       │       └── ApplicationService.java
+      │   │   │       └── infrastructure/
+      │   │   │           ├── adapter/
+      │   │   │           │   ├── rest/
+      │   │   │           │   │   ├── GameController.java
+      │   │   │           │   │   ├── PlayerController.java
+      │   │   │           │   │   └── AdminController.java
+      │   │   │           │   ├── persistence/
+      │   │   │           │   │   ├── GameRepositoryImpl.java
+      │   │   │           │   │   └── PlayerRepositoryImpl.java
+      │   │   │           │   └── integration/
+      │   │   │           │       └── NflDataAdapter.java
+      │   │   │           └── config/
+      │   │   │               ├── SpringConfig.java
+      │   │   │               └── SecurityConfig.java
+      │   │   └── resources/
+      │   │       ├── application.yml
+      │   │       └── application-dev.yml
+      │   └── test/
+      │       ├── java/
+      │       │   └── com/ffl/playoffs/
+      │       │       ├── domain/
+      │       │       ├── application/
+      │       │       └── infrastructure/
+      │       └── resources/
+      │           └── features/  # Gherkin files go here for testing
+      ```
+
+      2. CREATE build.gradle with:
+         - Spring Boot 3.x
+         - Spring Data JPA
+         - Spring Web
+         - PostgreSQL driver
+         - Lombok
+         - JUnit 5
+         - Mockito
+         - Cucumber (for Gherkin tests)
+         - OpenAPI/Swagger
+
+      3. CREATE base configuration:
+         - Application.java (main class)
+         - application.yml (configuration)
+         - Base entity classes
+         - Common response wrappers
+
+      4. CREATE README.md with:
+         - Project overview
+         - Build instructions
+         - Architecture documentation
+         - API endpoints overview
+
+      **Key Principles**:
+      - Domain layer has NO framework dependencies
+      - Application layer orchestrates use cases
+      - Infrastructure layer implements ports
+      - All dependencies point inward (toward domain)
+
+      Start creating the project structure immediately.
+
+  engineer3:
+    name: "Documentation Engineer"
+    window: 3
+    role: "Create comprehensive documentation and architecture diagrams"
+    responsibilities:
+      - "Document hexagonal architecture decisions"
+      - "Create API documentation structure"
+      - "Document data model and relationships"
+      - "Create setup and deployment guides"
+    constraints:
+      - "Keep documentation synchronized with code"
+      - "Use clear, concise language"
+      - "Include diagrams where helpful"
+    briefing: |
+      You are the Documentation Engineer for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Create comprehensive documentation for the project.
+
+      Your mission:
+      1. CREATE docs/ directory with:
+         - ARCHITECTURE.md (hexagonal architecture explanation)
+         - API.md (API endpoints and contracts)
+         - DATA_MODEL.md (entity relationships and schemas)
+         - DEPLOYMENT.md (deployment with Envoy sidecar)
+         - DEVELOPMENT.md (local development setup)
+
+      2. CREATE ARCHITECTURE.md documenting:
+         - Hexagonal architecture layers
+         - Dependency rules
+         - Port and adapter pattern
+         - Domain model overview
+         - Data flow diagrams
+
+      3. CREATE API.md with:
+         - Endpoint structure (/api/v1/...)
+         - Authentication flow with Envoy
+         - Request/response examples
+         - Error handling
+
+      4. CREATE DATA_MODEL.md with:
+         - Entity relationships
+         - Database schema
+         - Aggregates and value objects
+         - Business rules
+
+      5. CREATE DEPLOYMENT.md with:
+         - Kubernetes pod configuration
+         - Envoy sidecar setup
+         - Environment variables
+         - Health checks
+
+      6. UPDATE main README.md with:
+         - Project overview
+         - Quick start guide
+         - Technology stack
+         - Links to detailed docs
+
+      **Focus Areas**:
+      - Explain WHY hexagonal architecture
+      - Document the team elimination logic
+      - Explain PPR scoring rules
+      - Document Envoy authentication flow
+      - Provide examples throughout
+
+      Start creating documentation immediately.
+
+coordination:
+  communication_method: "files"  # or "tmux", "api"
+  status_check_interval: 300  # seconds
+  max_idle_time: 600  # seconds before alert
+  todo_directory: "/tmp/ffl-dev_todos"
+  progress_directory: "/tmp/ffl-dev_progress"
+
+build:
+  command: "./gradlew build"
+  test_command: "./gradlew test"
+  clean_command: "./gradlew clean"
+
+notifications:
+  slack_webhook: "${SLACK_WEBHOOK}"
+  discord_webhook: "${DISCORD_WEBHOOK}"
+  teams_webhook: "${TEAMS_WEBHOOK}"
+  on_completion: true
+  on_error: true
+  on_stuck_engineer: true

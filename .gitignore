@@ -1,0 +1,89 @@
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.log
+*.ctxt
+.mtj.tmp/
+hs_err_pid*
+
+# Gradle
+.gradle/
+build/
+!gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versioning
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Spring Boot
+HELP.md
+.springBeans
+spring-shell.log
+
+# Database
+*.db
+*.sqlite
+*.h2.db
+
+# Logs
+logs/
+*.log
+*.gz
+
+# Secrets and sensitive data
+*.key
+*.pem
+*.p12
+application-local.yml
+application-dev.yml
+.env
+.env.local
+bootstrap-pat.txt
+*.pat
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Node (if frontend is added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+docker-compose.override.yml
+
+# Testing
+*.log
+test-output/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db

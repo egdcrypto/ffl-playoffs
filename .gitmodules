@@ -1,0 +1,3 @@
+[submodule "ai-orchestration-framework"]
+	path = ai-orchestration-framework
+	url = https://github.com/egdcrypto/ai-orchestration-framework.git

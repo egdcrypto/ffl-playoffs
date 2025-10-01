@@ -71,10 +71,13 @@
                         <a class="nav-link" href="player-dashboard.html">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="team-selection.html">Make Pick</a>
+                        <a class="nav-link" href="my-roster.html">My Roster</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="leaderboard.html">Leaderboard</a>
+                        <a class="nav-link" href="player-selection.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="league-standings.html">Standings</a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center text-white">
@@ -86,11 +89,28 @@
     </nav>
 
     <div class="container mt-4 mb-5">
+        <!-- LEGACY WARNING -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert alert-warning border-warning">
+                    <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> LEGACY VIEW - TEAM-BASED SURVIVOR POOL</h4>
+                    <p><strong>This mockup represents the OLD team-based survivor pool model and is retained for reference only.</strong></p>
+                    <p class="mb-2">The FFL Playoffs application now uses a <strong>ROSTER-BASED fantasy football model</strong> with individual NFL player selection (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX).</p>
+                    <hr>
+                    <p class="mb-0">
+                        <i class="bi bi-arrow-right-circle-fill"></i>
+                        <strong>For the current roster-based standings view, see:</strong>
+                        <a href="league-standings.html" class="alert-link">league-standings.html</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Page Header -->
         <div class="row mb-4">
             <div class="col-lg-8">
-                <h2><i class="bi bi-trophy"></i> Leaderboard</h2>
-                <p class="text-muted">Current standings and player rankings</p>
+                <h2><i class="bi bi-trophy"></i> Leaderboard <span class="badge bg-secondary">LEGACY</span></h2>
+                <p class="text-muted">Team-based survivor pool standings (deprecated model)</p>
             </div>
             <div class="col-lg-4">
                 <select class="form-select form-select-lg" id="leagueSelector">

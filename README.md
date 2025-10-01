@@ -249,17 +249,35 @@ Behavior-Driven Development (BDD) specifications in `features/`:
 
 ### UI Mockups
 
-Interactive HTML mockups demonstrating the user interface:
+Interactive HTML mockups demonstrating the **ONE-TIME DRAFT** user interface with pre-lock and post-lock states:
 
 **📱 View Live Mockups:**
-- **[Mockups Index](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/index.html)** - All mockups in one place
+- **[Mockups Index](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/index.html)** - Complete mockup navigation with state explanations
+
+#### 🔓 Pre-Lock State (Draft Phase)
+**Before first game starts** - Roster building is active, players can draft and modify rosters:
+
+- **[Player Dashboard (Pre-Lock)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-dashboard-prelock.html)** - Dashboard with countdown timer, incomplete roster warnings
+- **[Player Selection (Pre-Lock)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-selection-prelock.html)** - Active draft with "Add to Roster" buttons, position filters (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
+- **[My Roster (Pre-Lock)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/my-roster-prelock.html)** - Editable roster with "Add Player" and "Drop Player" buttons, countdown to lock
+- **[League Standings (Pre-Lock)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/league-standings-prelock.html)** - Shows draft completion status, players still building rosters
+
+#### 🔒 Post-Lock State (Season Active - Read-Only)
+**After first game starts** - Rosters are PERMANENTLY LOCKED for entire season:
+
+- **[Player Dashboard (Locked)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-dashboard-locked.html)** - Shows locked rosters, weekly scores, no edit options
+- **[Player Selection (Locked)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-selection-locked.html)** - Browse-only view with "Roster Locked" warnings, no draft buttons
+- **[My Roster (Locked)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/my-roster-locked.html)** - Read-only roster view, weekly scoring, injured players remain (no replacements)
+- **[League Standings (Locked)](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/league-standings-locked.html)** - Final rankings with locked roster badges, live scoring
+
+#### 🔐 Authentication
 - **[Login Screen](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/login.html)** - Google OAuth authentication flow
-- **[Player Dashboard](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-dashboard.html)** - Main league player view with leagues, stats, and actions
-- **[Player Selection](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-selection.html)** - Draft individual NFL players with position filters (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
-- **[My Roster](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/my-roster.html)** - View your drafted NFL players organized by position with weekly scoring
-- **[League Standings](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/league-standings.html)** - League player rankings with expandable roster details
 
 > **✨ Repository is PUBLIC** - All mockups are accessible online via the links above!
+
+**📊 ONE-TIME DRAFT Model:**
+- **Pre-Lock Phase**: League players draft individual NFL players to fill all roster positions. Roster can be modified (add/drop players) until first game starts.
+- **Post-Lock Phase**: Once the first NFL game starts, rosters are **PERMANENTLY LOCKED** for the entire season. NO waiver wire, NO trades, NO lineup changes, NO player replacements (even for injuries).
 
 **📐 Design Documentation:**
 - [WIREFRAMES.md](ui-design/WIREFRAMES.md) - Detailed wireframes for all screens

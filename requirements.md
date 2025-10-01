@@ -132,14 +132,19 @@ The system implements a three-tier role hierarchy:
   - Sort by various stats (points, yards, touchdowns, etc.)
   - Pagination support for large player lists
 
-- **Roster Management**
+- **Roster Management (ONE-TIME DRAFT MODEL)**
+  - **CRITICAL**: This is a ONE-TIME DRAFT model - rosters are built ONCE before the season
   - Build roster by filling all required position slots
   - View current roster with all filled positions
-  - Edit roster selections before deadline
-  - Selection deadline before games start each week (configurable)
-  - Roster validation ensures all positions are filled with eligible players
+  - Edit roster selections ONLY before roster lock deadline
+  - **Roster Lock**: Rosters are PERMANENTLY LOCKED once the first game starts
+  - After roster lock, NO changes are allowed for the entire season
+  - No waiver wire, no trades, no weekly lineup changes
+  - Roster deadline is before the first game of the season starts (configurable)
+  - Roster validation ensures all positions are filled with eligible players before lock
   - View game-by-game scoring breakdown for each selected player
   - Number of weeks determined by league configuration (1-17 weeks)
+  - League players compete with their locked rosters for all configured weeks
 
 ### 3. Scoring System
 - **PPR Scoring Rules (Individual Player-Based)**

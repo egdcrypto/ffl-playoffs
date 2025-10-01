@@ -895,6 +895,8 @@ POST /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}/assign
 ```
 **Auth**: Authenticated user (member of league)
 
+**⚠️ ONE-TIME DRAFT**: This endpoint ONLY works before the first game starts. Once rosters are locked, returns `ROSTER_LOCKED` error. No changes allowed after lock.
+
 **Request**:
 ```json
 {
@@ -958,6 +960,8 @@ DELETE /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}
 ```
 **Auth**: Authenticated user (member of league)
 
+**⚠️ ONE-TIME DRAFT**: This endpoint ONLY works before the first game starts. Once rosters are locked, returns `ROSTER_LOCKED` error. No changes allowed after lock.
+
 **Response**:
 ```json
 {
@@ -972,6 +976,8 @@ DELETE /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}
 POST /api/v1/player/leagues/{leagueId}/roster/transactions
 ```
 **Auth**: Authenticated user (member of league)
+
+**⚠️ ONE-TIME DRAFT**: This endpoint ONLY works before the first game starts. Once rosters are locked, returns `ROSTER_LOCKED` error. No waiver wire or trades allowed.
 
 **Request**:
 ```json

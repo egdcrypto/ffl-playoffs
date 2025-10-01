@@ -1,6 +1,6 @@
 # FFL Playoffs Game
 
-A Fantasy Football League playoff game where players pick NFL teams for a configurable duration (1-17 weeks). If a player's selected team loses, that team no longer earns points for the remainder of the game. Uses standard PPR (Points Per Reception) scoring with configurable field goal and defensive scoring rules.
+A traditional Fantasy Football League application where league players build rosters by drafting individual NFL players across multiple positions (QB, RB, WR, TE, K, DEF, FLEX, Superflex). Compete for a configurable duration (1-17 weeks) with fully customizable roster configurations and PPR (Points Per Reception) scoring with configurable field goal and defensive scoring rules.
 
 [![Java](https://img.shields.io/badge/Java-17-red.svg)](https://openjdk.java.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -21,16 +21,17 @@ A Fantasy Football League playoff game where players pick NFL teams for a config
 
 ## Overview
 
-FFL Playoffs is an **enterprise-grade fantasy football application** with a unique elimination mechanic:
-- Players select one NFL team per week
-- If a team loses, it's **eliminated** and scores **0 points** for all remaining weeks
-- Games can start at any NFL week (1-18) and run for any duration (1-17 weeks)
+FFL Playoffs is an **enterprise-grade fantasy football application** with traditional roster-based gameplay:
+- League players draft individual NFL players by position (QB, RB, WR, TE, K, DEF)
+- Build customizable rosters with FLEX and SUPERFLEX positions
+- Draft system: Once an NFL player is drafted, they become unavailable to other league players
+- Games can start at any NFL week (1-22, including playoffs) and run for any duration (1-17 weeks)
 - Perfect for playoff pools, mid-season challenges, or full-season leagues
 
 ### Key Differentiators
 
-1. **Elimination Mechanic**: Losing teams score zero for remaining weeks (not found in traditional fantasy)
-2. **Flexible Scheduling**: Start at any NFL week, not just week 1
+1. **Configurable Roster Positions**: Admin-defined roster slots (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
+2. **Flexible Scheduling**: Start at any NFL week (1-22), not just week 1
 3. **League-Scoped Players**: Players belong to specific leagues, supporting multi-league participation
 4. **Enterprise-Grade Security**: Envoy sidecar with custom auth service, Google OAuth, and PATs
 5. **Hexagonal Architecture**: Clean separation of concerns for maintainability and testability
@@ -38,17 +39,27 @@ FFL Playoffs is an **enterprise-grade fantasy football application** with a uniq
 ## Key Features
 
 ### Core Gameplay
-- ⚡ **Weekly Team Selection**: Pick one NFL team per week
-- 🚫 **No Duplicate Picks**: Cannot select the same team twice in a league
-- ❌ **Team Elimination**: Losing teams score 0 for all remaining weeks
-- 📊 **PPR Scoring**: Standard Points Per Reception scoring with full customization
-- 🏆 **Real-Time Leaderboards**: Live standings and score breakdowns
+- ⚡ **Roster Building**: Draft individual NFL players across multiple positions
+- 🏈 **Position-Based Rosters**: QB, RB, WR, TE, K, DEF, FLEX (RB/WR/TE), Superflex (QB/RB/WR/TE)
+- 🔒 **Draft System**: Once drafted, NFL players become unavailable to other league players
+- 📊 **Individual Player Scoring**: PPR scoring based on each NFL player's performance
+- 🏆 **Real-Time Leaderboards**: Live standings and cumulative score breakdowns
 
 ### League Configuration
-- 📅 **Flexible Start Weeks**: Begin at any NFL week (1-18)
+- 📅 **Flexible Start Weeks**: Begin at any NFL week (1-22, including playoffs)
 - ⏱️ **Configurable Duration**: 1-17 weeks (default: 4 weeks for playoffs)
+- 📋 **Roster Configuration**: Admin defines position requirements
+  - Quarterbacks (QB): 0-4 slots
+  - Running Backs (RB): 0-6 slots
+  - Wide Receivers (WR): 0-6 slots
+  - Tight Ends (TE): 0-3 slots
+  - Kickers (K): 0-2 slots
+  - Defense/ST (DEF): 0-2 slots
+  - FLEX (RB/WR/TE): 0-3 slots
+  - Superflex (QB/RB/WR/TE): 0-2 slots
 - ⚙️ **Custom Scoring Rules**:
-  - PPR settings (yards per point, reception points)
+  - Individual player PPR scoring (passing, rushing, receiving, TDs, INTs, fumbles)
+  - PPR format: Full PPR (1.0), Half PPR (0.5), or Standard (0.0)
   - Field goal scoring by distance (0-39, 40-49, 50+ yards)
   - Defensive scoring (sacks, INTs, fumbles, TDs)
   - Points allowed and yards allowed tiers
@@ -229,11 +240,11 @@ Behavior-Driven Development (BDD) specifications in `features/`:
 - [authentication.feature](features/authentication.feature) - Google OAuth & PAT authentication
 - [super-admin-management.feature](features/super-admin-management.feature) - Super admin operations
 - [admin-management.feature](features/admin-management.feature) - Admin league management
-- [league-configuration.feature](features/league-configuration.feature) - League setup & config
-- [player-invitation.feature](features/player-invitation.feature) - Player invitations
-- [team-selection.feature](features/team-selection.feature) - Team picking logic
-- [team-elimination.feature](features/team-elimination.feature) - Elimination mechanics
-- [scoring-ppr.feature](features/scoring-ppr.feature) - PPR scoring calculations
+- [league-configuration.feature](features/league-configuration.feature) - League setup & roster configuration
+- [player-invitation.feature](features/player-invitation.feature) - Player invitations to leagues
+- [team-selection.feature](features/team-selection.feature) - Individual NFL player roster selection and draft system
+- [scoring-ppr.feature](features/scoring-ppr.feature) - Individual player PPR scoring calculations
+- [data-integration.feature](features/data-integration.feature) - NFL data synchronization and player statistics
 
 ### UI Mockups
 

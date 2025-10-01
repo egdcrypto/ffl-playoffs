@@ -20,11 +20,11 @@
 ## Overview
 
 ### Product Description
-A Fantasy Football League playoff game where players pick teams for a configurable duration (1-17 weeks, default 4 weeks) starting at any week of the NFL season (weeks 1-18). If a player's selected team loses, that team no longer earns points for the remainder of the game. Uses standard PPR (Points Per Reception) scoring rules.
+A Fantasy Football League game where players build rosters by selecting individual NFL players across multiple positions (QB, RB, WR, TE, FLEX, K, DEF, Superflex) for a configurable duration (1-17 weeks, default 4 weeks) starting at any week of the NFL season (weeks 1-22). Admins configure roster structure (how many of each position) and scoring rules. Uses standard PPR (Points Per Reception) scoring with configurable field goal and defensive scoring.
 
 ### Key Differentiators
-- **Elimination Mechanic**: Losing teams score zero for remaining weeks (not found in traditional fantasy)
-- **Flexible Scheduling**: Start at any NFL week, not just week 1
+- **Configurable Roster Positions**: Admins define roster structure with flexible position counts (QB, RB, WR, TE, FLEX, K, DEF, Superflex)
+- **Flexible Scheduling**: Start at any NFL week (1-22), run for any duration (1-17 weeks)
 - **League-Scoped Players**: Players belong to specific leagues, supporting multi-league participation
 - **Enterprise-Grade Security**: Envoy sidecar with custom auth service, Google OAuth, and PATs
 - **Hexagonal Architecture**: Clean separation of concerns for maintainability and testability
@@ -108,17 +108,37 @@ The system implements a three-tier role hierarchy:
   - Admin can only manage players in their own leagues
   - Player profile management within league context
 
-### 2. Team Selection
-- **Weekly Team Picks (ENTIRE NFL TEAMS, NOT Individual Players)**
-  - **IMPORTANT**: Players select one ENTIRE NFL TEAM per week (e.g., "Kansas City Chiefs")
-  - This is NOT a traditional fantasy draft - no individual player selection
-  - This is a team-based survivor pool with PPR scoring of the team's total stats
-  - Players cannot select the same team twice across all weeks in the game (personal restriction only)
-  - Multiple league players CAN independently select the same NFL team (no draft, no availability restrictions)
-  - Selection deadline before games start each week
-  - View all 32 NFL teams for selection
-  - Teams used by player are grayed out (personal history only)
-  - Edit picks before deadline
+### 2. Roster Building and Player Selection
+- **Individual NFL Player Selection by Position**
+  - **IMPORTANT**: League players build rosters by selecting individual NFL players (e.g., "Patrick Mahomes", "Christian McCaffrey")
+  - This is traditional fantasy football roster management with position-based selection
+  - Roster structure configured by admin (e.g., 1 QB, 2 RB, 2 WR, 1 TE, 1 FLEX, 1 K, 1 DEF, 1 Superflex)
+  - Each roster slot has position requirements:
+    - **QB (Quarterback)**: Must select NFL quarterback
+    - **RB (Running Back)**: Must select NFL running back
+    - **WR (Wide Receiver)**: Must select NFL wide receiver
+    - **TE (Tight End)**: Must select NFL tight end
+    - **K (Kicker)**: Must select NFL kicker
+    - **DEF (Defense/Special Teams)**: Must select NFL team defense
+    - **FLEX**: Can select RB, WR, or TE
+    - **Superflex**: Can select QB, RB, WR, or TE
+
+- **Player Search and Filtering**
+  - Search NFL players by name
+  - Filter by position (QB, RB, WR, TE, K, DEF)
+  - Filter by NFL team (32 teams)
+  - View player stats (game-by-game performance)
+  - View player season totals and averages
+  - Sort by various stats (points, yards, touchdowns, etc.)
+  - Pagination support for large player lists
+
+- **Roster Management**
+  - Build roster by filling all required position slots
+  - View current roster with all filled positions
+  - Edit roster selections before deadline
+  - Selection deadline before games start each week (configurable)
+  - Roster validation ensures all positions are filled with eligible players
+  - View game-by-game scoring breakdown for each selected player
   - Number of weeks determined by league configuration (1-17 weeks)
 
 ### 3. Scoring System

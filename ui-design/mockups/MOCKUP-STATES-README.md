@@ -47,17 +47,14 @@ This directory contains mockups demonstrating the **ONE-TIME DRAFT MODEL** with 
 | **Dashboard** | `player-dashboard-prelock.html` | `player-dashboard-locked.html` |
 | **My Roster** | `my-roster-prelock.html` | `my-roster-locked.html` |
 | **Player Selection** | `player-selection-prelock.html` | `player-selection-locked.html` |
+| **League Standings** | `league-standings-prelock.html` | `league-standings-locked.html` |
 
 ## Mixed-State Mockups
 
 - `player-dashboard.html` - Shows multiple leagues in different states
 - `my-roster.html` - Original mockup (being replaced by state-specific versions)
 - `player-selection.html` - Original mockup (being replaced by state-specific versions)
-
-## Legacy Mockups
-
-- `leaderboard.html` - DEPRECATED team-based survivor pool model (for reference)
-- See `league-standings.html` for current roster-based model
+- `league-standings.html` - Current roster-based league standings
 
 ## Viewing Mockups
 

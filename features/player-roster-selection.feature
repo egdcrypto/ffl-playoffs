@@ -42,7 +42,7 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     When I draft NFL player "Patrick Mahomes" (id: 101) to position "QB"
     Then the draft should succeed
     And my roster should have "Patrick Mahomes" in position "QB"
-    And "Patrick Mahomes" should be unavailable to other league players
+    And "Patrick Mahomes" remains available to all other league players
     And my roster completion should be "1/10"
 
   Scenario: League player drafts multiple NFL players to fill roster
@@ -344,8 +344,8 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     When I replace "Travis Kelce" with "George Kittle" in position "TE"
     Then the replacement should succeed
     And my TE position should have "George Kittle"
-    And "Travis Kelce" should be available to other league players
-    And "George Kittle" should be unavailable to other league players
+    And "Travis Kelce" remains available to all other league players
+    And "George Kittle" remains available to all other league players
 
   # Roster Lock and Deadline (PERMANENT LOCK - NO CHANGES FOR ENTIRE SEASON)
 

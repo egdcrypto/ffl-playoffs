@@ -36,7 +36,7 @@ All mockups include:
 - ✅ Roster completion tracking and lock countdown timers
 - ✅ Interactive elements (modals, collapsible rows, filters)
 - ✅ Mock data demonstrating real game scenarios
-- ✅ Draft system: unavailable players marked when drafted by others
+- ✅ No ownership model: ALL NFL players available to ALL league members (multiple players can select the same NFL player)
 - ✅ Pagination support for large player lists
 
 ## How to View
@@ -111,7 +111,8 @@ Bootstrap 5 spacing scale (0-5):
 ### Draft System
 - Position filters (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX)
 - NFL team filter and player name search
-- Unavailable players marked when drafted by other league members
+- ALL NFL players available to ALL league members (no ownership model)
+- Multiple league members can select the same NFL player
 - Roster sidebar showing current selections
 
 ### Roster Display
@@ -135,7 +136,7 @@ After stakeholder approval:
 4. Add real-time score updates via WebSocket
 5. Implement Google OAuth authentication flow
 6. Add roster lock enforcement on backend
-7. Implement draft system with player availability tracking
+7. Implement draft system with no ownership model (all players available to all)
 
 ## Notes
 

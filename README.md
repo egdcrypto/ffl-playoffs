@@ -1,6 +1,6 @@
 # FFL Playoffs Game
 
-A traditional Fantasy Football League application where league players build rosters by drafting individual NFL players across multiple positions (QB, RB, WR, TE, K, DEF, FLEX, Superflex). Compete for a configurable duration (1-17 weeks) with fully customizable roster configurations and PPR (Points Per Reception) scoring with configurable field goal and defensive scoring rules.
+A **roster-based fantasy football application** with a unique **ONE-TIME DRAFT** model. League players build rosters by drafting individual NFL players across multiple positions (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX). Once the first game starts, rosters are **permanently locked** for the entire season—no waiver wire, no trades, no lineup changes. Compete for a configurable duration (1-17 weeks) with fully customizable roster configurations and PPR (Points Per Reception) scoring.
 
 [![Java](https://img.shields.io/badge/Java-17-red.svg)](https://openjdk.java.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -21,29 +21,53 @@ A traditional Fantasy Football League application where league players build ros
 
 ## Overview
 
-FFL Playoffs is an **enterprise-grade fantasy football application** with traditional roster-based gameplay:
-- League players draft individual NFL players by position (QB, RB, WR, TE, K, DEF)
-- Build customizable rosters with FLEX and SUPERFLEX positions
-- Draft system: Once an NFL player is drafted, they become unavailable to other league players
-- Games can start at any NFL week (1-22, including playoffs) and run for any duration (1-17 weeks)
-- Perfect for playoff pools, mid-season challenges, or full-season leagues
+FFL Playoffs is an **enterprise-grade fantasy football application** with a unique **ONE-TIME DRAFT** model:
 
-### Key Differentiators
+### 🎯 Core Concept: ONE-TIME DRAFT Model
 
-1. **Configurable Roster Positions**: Admin-defined roster slots (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
-2. **Flexible Scheduling**: Start at any NFL week (1-22), not just week 1
-3. **League-Scoped Players**: Players belong to specific leagues, supporting multi-league participation
-4. **Enterprise-Grade Security**: Envoy sidecar with custom auth service, Google OAuth, and PATs
-5. **Hexagonal Architecture**: Clean separation of concerns for maintainability and testability
+**CRITICAL RULE**: Rosters are built **ONCE** before the season starts and are **PERMANENTLY LOCKED** when the first NFL game begins.
+
+**Pre-Lock Phase (Draft Phase)**:
+- League players draft individual NFL players to fill all roster positions
+- Players can modify their rosters (add/drop players) until the first game starts
+- Countdown timer shows time remaining until permanent lock
+- Admin-configurable roster structure (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX)
+
+**Post-Lock Phase (Season Active)**:
+- Rosters are **PERMANENTLY LOCKED** for the entire season
+- **NO waiver wire** pickups allowed
+- **NO trades** between league players
+- **NO lineup changes** week-to-week
+- **NO player replacements** (even for injuries)
+- League players compete with their locked rosters for the full duration
+
+### 🏈 Roster-Based Gameplay
+
+- **Individual NFL Player Selection**: Draft individual players by position (QB, RB, WR, TE, K, DEF)
+- **Customizable Rosters**: FLEX positions (RB/WR/TE eligible) and SUPERFLEX positions (QB/RB/WR/TE eligible)
+- **Player Availability**: Multiple league players CAN select the same NFL player (no ownership restrictions)
+- **Position-Based Scoring**: PPR scoring based on each individual NFL player's performance
+- **Flexible Scheduling**: Start at any NFL week (1-22, including playoffs), run for any duration (1-17 weeks)
+
+### 🔑 Key Differentiators
+
+1. **ONE-TIME DRAFT**: Permanent roster lock creates unique strategic challenge—must live with draft decisions
+2. **Configurable Roster Positions**: Admin-defined roster slots with flexible position eligibility
+3. **No Ownership Model**: All NFL players available to all league players (not a traditional draft)
+4. **Flexible Scheduling**: Start at any NFL week (1-22), not just week 1
+5. **League-Scoped Players**: Players belong to specific leagues, supporting multi-league participation
+6. **Enterprise-Grade Security**: Envoy sidecar with custom auth service, Google OAuth, and PATs
+7. **Hexagonal Architecture**: Clean separation of concerns for maintainability and testability
 
 ## Key Features
 
-### Core Gameplay
-- ⚡ **Roster Building**: Draft individual NFL players across multiple positions
-- 🏈 **Position-Based Rosters**: QB, RB, WR, TE, K, DEF, FLEX (RB/WR/TE), Superflex (QB/RB/WR/TE)
-- 🔒 **Draft System**: Once drafted, NFL players become unavailable to other league players
-- 📊 **Individual Player Scoring**: PPR scoring based on each NFL player's performance
-- 🏆 **Real-Time Leaderboards**: Live standings and cumulative score breakdowns
+### Core Gameplay (ONE-TIME DRAFT Model)
+- 🔓 **Pre-Lock Roster Building**: Draft individual NFL players across multiple positions before season starts
+- 🔒 **Permanent Roster Lock**: Rosters lock when first game starts—NO changes for entire season
+- 🏈 **Position-Based Rosters**: QB, RB, WR, TE, K, DEF, FLEX (RB/WR/TE), SUPERFLEX (QB/RB/WR/TE)
+- 🚫 **No Waiver Wire/Trades**: Live with your draft decisions—no pickups, trades, or lineup changes
+- 📊 **Individual Player Scoring**: PPR scoring based on each NFL player's weekly performance
+- 🏆 **Real-Time Leaderboards**: Live standings with cumulative roster score breakdowns
 
 ### League Configuration
 - 📅 **Flexible Start Weeks**: Begin at any NFL week (1-22, including playoffs)
@@ -452,19 +476,21 @@ test: add integration tests for leaderboard
 - ✅ Hexagonal architecture setup
 - ✅ User management (SUPER_ADMIN, ADMIN, PLAYER)
 - ✅ League configuration with flexible start weeks and roster configuration
-- ✅ Individual NFL player roster building with draft system
-- ✅ Position-based rosters (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
-- ✅ Individual player PPR scoring with configurable rules
+- ✅ **ONE-TIME DRAFT model** with permanent roster lock
+- ✅ Individual NFL player roster building (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX)
+- ✅ Pre-lock roster building phase with add/drop functionality
+- ✅ Post-lock read-only roster enforcement (no waiver wire, no trades)
+- ✅ Position-based PPR scoring with configurable field goal and defensive rules
 - ✅ Google OAuth authentication
 - ✅ Personal Access Token (PAT) system
-- ✅ Comprehensive documentation and UI mockups
+- ✅ Comprehensive documentation and UI mockups (pre-lock and post-lock states)
 
 ### Phase 2: Enhanced Features (Q2 2025)
 - 🔲 Real-time score updates via WebSocket
-- 🔲 Email notifications for roster updates and weekly scoring
+- 🔲 Email notifications for roster lock warnings and weekly scoring
 - 🔲 Historical game archive and season statistics
 - 🔲 Mobile app (React Native)
-- 🔲 Social features (league chat, player comparisons, trade system)
+- 🔲 Social features (league chat, player comparisons, roster analysis)
 
 ### Phase 3: Analytics & Insights (Q3 2025)
 - 🔲 Advanced statistics dashboard

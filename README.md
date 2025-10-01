@@ -4,7 +4,7 @@ A **roster-based fantasy football application** with a unique **ONE-TIME DRAFT**
 
 [![Java](https://img.shields.io/badge/Java-17-red.svg)](https://openjdk.java.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue.svg)](https://www.postgresql.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6+-green.svg)](https://www.mongodb.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## Table of Contents
@@ -105,7 +105,7 @@ FFL Playoffs is an **enterprise-grade fantasy football application** with a uniq
 
 ### Prerequisites
 - Java 17+
-- PostgreSQL 14+
+- MongoDB 6+
 - Gradle 8.0+
 - Docker (optional)
 
@@ -116,12 +116,14 @@ FFL Playoffs is an **enterprise-grade fantasy football application** with a uniq
 git clone https://github.com/your-org/ffl-playoffs.git
 cd ffl-playoffs
 
-# Create PostgreSQL database
-psql -U postgres
-CREATE DATABASE ffl_playoffs;
-CREATE USER ffl_user WITH ENCRYPTED PASSWORD 'ffl_password';
-GRANT ALL PRIVILEGES ON DATABASE ffl_playoffs TO ffl_user;
-\q
+# Start MongoDB (if not already running)
+# Option 1: Local MongoDB
+mongod --dbpath /path/to/data
+
+# Option 2: Docker
+docker run -d -p 27017:27017 --name mongodb mongo:6
+
+# MongoDB will automatically create the database on first connection
 ```
 
 ### 2. Configure Application
@@ -130,10 +132,11 @@ Create `ffl-playoffs-api/src/main/resources/application-dev.yml`:
 
 ```yaml
 spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ffl_playoffs
-    username: ffl_user
-    password: ffl_password
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ffl_playoffs
+      # Or with authentication:
+      # uri: mongodb://ffl_user:ffl_password@localhost:27017/ffl_playoffs
 
 server:
   port: 8080
@@ -178,9 +181,8 @@ curl -X POST http://localhost:8080/api/v1/setup/superadmin \
 - **Language**: Java 17
 - **Framework**: Spring Boot 3.x
 - **Architecture**: Hexagonal Architecture (Ports & Adapters)
-- **Database**: PostgreSQL 14+
-- **ORM**: Spring Data JPA / Hibernate
-- **Migrations**: Flyway
+- **Database**: MongoDB 6+
+- **ODM**: Spring Data MongoDB
 - **Build Tool**: Gradle 8.x
 
 ### Security & Infrastructure
@@ -333,8 +335,7 @@ ffl-playoffs/
 │   │   │   │   ├── application/   # Application layer (use cases)
 │   │   │   │   └── infrastructure/ # Infrastructure layer (adapters)
 │   │   │   └── resources/
-│   │   │       ├── application.yml
-│   │   │       └── db/migration/  # Flyway migrations
+│   │   │       └── application.yml
 │   │   └── test/
 │   └── build.gradle
 ├── ui-design/                     # UI design and mockups
@@ -438,15 +439,18 @@ curl http://localhost:8080/api/v1/player/leagues/1/leaderboard \
 ./gradlew check
 ```
 
-### Database Migrations
+### Database Management
 
 ```bash
-# Migrations run automatically on startup
-./gradlew bootRun
+# Connect to MongoDB shell
+mongosh mongodb://localhost:27017/ffl_playoffs
 
-# Or use Flyway CLI
-flyway -url=jdbc:postgresql://localhost:5432/ffl_playoffs \
-  -user=ffl_user -password=ffl_password migrate
+# View collections
+show collections
+
+# Query data
+db.leagues.find().pretty()
+db.players.find().pretty()
 ```
 
 ## Contributing
@@ -511,4 +515,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ using Hexagonal Architecture, Spring Boot, and PostgreSQL**
+**Built with ❤️ using Hexagonal Architecture, Spring Boot, and MongoDB**

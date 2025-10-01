@@ -24,7 +24,7 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
 
 1. **Business Logic Independence**: Domain logic is completely independent of frameworks, databases, and external services
 2. **Testability**: Core business rules can be tested without databases or HTTP servers
-3. **Flexibility**: Easy to swap PostgreSQL for another database, or REST for GraphQL
+3. **Flexibility**: Easy to swap MongoDB for another database, or REST for GraphQL
 4. **Technology Agnostic**: Framework and library choices don't impact core domain
 5. **Clear Dependencies**: Dependencies always point inward toward the domain
 
@@ -109,7 +109,7 @@ The innermost layer containing pure business logic with **zero external dependen
 - **Repository Interfaces (Ports)**: LeagueRepository, PlayerRepository, ScoreRepository
 
 **Rules**:
-- No framework dependencies (Spring, JPA, etc.)
+- No framework dependencies (Spring, MongoDB annotations, etc.)
 - No infrastructure concerns (databases, HTTP, external APIs)
 - Pure Java domain logic
 - Self-contained business rules
@@ -188,7 +188,7 @@ Implements the port interfaces and handles all external concerns.
 
 **Components**:
 - **REST Adapters**: Spring controllers exposing HTTP endpoints
-- **Persistence Adapters**: JPA repositories, database entities
+- **Persistence Adapters**: Spring Data MongoDB repositories, document entities
 - **Integration Adapters**: NFL data API clients, notification services
 - **Configuration**: Spring configuration, security, Envoy integration
 
@@ -207,18 +207,18 @@ infrastructure/
 │   │   ├── PlayerController.java
 │   │   └── AuthController.java
 │   ├── persistence/        # Database implementations
-│   │   ├── jpa/
-│   │   │   ├── LeagueJpaRepository.java
-│   │   │   └── entities/
-│   │   │       ├── LeagueEntity.java
-│   │   │       └── PlayerEntity.java
+│   │   ├── mongodb/
+│   │   │   ├── LeagueMongoRepository.java
+│   │   │   └── documents/
+│   │   │       ├── LeagueDocument.java
+│   │   │       └── PlayerDocument.java
 │   │   └── LeagueRepositoryAdapter.java
 │   └── integration/        # External service clients
 │       ├── NFLDataApiClient.java
 │       └── EmailNotificationService.java
 └── config/                 # Spring configuration
     ├── SecurityConfig.java
-    └── DatabaseConfig.java
+    └── MongoConfig.java
 ```
 
 **Example**:
@@ -226,20 +226,20 @@ infrastructure/
 // infrastructure/adapter/persistence/LeagueRepositoryAdapter.java
 @Component
 public class LeagueRepositoryAdapter implements LeagueRepository {
-    private final LeagueJpaRepository jpaRepository;
+    private final LeagueMongoRepository mongoRepository;
     private final LeagueMapper mapper;
 
     @Override
-    public League findById(Long id) {
-        LeagueEntity entity = jpaRepository.findById(id)
+    public League findById(String id) {
+        LeagueDocument document = mongoRepository.findById(id)
             .orElseThrow(() -> new LeagueNotFoundException(id));
-        return mapper.toDomain(entity);
+        return mapper.toDomain(document);
     }
 
     @Override
     public void save(League league) {
-        LeagueEntity entity = mapper.toEntity(league);
-        jpaRepository.save(entity);
+        LeagueDocument document = mapper.toDocument(league);
+        mongoRepository.save(document);
     }
 }
 ```
@@ -288,7 +288,7 @@ public interface LeagueRepository {  // Port
 // Infrastructure Layer implements the ADAPTER
 @Component
 public class LeagueRepositoryAdapter implements LeagueRepository {
-    // JPA implementation
+    // MongoDB implementation
 }
 
 // Application uses the PORT, not the concrete implementation
@@ -435,8 +435,8 @@ HTTP POST /api/v1/admin/leagues
 [LeagueRepository] (Port - Application)
       ↓ (implementation)
 [LeagueRepositoryAdapter] (Infrastructure)
-      ↓ (JPA save)
-[PostgreSQL Database]
+      ↓ (MongoDB save)
+[MongoDB Database]
 ```
 
 ### 2. Team Selection Flow
@@ -521,7 +521,7 @@ HTTP POST /api/v1/player/selections
 
 **Solution**: Hexagonal architecture isolates business logic in the domain layer, making it:
 - **Framework-independent**: Can switch from Spring to Micronaut without touching domain
-- **Database-independent**: Can swap PostgreSQL for MongoDB
+- **Database-independent**: Can swap MongoDB for another database
 - **Testable**: Test business logic without Spring context or databases
 - **UI-independent**: Support REST, GraphQL, or CLI with same core
 
@@ -529,12 +529,12 @@ HTTP POST /api/v1/player/selections
 
 **Domain Model** (e.g., `League.java`):
 - Pure business logic
-- No JPA annotations
+- No MongoDB annotations
 - Rich behavior
 - Encapsulates invariants
 
-**Persistence Model** (e.g., `LeagueEntity.java`):
-- JPA-annotated
+**Persistence Model** (e.g., `LeagueEntity.java` or `LeagueDocument.java`):
+- MongoDB-annotated
 - Database-focused
 - Anemic (getters/setters)
 - Optimized for queries

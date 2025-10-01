@@ -21,8 +21,8 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 
 ### Technology Stack
 - **Language**: Java (Spring Boot)
-- **Framework**: Spring Boot, Spring Data JPA
-- **Database**: PostgreSQL
+- **Framework**: Spring Boot, Spring Data MongoDB
+- **Database**: MongoDB 6+
 - **Authentication**: Google OAuth 2.0, Personal Access Tokens (PATs)
 - **Security**: Envoy Sidecar with External Authorization (ext_authz)
 - **Container Orchestration**: Kubernetes
@@ -109,7 +109,7 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 ### Infrastructure Layer
 
 **Adapters (Outbound)**:
-- `PostgresLeagueRepository` implements `LeagueRepository`
+- `MongoLeagueRepository` implements `LeagueRepository`
 - `NFLDataAPIAdapter` - Fetches NFL schedules and statistics
 - `EmailServiceAdapter` - Sends notifications
 - `GoogleOAuthAdapter` - Validates Google JWT tokens
@@ -529,11 +529,11 @@ spec:
           ports:
             - containerPort: 8080  # localhost only
           env:
-            - name: DATABASE_URL
+            - name: MONGODB_URI
               valueFrom:
                 secretKeyRef:
-                  name: postgres-secret
-                  key: url
+                  name: mongodb-secret
+                  key: uri
 ```
 
 ### Service Mesh Configuration
@@ -582,51 +582,57 @@ spec:
 
 ## Database Schema
 
-### Key Tables
+### Key Collections
 
 #### leagues
-```sql
-CREATE TABLE leagues (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    owner_id BIGINT NOT NULL,
-    starting_week INTEGER NOT NULL CHECK (starting_week BETWEEN 1 AND 18),
-    number_of_weeks INTEGER NOT NULL CHECK (number_of_weeks BETWEEN 1 AND 17),
-    status VARCHAR(50) NOT NULL,
-    is_public BOOLEAN DEFAULT false,
-    max_players INTEGER,
-    scoring_rules JSONB NOT NULL,
+```javascript
+{
+  _id: ObjectId,
+  name: String,
+  description: String,
+  ownerId: String,
+  startingWeek: Number,  // 1-18
+  numberOfWeeks: Number, // 1-17
+  status: String,        // DRAFT, ACTIVE, PAUSED, COMPLETED, ARCHIVED
+  isPublic: Boolean,
+  maxPlayers: Number,
+  scoringRules: {
+    pprRules: { ... },
+    fieldGoalRules: { ... },
+    defensiveRules: { ... }
+  },
 
-    -- 🆕 Configuration Lock Fields
-    configuration_locked BOOLEAN DEFAULT false,
-    lock_timestamp TIMESTAMPTZ,
-    lock_reason VARCHAR(50),
-    first_game_start_time TIMESTAMPTZ,
+  // 🆕 Configuration Lock Fields
+  configurationLocked: Boolean,
+  lockTimestamp: Date,
+  lockReason: String,
+  firstGameStartTime: Date,
 
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+  createdAt: Date,
+  updatedAt: Date
+}
 
-CREATE INDEX idx_leagues_owner ON leagues(owner_id);
-CREATE INDEX idx_leagues_status ON leagues(status);
-CREATE INDEX idx_leagues_config_lock ON leagues(configuration_locked, first_game_start_time);
+// Indexes
+db.leagues.createIndex({ ownerId: 1 })
+db.leagues.createIndex({ status: 1 })
+db.leagues.createIndex({ configurationLocked: 1, firstGameStartTime: 1 })
 ```
 
 #### weeks
-```sql
-CREATE TABLE weeks (
-    id BIGSERIAL PRIMARY KEY,
-    league_id BIGINT NOT NULL REFERENCES leagues(id),
-    game_week_number INTEGER NOT NULL,
-    nfl_week_number INTEGER NOT NULL,
-    pick_deadline TIMESTAMPTZ NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-);
+```javascript
+{
+  _id: ObjectId,
+  leagueId: String,
+  gameWeekNumber: Number,
+  nflWeekNumber: Number,
+  pickDeadline: Date,
+  status: String,  // UPCOMING, ACTIVE, LOCKED, COMPLETED
+  createdAt: Date
+}
 
-CREATE UNIQUE INDEX idx_weeks_league_game_week ON weeks(league_id, game_week_number);
-CREATE INDEX idx_weeks_nfl_week ON weeks(nfl_week_number);
+// Indexes
+db.weeks.createIndex({ leagueId: 1, gameWeekNumber: 1 }, { unique: true })
+db.weeks.createIndex({ nflWeekNumber: 1 })
 ```
 
 ---

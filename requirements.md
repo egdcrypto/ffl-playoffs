@@ -541,8 +541,8 @@ The system implements a three-tier role hierarchy:
 
 ## Technology Stack
 - **Language**: Java (Spring Boot)
-- **Framework**: Spring Boot, Spring Data JPA
-- **Database**: PostgreSQL (recommended)
+- **Framework**: Spring Boot, Spring Data MongoDB
+- **Database**: MongoDB 6+
 - **Authentication**:
   - Google OAuth 2.0 for user authentication
   - Personal Access Tokens (PATs) for service-to-service

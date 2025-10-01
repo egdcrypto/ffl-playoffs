@@ -431,6 +431,80 @@
             </div>
         </div>
 
+        <!-- Pagination Controls -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <!-- Page Info -->
+                            <div class="text-muted">
+                                Showing <strong>1-25</strong> of <strong>100</strong> players
+                            </div>
+
+                            <!-- Pagination -->
+                            <nav aria-label="Leaderboard pagination">
+                                <ul class="pagination mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                            <i class="bi bi-chevron-double-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item active" aria-current="page">
+                                        <a class="page-link" href="#">1</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">3</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">4</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">
+                                            <i class="bi bi-chevron-double-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+
+                            <!-- Items per page selector -->
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="itemsPerPage" class="form-label mb-0 text-muted small d-none d-md-inline">Per page:</label>
+                                <select class="form-select form-select-sm" id="itemsPerPage" style="width: auto;">
+                                    <option value="10">10</option>
+                                    <option value="25" selected>25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Jump to page (optional) -->
+                        <div class="d-flex justify-content-center mt-3 pt-3 border-top">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="text-muted small">Jump to page:</span>
+                                <input type="number" class="form-control form-control-sm" style="width: 80px;" min="1" max="4" value="1" placeholder="Page">
+                                <button class="btn btn-sm btn-outline-primary">Go</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Score Breakdown Modal Trigger (optional) -->
         <div class="row mt-4">
             <div class="col text-center">

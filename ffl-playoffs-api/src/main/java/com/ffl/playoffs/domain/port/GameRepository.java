@@ -1,5 +1,7 @@
 package com.ffl.playoffs.domain.port;
 
+import com.ffl.playoffs.application.dto.Page;
+import com.ffl.playoffs.application.dto.PageRequest;
 import com.ffl.playoffs.domain.model.Game;
 
 import java.util.List;
@@ -21,7 +23,34 @@ public interface GameRepository {
 
     List<Game> findByCreatorId(UUID creatorId);
 
+    /**
+     * Find all games with pagination
+     * @param pageRequest pagination parameters
+     * @return paginated list of games
+     */
+    Page<Game> findAll(PageRequest pageRequest);
+
+    /**
+     * Find all games (unpaginated)
+     * @return list of all games
+     */
     List<Game> findAll();
+
+    /**
+     * Find games by creator with pagination
+     * @param creatorId the creator's user ID
+     * @param pageRequest pagination parameters
+     * @return paginated list of games
+     */
+    Page<Game> findByCreatorId(UUID creatorId, PageRequest pageRequest);
+
+    /**
+     * Find games by status with pagination
+     * @param status the game status
+     * @param pageRequest pagination parameters
+     * @return paginated list of games
+     */
+    Page<Game> findByStatus(String status, PageRequest pageRequest);
 
     void delete(UUID id);
 

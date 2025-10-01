@@ -593,6 +593,57 @@
                     </div>
                 </div>
 
+                <!-- Pagination Controls -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                            <!-- Page Info -->
+                            <div class="text-muted">
+                                Showing <strong>1-20</strong> of <strong>32</strong> teams
+                            </div>
+
+                            <!-- Pagination -->
+                            <nav aria-label="Team list pagination">
+                                <ul class="pagination mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                            <i class="bi bi-chevron-double-left"></i> First
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                            <i class="bi bi-chevron-left"></i> Previous
+                                        </a>
+                                    </li>
+                                    <li class="page-item active" aria-current="page">
+                                        <a class="page-link" href="#">1</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next <i class="bi bi-chevron-right"></i></a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Last <i class="bi bi-chevron-double-right"></i></a>
+                                    </li>
+                                </ul>
+                            </nav>
+
+                            <!-- Items per page selector -->
+                            <div class="d-flex align-items-center gap-2">
+                                <label for="itemsPerPage" class="form-label mb-0 text-muted small">Items per page:</label>
+                                <select class="form-select form-select-sm" id="itemsPerPage" style="width: auto;">
+                                    <option value="10">10</option>
+                                    <option value="20" selected>20</option>
+                                    <option value="32">32 (All)</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Submit Button -->
                 <div class="row mt-4">
                     <div class="col">

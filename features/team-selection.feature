@@ -187,3 +187,137 @@ Feature: Team Selection
     Then I should receive deadline information
     And the time remaining should be "1 hour 30 minutes"
     And the deadline status should be "OPEN"
+
+  # Pagination for Team Selection Display
+
+  Scenario: Paginate NFL team list with default page size
+    Given there are 32 NFL teams in the system
+    And it is week 1 of the game
+    When I request the available teams without pagination parameters
+    Then the response includes 20 teams (default page size)
+    And the response includes pagination metadata:
+      | page           | 0              |
+      | size           | 20             |
+      | totalElements  | 32             |
+      | totalPages     | 2              |
+      | hasNext        | true           |
+      | hasPrevious    | false          |
+
+  Scenario: Request specific page of NFL teams
+    Given there are 32 NFL teams in the system
+    And it is week 2 of the game
+    When I request available teams with page 1 and size 10
+    Then the response includes teams 11-20
+    And the pagination metadata shows:
+      | page           | 1              |
+      | size           | 10             |
+      | totalElements  | 32             |
+      | totalPages     | 4              |
+      | hasNext        | true           |
+      | hasPrevious    | true           |
+
+  Scenario: Paginate teams with custom page size
+    Given there are 32 NFL teams in the system
+    And it is week 1 of the game
+    When I request available teams with page 0 and size 50
+    Then the response includes all 32 teams
+    And the pagination metadata shows:
+      | page           | 0              |
+      | size           | 50             |
+      | totalElements  | 32             |
+      | totalPages     | 1              |
+      | hasNext        | false          |
+      | hasPrevious    | false          |
+
+  Scenario: Paginate team selection history
+    Given I have made selections for 15 different weeks across multiple leagues
+    When I request my team selection history with page size 10
+    Then page 0 contains selections 1-10
+    And page 1 contains selections 11-15
+    And each response includes total count of 15
+
+  Scenario: Paginate teams by division
+    Given I am viewing teams for week 1
+    And I filter by division "AFC East"
+    When I request teams with page 0 and size 10
+    Then the response includes AFC East teams only
+    And the pagination metadata reflects filtered total:
+      | totalElements  | 4 (AFC East teams) |
+      | totalPages     | 1                  |
+
+  Scenario: Paginate teams by conference
+    Given I am viewing teams for week 2
+    And I filter by conference "NFC"
+    When I request teams with page 0 and size 10
+    Then the response includes 10 NFC teams
+    And the pagination metadata reflects filtered total:
+      | totalElements  | 16 (NFC teams) |
+      | totalPages     | 2              |
+
+  Scenario: Paginate available vs used teams
+    Given I am in week 3 of the game
+    And I have already selected 8 teams in previous weeks
+    And I filter by "available only"
+    When I request teams with page 0 and size 20
+    Then the response includes 20 of the 24 remaining available teams
+    And the pagination metadata shows:
+      | totalElements  | 24 (unused teams) |
+      | totalPages     | 2                 |
+
+  Scenario: Pagination includes navigation links
+    Given I am viewing available teams for week 1
+    When I am on page 1 of 4 with size 10
+    Then the response includes navigation links:
+      | first    | /api/v1/teams/available?page=0&size=10 |
+      | previous | /api/v1/teams/available?page=0&size=10 |
+      | self     | /api/v1/teams/available?page=1&size=10 |
+      | next     | /api/v1/teams/available?page=2&size=10 |
+      | last     | /api/v1/teams/available?page=3&size=10 |
+
+  Scenario: Validate maximum page size for team list
+    Given the system has a maximum page size of 100
+    When I request teams with page size 200
+    Then the request is rejected with error "MAX_PAGE_SIZE_EXCEEDED"
+    And the error message suggests "Maximum page size is 100"
+
+  Scenario: Paginate with sorting by team name
+    Given there are 32 NFL teams in the system
+    When I request teams sorted by "name" ascending with page size 10
+    Then page 0 shows the first 10 teams alphabetically
+    And page 1 shows teams 11-20 alphabetically
+    And pagination metadata includes sort information:
+      | sort | name,asc |
+
+  Scenario: Paginate with sorting by win percentage
+    Given there are 32 NFL teams in the system
+    And each team has a win percentage calculated
+    When I request teams sorted by "winPercentage" descending with page size 10
+    Then page 0 shows the top 10 teams by win percentage
+    And page 1 shows teams ranked 11-20 by win percentage
+    And pagination metadata includes sort information:
+      | sort | winPercentage,desc |
+
+  Scenario: Request page beyond available teams
+    Given there are 32 NFL teams
+    When I request page 10 with size 20
+    Then the response returns an empty list
+    And the pagination metadata shows:
+      | page           | 10             |
+      | size           | 20             |
+      | totalElements  | 32             |
+      | totalPages     | 2              |
+      | hasNext        | false          |
+      | hasPrevious    | true           |
+
+  Scenario: Paginate teams with multiple filters and sorting
+    Given I am viewing teams for week 2
+    And I filter by conference "AFC"
+    And I exclude my previously used teams
+    And I have used 3 AFC teams already
+    When I request teams sorted by "winPercentage" descending with page 0 and size 10
+    Then the response includes 10 available AFC teams
+    And teams are sorted by win percentage
+    And the pagination metadata shows:
+      | totalElements  | 13 (16 AFC - 3 used) |
+      | totalPages     | 2                    |
+      | sort           | winPercentage,desc   |

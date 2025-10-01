@@ -1024,24 +1024,192 @@ X-RateLimit-Reset: 1633024800
 
 ## Pagination
 
-List endpoints support pagination:
+All list endpoints support pagination to improve performance and user experience when dealing with large datasets.
+
+### Query Parameters
+
+| Parameter | Type   | Default | Max | Description                                    |
+|-----------|--------|---------|-----|------------------------------------------------|
+| `page`    | int    | 0       | -   | Zero-based page number                         |
+| `size`    | int    | 20      | 100 | Number of items per page                       |
+| `sort`    | string | -       | -   | Sort criteria (e.g., `name,asc` or `createdAt,desc`) |
+
+### Request Example
 
 ```http
 GET /api/v1/admin/leagues?page=0&size=20&sort=createdAt,desc
 ```
 
-**Response**:
+### Response Structure
+
+All paginated responses follow this standard format:
+
 ```json
 {
-  "content": [ /* league objects */ ],
+  "content": [
+    {
+      "id": "uuid-here",
+      "name": "2025 NFL Playoffs Pool",
+      "status": "ACTIVE",
+      "createdAt": "2025-09-15T10:00:00Z"
+    }
+  ],
   "page": 0,
   "size": 20,
   "totalElements": 45,
   "totalPages": 3,
-  "first": true,
-  "last": false
+  "hasNext": true,
+  "hasPrevious": false,
+  "sort": "createdAt,desc",
+  "links": {
+    "first": "/api/v1/admin/leagues?page=0&size=20&sort=createdAt,desc",
+    "previous": null,
+    "self": "/api/v1/admin/leagues?page=0&size=20&sort=createdAt,desc",
+    "next": "/api/v1/admin/leagues?page=1&size=20&sort=createdAt,desc",
+    "last": "/api/v1/admin/leagues?page=2&size=20&sort=createdAt,desc"
+  }
 }
 ```
+
+### Response Fields
+
+| Field           | Type      | Description                                          |
+|-----------------|-----------|------------------------------------------------------|
+| `content`       | array     | The array of items for the current page              |
+| `page`          | int       | Current page number (zero-based)                     |
+| `size`          | int       | Number of items per page                             |
+| `totalElements` | long      | Total number of items across all pages               |
+| `totalPages`    | int       | Total number of pages                                |
+| `hasNext`       | boolean   | Whether there is a next page                         |
+| `hasPrevious`   | boolean   | Whether there is a previous page                     |
+| `sort`          | string    | Sort criteria applied (if any)                       |
+| `links`         | object    | HATEOAS navigation links (optional)                  |
+
+### Navigation Links (HATEOAS)
+
+The optional `links` object provides hypermedia navigation:
+
+| Link       | Description                             |
+|------------|-----------------------------------------|
+| `first`    | URL to the first page                   |
+| `previous` | URL to the previous page (null if none) |
+| `self`     | URL to the current page                 |
+| `next`     | URL to the next page (null if none)     |
+| `last`     | URL to the last page                    |
+
+### Endpoints Supporting Pagination
+
+#### NFL Teams
+
+```http
+GET /api/v1/teams?page=0&size=20
+GET /api/v1/teams?conference=AFC&page=0&size=10
+GET /api/v1/teams?division=AFC East&page=0&size=10&sort=winPercentage,desc
+```
+
+#### Leaderboard
+
+```http
+GET /api/v1/player/leagues/{leagueId}/leaderboard?page=0&size=25
+GET /api/v1/player/leagues/{leagueId}/leaderboard?week=2&page=0&size=25
+```
+
+#### Team Selections
+
+```http
+GET /api/v1/player/selections?page=0&size=10
+GET /api/v1/player/selections/history?page=0&size=20
+```
+
+#### Games
+
+```http
+GET /api/v1/admin/leagues?page=0&size=20&sort=createdAt,desc
+GET /api/v1/admin/leagues?status=ACTIVE&page=0&size=20
+```
+
+#### Players
+
+```http
+GET /api/v1/admin/leagues/{leagueId}/players?page=0&size=50
+```
+
+### Sorting
+
+Sort by single or multiple fields using the `sort` parameter:
+
+**Single field:**
+```http
+GET /api/v1/teams?sort=name,asc
+```
+
+**Multiple fields:**
+```http
+GET /api/v1/teams?sort=winPercentage,desc&sort=name,asc
+```
+
+**Sort directions:**
+- `asc` - Ascending (A-Z, 0-9, oldest-newest)
+- `desc` - Descending (Z-A, 9-0, newest-oldest)
+
+### Filtering with Pagination
+
+Combine filters with pagination:
+
+```http
+GET /api/v1/teams?conference=NFC&page=0&size=10
+GET /api/v1/player/leagues/{leagueId}/leaderboard?status=ACTIVE&page=0&size=25
+```
+
+The `totalElements` and `totalPages` reflect the filtered results.
+
+### Error Handling
+
+#### Page Size Exceeds Maximum
+
+```http
+GET /api/v1/teams?size=200
+```
+
+**Response** (400 Bad Request):
+```json
+{
+  "error": "MAX_PAGE_SIZE_EXCEEDED",
+  "message": "Maximum page size is 100",
+  "maxSize": 100,
+  "requestedSize": 200
+}
+```
+
+#### Page Beyond Available Data
+
+Requesting a page beyond the available data returns an empty `content` array:
+
+```http
+GET /api/v1/teams?page=100&size=20
+```
+
+**Response** (200 OK):
+```json
+{
+  "content": [],
+  "page": 100,
+  "size": 20,
+  "totalElements": 32,
+  "totalPages": 2,
+  "hasNext": false,
+  "hasPrevious": true
+}
+```
+
+### Best Practices
+
+1. **Use default page size**: For most use cases, the default size of 20 is optimal
+2. **Implement client-side caching**: Cache paginated results to reduce API calls
+3. **Follow navigation links**: Use the `links` object for HATEOAS-compliant navigation
+4. **Handle empty pages**: Always check if `content` is empty before processing
+5. **Show total counts**: Display `totalElements` to users for better UX
+6. **Lazy load**: Fetch additional pages on-demand rather than upfront
 
 ## API Documentation
 

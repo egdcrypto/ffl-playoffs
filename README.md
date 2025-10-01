@@ -242,7 +242,10 @@ Behavior-Driven Development (BDD) specifications in `features/`:
 - [admin-management.feature](features/admin-management.feature) - Admin league management
 - [league-configuration.feature](features/league-configuration.feature) - League setup & roster configuration
 - [player-invitation.feature](features/player-invitation.feature) - Player invitations to leagues
-- [team-selection.feature](features/team-selection.feature) - Individual NFL player roster selection and draft system
+- [team-selection.feature](features/team-selection.feature) - ⚠️ DEPRECATED - Legacy team-based survivor pool (see player-roster-selection.feature for current model)
+- [team-elimination.feature](features/team-elimination.feature) - ⚠️ DEPRECATED - Legacy elimination system (roster model has no eliminations)
+- [player-roster-selection.feature](features/player-roster-selection.feature) - Individual NFL player roster drafting and position-based selection
+- [roster-management.feature](features/roster-management.feature) - One-time draft model with permanent roster lock
 - [scoring-ppr.feature](features/scoring-ppr.feature) - Individual player PPR scoring calculations
 - [data-integration.feature](features/data-integration.feature) - NFL data synchronization and player statistics
 

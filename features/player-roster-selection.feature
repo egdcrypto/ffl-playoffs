@@ -1,7 +1,13 @@
-Feature: Player Roster Selection and Draft System
+Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
   As a league player
-  I want to build my roster by drafting individual NFL players
-  So that I can compete in the fantasy football league
+  I want to build my roster by drafting individual NFL players ONCE before the season
+  So that I can compete with my locked roster for the entire season
+
+  CRITICAL RULE: This is a ONE-TIME DRAFT MODEL
+  - Rosters are built ONCE before the first game starts
+  - Once the first game starts, rosters are PERMANENTLY LOCKED
+  - NO changes allowed after lock: no waiver wire, no trades, no weekly adjustments
+  - League players compete with their locked rosters for all configured weeks
 
   Background:
     Given the league "2025 Playoffs League" exists
@@ -308,10 +314,11 @@ Feature: Player Roster Selection and Draft System
       | onTheClock        | player9           |
       | nextUp            | player10, player11|
 
-  # Dropping/Replacing Players
+  # Dropping/Replacing Players (ONLY BEFORE ROSTER LOCK)
 
-  Scenario: League player drops NFL player before league starts
-    Given the league has not started
+  Scenario: League player drops NFL player before first game starts
+    Given the first game starts at "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 10:00:00 ET"
     And I have drafted "Christian McCaffrey" (id: 103) to position "RB"
     When I drop "Christian McCaffrey" from my roster
     Then the drop should succeed
@@ -319,17 +326,19 @@ Feature: Player Roster Selection and Draft System
     And "Christian McCaffrey" should become available to all league players
     And my RB position should have 1 empty slot
 
-  Scenario: League player cannot drop NFL player after league starts
-    Given the league has started
-    And week 1 games are in progress
+  Scenario: League player CANNOT drop NFL player after first game starts (PERMANENT LOCK)
+    Given the first game started at "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 13:01:00 ET"
     And I have drafted "Christian McCaffrey" (id: 103) to position "RB"
     When I attempt to drop "Christian McCaffrey" from my roster
     Then the drop should fail
-    And I should receive error "CANNOT_DROP_AFTER_START"
-    And the error message should be "Cannot drop players after league starts"
+    And I should receive error "ROSTER_PERMANENTLY_LOCKED"
+    And the error message should be "Roster is permanently locked - no changes allowed after first game starts"
+    And "Christian McCaffrey" remains on my roster for the entire season
 
-  Scenario: League player replaces NFL player before league starts
-    Given the league has not started
+  Scenario: League player replaces NFL player before first game starts
+    Given the first game starts at "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 10:00:00 ET"
     And I have drafted "Travis Kelce" (id: 107) to position "TE"
     And "George Kittle" (id: 115) is available
     When I replace "Travis Kelce" with "George Kittle" in position "TE"
@@ -338,10 +347,10 @@ Feature: Player Roster Selection and Draft System
     And "Travis Kelce" should be available to other league players
     And "George Kittle" should be unavailable to other league players
 
-  # Roster Lock and Deadline
+  # Roster Lock and Deadline (PERMANENT LOCK - NO CHANGES FOR ENTIRE SEASON)
 
-  Scenario: Roster locks when league starts
-    Given the league starts at "2025-01-12 13:00:00 ET"
+  Scenario: Roster PERMANENTLY locks when first game starts
+    Given the first game of the season starts at "2025-01-12 13:00:00 ET"
     And I have a complete roster
     And the current time is "2025-01-12 12:59:59 ET"
     When I attempt to draft another NFL player
@@ -349,16 +358,45 @@ Feature: Player Roster Selection and Draft System
     When the current time becomes "2025-01-12 13:00:00 ET"
     And I attempt to make any roster changes
     Then the changes should fail
-    And I should receive error "ROSTER_LOCKED"
-    And the error message should be "Roster is locked - league has started"
+    And I should receive error "ROSTER_PERMANENTLY_LOCKED"
+    And the error message should be "Roster is permanently locked for the entire season - no changes allowed"
 
-  Scenario: League player with incomplete roster at league start
-    Given the league starts at "2025-01-12 13:00:00 ET"
+  Scenario: League player with incomplete roster at first game start (LOCKED FOREVER)
+    Given the first game starts at "2025-01-12 13:00:00 ET"
     And I have only drafted 7 out of 10 required players
     And the current time becomes "2025-01-12 13:00:00 ET"
-    Then my roster should be locked
-    And my roster status should be "INCOMPLETE"
-    And I should receive warning "Your roster is incomplete - you will receive 0 points for empty positions"
+    Then my roster should be permanently locked
+    And my roster status should be "INCOMPLETE_LOCKED"
+    And I should receive warning "Your roster is incomplete and permanently locked - you will receive 0 points for empty positions for all weeks"
+
+  Scenario: NO roster changes allowed for entire season after lock
+    Given the first game started at "2025-01-12 13:00:00 ET"
+    And we are now in week 10 of the season
+    And I have "Christian McCaffrey" on my roster
+    And "Christian McCaffrey" is injured and will miss remaining games
+    When I attempt to replace "Christian McCaffrey"
+    Then the change should fail
+    And I should receive error "ROSTER_PERMANENTLY_LOCKED"
+    And the error message should be "No roster changes allowed - this is a one-time draft model"
+    And I must keep "Christian McCaffrey" on my roster despite injury
+
+  Scenario: League player warned about permanent roster lock before first game
+    Given the first game starts at "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 11:00:00 ET"
+    When I view my roster
+    Then I should see a prominent warning "PERMANENT ROSTER LOCK in 2 hours"
+    And I should see "After first game starts, NO changes allowed for entire season"
+    And I should see "Complete and finalize your roster now"
+
+  Scenario: All roster modification endpoints disabled after lock
+    Given the first game started at "2025-01-12 13:00:00 ET"
+    When I attempt to access any roster modification endpoint:
+      | /api/v1/player/roster/draft        |
+      | /api/v1/player/roster/drop         |
+      | /api/v1/player/roster/replace      |
+      | /api/v1/player/roster/trade        |
+    Then all requests should return HTTP 403 Forbidden
+    And error message should be "ROSTER_PERMANENTLY_LOCKED"
 
   # Multiple RB/WR Slot Scenarios
 

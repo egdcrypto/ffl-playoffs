@@ -1,7 +1,13 @@
-Feature: Fantasy Football Roster Management
+Feature: Fantasy Football Roster Management (ONE-TIME DRAFT MODEL)
   As a league player
-  I want to build and manage my fantasy football roster
-  So that I can compete based on my selected NFL players' performances
+  I want to build my fantasy football roster ONCE before the season
+  So that I can compete with my locked roster for all weeks
+
+  CRITICAL RULE: ONE-TIME DRAFT MODEL
+  - Build roster ONCE before first game starts
+  - Roster PERMANENTLY LOCKED when first game starts
+  - NO changes for entire season: no waiver wire, no trades, no weekly adjustments
+  - Must live with roster decisions for all configured weeks
 
   Background:
     Given the game "2025 NFL Playoffs Pool" is active
@@ -51,14 +57,15 @@ Feature: Fantasy Football Roster Management
     Then the selection should fail
     And I should receive error "Travis Kelce is already on your roster in position TE"
 
-  Scenario: Multiple league players can select the same NFL player
+  Scenario: Multiple league players can select the same NFL player (NO draft restrictions)
     Given league player "player1" has "Patrick Mahomes" as their QB
     And league player "player2" has "Patrick Mahomes" as their QB
     And I am league player "player3"
     When I select "Patrick Mahomes" for my QB position
     Then my selection should be saved successfully
     And all 3 league players have "Patrick Mahomes" on their roster
-    And there is NO draft system or player ownership restrictions
+    And there is NO ownership restriction - unlimited players can select same NFL player
+    And this is NOT a draft where players become unavailable after selection
 
   Scenario: League player views their complete roster
     Given I have built my roster with 9 NFL players
@@ -84,29 +91,31 @@ Feature: Fantasy Football Roster Management
     When I attempt to select a QB for FLEX
     Then the selection should fail with "QB not eligible for FLEX"
 
-  Scenario: League player makes roster changes before roster lock
-    Given the roster lock deadline is "2025-09-10 13:00:00"
+  Scenario: League player makes roster changes before first game starts
+    Given the first game starts at "2025-09-10 13:00:00"
     And the current time is "2025-09-10 10:00:00"
     And I have "Josh Allen" as my QB
     When I drop "Josh Allen" and add "Lamar Jackson" at QB
     Then my roster should be updated
     And my QB should be "Lamar Jackson"
 
-  Scenario: League player cannot make roster changes after roster lock
-    Given the roster lock deadline is "2025-09-10 13:00:00"
+  Scenario: League player CANNOT make roster changes after first game starts (PERMANENT LOCK)
+    Given the first game started at "2025-09-10 13:00:00"
     And the current time is "2025-09-10 14:00:00"
     And I have "Josh Allen" as my QB
     When I attempt to drop "Josh Allen" and add "Lamar Jackson"
     Then the change should fail
-    And I should receive error "Roster is locked - no changes allowed"
+    And I should receive error "ROSTER_PERMANENTLY_LOCKED"
+    And the error message should be "Roster is permanently locked - no changes allowed for entire season"
 
-  Scenario: Roster lock deadline warning
-    Given the roster lock deadline is "2025-09-10 13:00:00"
+  Scenario: Permanent roster lock warning before first game
+    Given the first game starts at "2025-09-10 13:00:00"
     And the current time is "2025-09-10 11:30:00"
     And I have an incomplete roster
     When I view my roster
-    Then I should see a warning "Roster lock in 1 hour 30 minutes"
-    And I should see "Complete your roster before lock"
+    Then I should see a warning "PERMANENT ROSTER LOCK in 1 hour 30 minutes"
+    And I should see "Complete your roster before first game - NO changes allowed after lock"
+    And I should see "This is a one-time draft model"
 
   Scenario: Calculate league player's total score from all roster players
     Given I have built my roster
@@ -151,14 +160,6 @@ Feature: Fantasy Football Roster Management
       | total score                   |
       | week score                    |
       | roster preview (top players)  |
-
-  Scenario: League player drops and adds NFL player (waiver transaction)
-    Given roster changes are allowed (not locked)
-    And I have "Justin Tucker" (K) on my roster
-    When I drop "Justin Tucker"
-    And I add "Harrison Butker" (K) to my roster
-    Then my roster should have "Harrison Butker" at K
-    And "Justin Tucker" should no longer be on my roster
 
   Scenario: League player cannot exceed position limits
     Given I have 2 RBs on my roster (maximum)
@@ -260,3 +261,54 @@ Feature: Fantasy Football Roster Management
       | points this week  |
       | total points      |
       | avg points        |
+
+  # Permanent Roster Lock Enforcement
+
+  Scenario: Injured player must remain on locked roster for entire season
+    Given my roster was locked on "2025-01-12 13:00:00"
+    And I have "Christian McCaffrey" (RB) on my roster
+    And we are in week 8
+    And "Christian McCaffrey" suffered season-ending injury in week 5
+    When I view my roster
+    Then "Christian McCaffrey" should still be on my roster
+    And "Christian McCaffrey" should show 0 points for weeks 5-17
+    And I should see message "Player injured - roster locked, no replacement allowed"
+    And I cannot drop or replace "Christian McCaffrey"
+
+  Scenario: League player must accept consequences of draft decisions
+    Given my roster was locked on "2025-01-12 13:00:00"
+    And I have the following players on my roster:
+      | player            | status            | weeks_missed |
+      | Player A          | Season-ending IR  | 12           |
+      | Player B          | Suspended         | 4            |
+      | Player C          | Traded to new team| 0            |
+    Then all 3 players must remain on my roster
+    And I must accept 0 points for all missed weeks
+    And I should see message "ONE-TIME DRAFT model - all roster decisions are final"
+
+  Scenario: No waiver wire system exists
+    Given my roster is locked
+    And there are high-performing free agent players available
+    When I view the waiver wire section
+    Then I should see message "Waiver wire not available - this is a one-time draft league"
+    And I should not be able to claim any free agents
+    And all roster modification features should be disabled
+
+  Scenario: No trade system exists
+    Given my roster is locked
+    And another league player wants to trade with me
+    When I attempt to access the trade interface
+    Then I should see message "Trades not available - this is a one-time draft league"
+    And I should not be able to propose or accept trades
+    And roster is locked for entire season
+
+  Scenario: Roster lock applies to all weeks in league configuration
+    Given the league is configured for weeks 15-18 (4 weeks)
+    And my roster was locked on "2025-01-12 13:00:00" (before week 15)
+    When week 15 completes
+    And week 16 starts
+    Then my roster should remain unchanged
+    When week 17 completes
+    And week 18 starts
+    Then my roster should remain unchanged
+    And I compete with the same 10 players for all 4 weeks

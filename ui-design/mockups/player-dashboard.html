@@ -47,10 +47,13 @@
                         <a class="nav-link active" href="player-dashboard.html">Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="team-selection.html">Make Pick</a>
+                        <a class="nav-link" href="my-roster.html">My Roster</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                        <a class="nav-link" href="player-selection.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
                     </li>
                 </ul>
                 <div class="d-flex align-items-center text-white">
@@ -77,10 +80,11 @@
                     <div class="d-flex align-items-center">
                         <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 1.5rem;"></i>
                         <div>
-                            <strong>Action Required!</strong> You haven't made your pick for Week 16 in "Playoff Challenge 2024".
-                            <br><small>Deadline: Sunday, December 22 at 1:00 PM ET (in 2 days, 5 hours)</small>
+                            <strong>ROSTER LOCK WARNING!</strong> Your roster for "2025 NFL Playoffs Pool" is incomplete.
+                            <br><small>⚠️ PERMANENT LOCK in 2 days, 5 hours (Sunday, January 12 at 1:00 PM ET when first game starts)</small>
+                            <br><small>Complete your roster now - NO changes allowed after lock!</small>
                         </div>
-                        <a href="team-selection.html" class="btn btn-warning ms-auto">Make Pick Now</a>
+                        <a href="player-selection.html" class="btn btn-warning ms-auto">Build Roster Now</a>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
@@ -114,10 +118,11 @@
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="card stat-card" style="border-left-color: #dc3545;">
+                <div class="card stat-card" style="border-left-color: #198754;">
                     <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Teams Eliminated</h6>
-                        <h3 class="card-title mb-0">2 <small class="text-muted">of 8</small></h3>
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
+                        <h3 class="card-title mb-0">2 <span class="badge bg-success">LOCKED</span></h3>
+                        <small class="text-muted">1 incomplete</small>
                     </div>
                 </div>
             </div>
@@ -134,42 +139,42 @@
             <!-- League Card 1 -->
             <div class="col-lg-4 col-md-6 mb-4">
                 <div class="card league-card h-100">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Playoff Challenge 2024</h5>
-                        <span class="badge bg-success status-badge">ACTIVE</span>
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">2025 NFL Playoffs Pool</h5>
+                        <span class="badge bg-danger status-badge">INCOMPLETE</span>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <small class="text-muted">Current Week</small>
-                            <h4 class="mb-0">Week 16 <span class="text-muted small">(NFL Week 16)</span></h4>
+                            <small class="text-muted">Roster Status</small>
+                            <h4 class="mb-0">6 of 9 players <span class="text-danger small">INCOMPLETE</span></h4>
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
                                 <small class="text-muted">Your Rank</small>
-                                <h5 class="text-success mb-0">#2 <small>of 12</small></h5>
+                                <h5 class="text-muted mb-0">-- <small>of 12</small></h5>
                             </div>
                             <div class="col-6">
                                 <small class="text-muted">Your Points</small>
-                                <h5 class="mb-0">287.5</h5>
+                                <h5 class="mb-0">0.0</h5>
                             </div>
                         </div>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <small class="text-muted">Eliminated Teams</small>
-                                <small>1 of 3</small>
+                                <small class="text-muted">Roster Completion</small>
+                                <small>6 of 9</small>
                             </div>
                             <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-danger" style="width: 33%"></div>
+                                <div class="progress-bar bg-warning" style="width: 67%"></div>
                             </div>
                         </div>
-                        <div class="alert alert-warning py-2 px-3 mb-0">
-                            <small><i class="bi bi-clock"></i> Pick due: Sunday 1:00 PM ET</small>
+                        <div class="alert alert-danger py-2 px-3 mb-0">
+                            <small><i class="bi bi-lock-fill"></i> LOCK in 2d 5h - Complete roster now!</small>
                         </div>
                     </div>
                     <div class="card-footer bg-white">
                         <div class="btn-group w-100" role="group">
-                            <a href="team-selection.html" class="btn btn-primary"><i class="bi bi-hand-index"></i> Make Pick</a>
-                            <a href="leaderboard.html" class="btn btn-outline-primary"><i class="bi bi-trophy"></i> Standings</a>
+                            <a href="player-selection.html" class="btn btn-warning"><i class="bi bi-person-plus"></i> Build Roster</a>
+                            <a href="league-standings.html" class="btn btn-outline-primary"><i class="bi bi-trophy"></i> Standings</a>
                         </div>
                     </div>
                 </div>
@@ -199,21 +204,21 @@
                         </div>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <small class="text-muted">Eliminated Teams</small>
-                                <small>0 of 2</small>
+                                <small class="text-muted">Roster Status</small>
+                                <small>9 of 9</small>
                             </div>
                             <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-success" style="width: 0%"></div>
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
                             </div>
                         </div>
                         <div class="alert alert-success py-2 px-3 mb-0">
-                            <small><i class="bi bi-check-circle"></i> Pick submitted: BAL Ravens</small>
+                            <small><i class="bi bi-lock-fill"></i> Roster LOCKED - Top Scorer: Mahomes 28.5 pts</small>
                         </div>
                     </div>
                     <div class="card-footer bg-white">
                         <div class="btn-group w-100" role="group">
-                            <a href="team-selection.html" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Edit Pick</a>
-                            <a href="leaderboard.html" class="btn btn-outline-primary"><i class="bi bi-trophy"></i> Standings</a>
+                            <a href="my-roster.html" class="btn btn-outline-primary"><i class="bi bi-list-check"></i> View Roster</a>
+                            <a href="league-standings.html" class="btn btn-outline-primary"><i class="bi bi-trophy"></i> Standings</a>
                         </div>
                     </div>
                 </div>
@@ -224,7 +229,7 @@
                 <div class="card league-card h-100">
                     <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Office Pool 2024</h5>
-                        <span class="badge bg-danger status-badge">ELIMINATED</span>
+                        <span class="badge bg-danger status-badge">STRUGGLING</span>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
@@ -233,7 +238,7 @@
                         </div>
                         <div class="row mb-3">
                             <div class="col-6">
-                                <small class="text-muted">Final Rank</small>
+                                <small class="text-muted">Your Rank</small>
                                 <h5 class="text-danger mb-0">#8 <small>of 10</small></h5>
                             </div>
                             <div class="col-6">
@@ -243,19 +248,19 @@
                         </div>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between mb-1">
-                                <small class="text-muted">Eliminated Teams</small>
-                                <small>3 of 3</small>
+                                <small class="text-muted">Roster Status</small>
+                                <small>9 of 9</small>
                             </div>
                             <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-danger" style="width: 100%"></div>
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
                             </div>
                         </div>
                         <div class="alert alert-danger py-2 px-3 mb-0">
-                            <small><i class="bi bi-x-circle"></i> Eliminated in Week 3</small>
+                            <small><i class="bi bi-x-circle"></i> 3 injured players - roster locked</small>
                         </div>
                     </div>
                     <div class="card-footer bg-white">
-                        <a href="leaderboard.html" class="btn btn-outline-secondary w-100"><i class="bi bi-trophy"></i> View Final Standings</a>
+                        <a href="league-standings.html" class="btn btn-outline-secondary w-100"><i class="bi bi-trophy"></i> View Standings</a>
                     </div>
                 </div>
             </div>
@@ -269,36 +274,36 @@
                     <div class="list-group list-group-flush">
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                <strong>Friends League:</strong> Selected BAL Ravens for Week 16
+                                <i class="bi bi-star-fill text-success me-2"></i>
+                                <strong>Friends League:</strong> Patrick Mahomes scored 28.5 pts (Week 2)
                             </div>
                             <small class="text-muted">2 hours ago</small>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="bi bi-trophy-fill text-warning me-2"></i>
-                                <strong>Playoff Challenge 2024:</strong> Moved to #2 in standings
+                                <strong>2025 NFL Playoffs Pool:</strong> Moved to #2 in standings
                             </div>
                             <small class="text-muted">1 day ago</small>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                <strong>Office Pool 2024:</strong> Team eliminated (PIT Steelers lost)
+                                <i class="bi bi-bandaid-fill text-danger me-2"></i>
+                                <strong>Office Pool 2024:</strong> Christian McCaffrey injured (0 pts)
                             </div>
                             <small class="text-muted">2 days ago</small>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="bi bi-calculator-fill text-primary me-2"></i>
-                                <strong>Playoff Challenge 2024:</strong> Week 15 scores calculated (95.5 pts)
+                                <strong>Friends League:</strong> Week 1 scores calculated (132.0 pts)
                             </div>
                             <small class="text-muted">3 days ago</small>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <i class="bi bi-hand-index-fill text-info me-2"></i>
-                                <strong>Playoff Challenge 2024:</strong> Selected SF 49ers for Week 15
+                                <i class="bi bi-lock-fill text-info me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Roster permanently locked (9 players)
                             </div>
                             <small class="text-muted">1 week ago</small>
                         </div>

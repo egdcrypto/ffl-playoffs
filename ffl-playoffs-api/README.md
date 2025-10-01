@@ -39,8 +39,8 @@ This project follows **Hexagonal Architecture** (Ports and Adapters), ensuring a
 
 - **Java 17**
 - **Spring Boot 3.2.1**
-- **Spring Data JPA**
-- **PostgreSQL**
+- **Spring Data MongoDB**
+- **MongoDB**
 - **Lombok**
 - **OpenAPI/Swagger**
 - **Cucumber** (BDD testing)
@@ -49,29 +49,32 @@ This project follows **Hexagonal Architecture** (Ports and Adapters), ensuring a
 ## Prerequisites
 
 - Java 17 or higher
-- PostgreSQL 14+ (for production/development)
+- MongoDB 6+ (for production/development)
 - Gradle 8.x (wrapper included)
 
 ## Getting Started
 
 ### 1. Database Setup
 
-Create a PostgreSQL database:
+Create a MongoDB database:
 
 ```bash
-createdb ffl_playoffs
+mongosh
+use ffl_playoffs
+db.createUser({user: "ffl_user", pwd: "ffl_password", roles: [{role: "readWrite", db: "ffl_playoffs"}]})
+exit
 ```
 
 Or use Docker:
 
 ```bash
 docker run -d \
-  --name ffl-postgres \
-  -e POSTGRES_DB=ffl_playoffs \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  postgres:15
+  --name ffl-mongodb \
+  -e MONGO_INITDB_DATABASE=ffl_playoffs \
+  -e MONGO_INITDB_ROOT_USERNAME=ffl_user \
+  -e MONGO_INITDB_ROOT_PASSWORD=ffl_password \
+  -p 27017:27017 \
+  mongo:6
 ```
 
 ### 2. Environment Configuration
@@ -80,10 +83,10 @@ Create a `.env` file or set environment variables:
 
 ```bash
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=27017
 DB_NAME=ffl_playoffs
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
+DB_USERNAME=ffl_user
+DB_PASSWORD=ffl_password
 ```
 
 ### 3. Build the Project
@@ -153,8 +156,8 @@ This project uses standard Java conventions with Lombok to reduce boilerplate.
 ### Database Migrations
 
 Database schema changes should be managed through:
-- Flyway migrations (recommended for production)
-- Or JPA `ddl-auto` for development
+- MongoDB migrations (recommended for production)
+- Or Spring Data MongoDB automatic index creation for development
 
 ## Project Structure Details
 
@@ -195,8 +198,8 @@ Database schema changes should be managed through:
 - `AdminController` - Administrative operations
 
 **Persistence:**
-- `GameRepositoryImpl` - JPA implementation of GameRepository
-- `PlayerRepositoryImpl` - JPA implementation of PlayerRepository
+- `GameRepositoryImpl` - MongoDB implementation of GameRepository
+- `PlayerRepositoryImpl` - MongoDB implementation of PlayerRepository
 
 **Integration:**
 - `NflDataAdapter` - NFL data API client implementation

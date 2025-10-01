@@ -72,7 +72,7 @@ The FFL Playoffs API is deployed as a **three-service Kubernetes pod** with:
       ↓ Call localhost:9191 (ext_authz)
 4. Auth Service (localhost:9191)
       ↓ Validate token (Google JWT or PAT)
-      ↓ Query PostgreSQL for user/role
+      ↓ Query MongoDB for user/role
       ↓ Return HTTP 200 + headers OR HTTP 403
 5. Envoy validates role/scope
       ↓ If authorized → Forward to localhost:8080
@@ -387,15 +387,12 @@ kubectl create secret tls envoy-tls \
 apiVersion: v1
 kind: Secret
 metadata:
-  name: postgres-credentials
+  name: mongodb-credentials
   namespace: ffl-playoffs
 type: Opaque
 data:
-  POSTGRES_HOST: <base64-encoded-host>
-  POSTGRES_PORT: <base64-encoded-port>
-  POSTGRES_DB: <base64-encoded-dbname>
-  POSTGRES_USER: <base64-encoded-user>
-  POSTGRES_PASSWORD: <base64-encoded-password>
+  MONGODB_URI: <base64-encoded-connection-string>
+  # Example: mongodb://ffl_user:password@mongodb.default.svc:27017/ffl_playoffs
 ```
 
 ---
@@ -464,31 +461,11 @@ spec:
           name: http
           protocol: TCP
         env:
-        - name: POSTGRES_HOST
+        - name: SPRING_DATA_MONGODB_URI
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_HOST
-        - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_PORT
-        - name: POSTGRES_DB
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_DB
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_PASSWORD
+              name: mongodb-credentials
+              key: MONGODB_URI
         - name: GOOGLE_CLIENT_ID
           valueFrom:
             secretKeyRef:
@@ -531,31 +508,11 @@ spec:
           value: "8080"
         - name: MANAGEMENT_SERVER_PORT
           value: "8081"
-        - name: POSTGRES_HOST
+        - name: SPRING_DATA_MONGODB_URI
           valueFrom:
             secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_HOST
-        - name: POSTGRES_PORT
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_PORT
-        - name: POSTGRES_DB
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_DB
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_USER
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: postgres-credentials
-              key: POSTGRES_PASSWORD
+              name: mongodb-credentials
+              key: MONGODB_URI
         resources:
           requests:
             cpu: 500m
@@ -644,32 +601,24 @@ spec:
 
 ### Main API
 
-| Variable                  | Description                          | Example                     |
-|---------------------------|--------------------------------------|-----------------------------|
-| `SPRING_PROFILES_ACTIVE`  | Spring profile                       | `production`                |
-| `SERVER_PORT`             | API port                             | `8080`                      |
-| `MANAGEMENT_SERVER_PORT`  | Actuator port                        | `8081`                      |
-| `POSTGRES_HOST`           | PostgreSQL host                      | `postgres.default.svc`      |
-| `POSTGRES_PORT`           | PostgreSQL port                      | `5432`                      |
-| `POSTGRES_DB`             | Database name                        | `ffl_playoffs`              |
-| `POSTGRES_USER`           | Database user                        | `ffl_user`                  |
-| `POSTGRES_PASSWORD`       | Database password                    | `<secret>`                  |
-| `NFL_API_URL`             | External NFL data API                | `https://api.nfl.com/v1`    |
-| `NFL_API_KEY`             | NFL API key                          | `<secret>`                  |
+| Variable                     | Description                          | Example                                                    |
+|------------------------------|--------------------------------------|------------------------------------------------------------|
+| `SPRING_PROFILES_ACTIVE`     | Spring profile                       | `production`                                               |
+| `SERVER_PORT`                | API port                             | `8080`                                                     |
+| `MANAGEMENT_SERVER_PORT`     | Actuator port                        | `8081`                                                     |
+| `SPRING_DATA_MONGODB_URI`    | MongoDB connection string            | `mongodb://ffl_user:password@mongodb.default.svc:27017/ffl_playoffs` |
+| `NFL_API_URL`                | External NFL data API                | `https://api.nfl.com/v1`                                   |
+| `NFL_API_KEY`                | NFL API key                          | `<secret>`                                                 |
 
 ---
 
 ### Auth Service
 
-| Variable              | Description                          | Example                     |
-|-----------------------|--------------------------------------|-----------------------------|
-| `SERVER_PORT`         | Auth service port                    | `9191`                      |
-| `POSTGRES_HOST`       | PostgreSQL host                      | `postgres.default.svc`      |
-| `POSTGRES_PORT`       | PostgreSQL port                      | `5432`                      |
-| `POSTGRES_DB`         | Database name                        | `ffl_playoffs`              |
-| `POSTGRES_USER`       | Database user                        | `ffl_user`                  |
-| `POSTGRES_PASSWORD`   | Database password                    | `<secret>`                  |
-| `GOOGLE_CLIENT_ID`    | Google OAuth client ID               | `<google-client-id>`        |
+| Variable                     | Description                          | Example                                                    |
+|------------------------------|--------------------------------------|------------------------------------------------------------|
+| `SERVER_PORT`                | Auth service port                    | `9191`                                                     |
+| `SPRING_DATA_MONGODB_URI`    | MongoDB connection string            | `mongodb://ffl_user:password@mongodb.default.svc:27017/ffl_playoffs` |
+| `GOOGLE_CLIENT_ID`           | Google OAuth client ID               | `<google-client-id>`                                       |
 
 ---
 
@@ -718,8 +667,8 @@ curl http://localhost:8081/actuator/health
     "db": {
       "status": "UP",
       "details": {
-        "database": "PostgreSQL",
-        "validationQuery": "isValid()"
+        "database": "MongoDB",
+        "version": "6.0.5"
       }
     },
     "diskSpace": {
@@ -758,17 +707,17 @@ spec:
     - protocol: TCP
       port: 443
   egress:
-  # Allow traffic to PostgreSQL
+  # Allow traffic to MongoDB
   - to:
     - namespaceSelector:
         matchLabels:
           name: default
       podSelector:
         matchLabels:
-          app: postgres
+          app: mongodb
     ports:
     - protocol: TCP
-      port: 5432
+      port: 27017
   # Allow traffic to NFL API (external)
   - to:
     - namespaceSelector: {}
@@ -891,12 +840,12 @@ curl -H "Authorization: Bearer <token>" http://localhost:9191/auth/validate
 ```bash
 # Check database connectivity from pod
 kubectl exec -n ffl-playoffs <pod-name> -c api -- \
-  psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB -c "SELECT 1"
+  mongosh $SPRING_DATA_MONGODB_URI --eval "db.adminCommand('ping')"
 ```
 
 **Solution**:
-- Verify PostgreSQL is running
-- Check credentials in secret
+- Verify MongoDB is running
+- Check connection string in secret
 - Verify network policy allows traffic to database
 
 ---

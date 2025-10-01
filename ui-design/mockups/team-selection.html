@@ -41,7 +41,7 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 1.2rem;
         }
         .countdown-timer {
             font-size: 2rem;
@@ -89,7 +89,7 @@
         <div class="row mb-4">
             <div class="col-lg-8">
                 <h2>Select Your Team</h2>
-                <p class="text-muted">Choose an NFL team for this week. Remember: you cannot select the same team twice!</p>
+                <p class="text-muted">Choose any NFL team for this week. You cannot select the same team twice!</p>
             </div>
             <div class="col-lg-4">
                 <select class="form-select form-select-lg" id="leagueSelector">
@@ -136,96 +136,25 @@
         <div class="row">
             <!-- Left Column: Team Selection -->
             <div class="col-lg-8 mb-4">
-                <h4 class="mb-3">Available Teams</h4>
+                <h4 class="mb-3">All 32 NFL Teams</h4>
                 
                 <!-- Filter Buttons -->
                 <div class="btn-group mb-3" role="group">
                     <input type="radio" class="btn-check" name="teamFilter" id="filterAll" checked>
-                    <label class="btn btn-outline-primary" for="filterAll">All Teams</label>
+                    <label class="btn btn-outline-primary" for="filterAll">All Teams (32)</label>
 
                     <input type="radio" class="btn-check" name="teamFilter" id="filterAvailable">
-                    <label class="btn btn-outline-success" for="filterAvailable">Available (10)</label>
+                    <label class="btn btn-outline-success" for="filterAvailable">Available (30)</label>
 
-                    <input type="radio" class="btn-check" name="teamFilter" id="filterUsed">
-                    <label class="btn btn-outline-warning" for="filterUsed">Already Used (2)</label>
-
-                    <input type="radio" class="btn-check" name="teamFilter" id="filterEliminated">
-                    <label class="btn btn-outline-danger" for="filterEliminated">Eliminated (3)</label>
+                    <input type="radio" class="btn-check" name="teamFilter" id="filterYourUsed">
+                    <label class="btn btn-outline-warning" for="filterYourUsed">Your Used (2)</label>
                 </div>
 
-                <!-- Team Grid -->
+                <!-- Team Grid - All 32 NFL Teams -->
                 <div class="row g-3">
-                    <!-- Available Team -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card team-card h-100">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-primary text-white">BAL</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Baltimore Ravens</h6>
-                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
-                                </div>
-                                <i class="bi bi-circle text-muted"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Available Team -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card team-card h-100 selected">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-danger text-white">KC</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Kansas City Chiefs</h6>
-                                    <small class="text-success"><i class="bi bi-check-circle-fill"></i> Selected</small>
-                                </div>
-                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Available Team -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card team-card h-100">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-success text-white">PHI</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Philadelphia Eagles</h6>
-                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
-                                </div>
-                                <i class="bi bi-circle text-muted"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Already Used Team -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card team-card h-100 disabled">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-secondary text-white">SF</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">San Francisco 49ers</h6>
-                                    <small class="text-warning"><i class="bi bi-dash-circle"></i> Used Week 2</small>
-                                </div>
-                                <i class="bi bi-lock-fill text-muted"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Eliminated Team -->
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card team-card h-100 disabled">
-                            <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-secondary text-white">DAL</div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-0">Dallas Cowboys</h6>
-                                    <small class="text-danger"><i class="bi bi-x-circle"></i> Eliminated Week 1</small>
-                                </div>
-                                <i class="bi bi-x-circle-fill text-danger"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Available Team -->
+                    <!-- AFC EAST -->
+                    <div class="col-12"><h6 class="text-muted">AFC East</h6></div>
+                    
                     <div class="col-md-6 col-lg-4">
                         <div class="card team-card h-100">
                             <div class="card-body d-flex align-items-center">
@@ -239,25 +168,298 @@
                         </div>
                     </div>
 
-                    <!-- Eliminated Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">MIA</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Miami Dolphins</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">NE</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">New England Patriots</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-success text-white">NYJ</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">New York Jets</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AFC NORTH -->
+                    <div class="col-12"><h6 class="text-muted mt-3">AFC North</h6></div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">BAL</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Baltimore Ravens</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-warning text-dark">CIN</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Cincinnati Bengals</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">CLE</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Cleveland Browns</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="col-md-6 col-lg-4">
                         <div class="card team-card h-100 disabled">
                             <div class="card-body d-flex align-items-center">
                                 <div class="team-logo me-3 bg-secondary text-white">PIT</div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">Pittsburgh Steelers</h6>
-                                    <small class="text-danger"><i class="bi bi-x-circle"></i> Eliminated Week 2</small>
+                                    <small class="text-warning"><i class="bi bi-dash-circle"></i> You used Week 2</small>
                                 </div>
-                                <i class="bi bi-x-circle-fill text-danger"></i>
+                                <i class="bi bi-lock-fill text-muted"></i>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Available Team -->
+                    <!-- AFC SOUTH -->
+                    <div class="col-12"><h6 class="text-muted mt-3">AFC South</h6></div>
+
                     <div class="col-md-6 col-lg-4">
                         <div class="card team-card h-100">
                             <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-warning text-white">GB</div>
+                                <div class="team-logo me-3 bg-primary text-white">HOU</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Houston Texans</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-info text-white">IND</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Indianapolis Colts</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">JAX</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Jacksonville Jaguars</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-info text-white">TEN</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Tennessee Titans</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AFC WEST -->
+                    <div class="col-12"><h6 class="text-muted mt-3">AFC West</h6></div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-warning text-dark">DEN</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Denver Broncos</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 selected">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">KC</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Kansas City Chiefs</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle-fill"></i> Selected</small>
+                                </div>
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-info text-white">LV</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Las Vegas Raiders</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-warning text-dark">LAC</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">LA Chargers</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NFC EAST -->
+                    <div class="col-12"><h6 class="text-muted mt-3">NFC East</h6></div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 disabled">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">DAL</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Dallas Cowboys</h6>
+                                    <small class="text-warning"><i class="bi bi-dash-circle"></i> You used Week 1</small>
+                                </div>
+                                <i class="bi bi-lock-fill text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">NYG</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">New York Giants</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-success text-white">PHI</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Philadelphia Eagles</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">WAS</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Washington Commanders</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NFC NORTH -->
+                    <div class="col-12"><h6 class="text-muted mt-3">NFC North</h6></div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">CHI</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Chicago Bears</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-info text-white">DET</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Detroit Lions</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-warning text-dark">GB</div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">Green Bay Packers</h6>
                                     <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
@@ -267,16 +469,125 @@
                         </div>
                     </div>
 
-                    <!-- Already Used Team -->
                     <div class="col-md-6 col-lg-4">
-                        <div class="card team-card h-100 disabled">
+                        <div class="card team-card h-100">
                             <div class="card-body d-flex align-items-center">
-                                <div class="team-logo me-3 bg-secondary text-white">DET</div>
+                                <div class="team-logo me-3 bg-primary text-white">MIN</div>
                                 <div class="flex-grow-1">
-                                    <h6 class="mb-0">Detroit Lions</h6>
-                                    <small class="text-warning"><i class="bi bi-dash-circle"></i> Used Week 1</small>
+                                    <h6 class="mb-0">Minnesota Vikings</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
                                 </div>
-                                <i class="bi bi-lock-fill text-muted"></i>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NFC SOUTH -->
+                    <div class="col-12"><h6 class="text-muted mt-3">NFC South</h6></div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">ATL</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Atlanta Falcons</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">CAR</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Carolina Panthers</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-warning text-dark">NO</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">New Orleans Saints</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">TB</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Tampa Bay Buccaneers</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NFC WEST -->
+                    <div class="col-12"><h6 class="text-muted mt-3">NFC West</h6></div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">ARI</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Arizona Cardinals</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">LAR</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">LA Rams</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">SF</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">San Francisco 49ers</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">SEA</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Seattle Seahawks</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
                             </div>
                         </div>
                     </div>
@@ -305,14 +616,14 @@
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>Week 1 (NFL 15)</strong>
-                                <br><small class="text-muted">DET Lions</small>
+                                <br><small class="text-muted">DAL Cowboys</small>
                             </div>
                             <span class="badge bg-success">95.5 pts</span>
                         </div>
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
                                 <strong>Week 2 (NFL 16)</strong>
-                                <br><small class="text-muted">SF 49ers</small>
+                                <br><small class="text-muted">PIT Steelers</small>
                             </div>
                             <span class="badge bg-success">87.0 pts</span>
                         </div>
@@ -333,6 +644,20 @@
                     </div>
                 </div>
 
+                <!-- Help Card -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h6><i class="bi bi-info-circle"></i> Selection Rules</h6>
+                        <ul class="mb-0 small">
+                            <li><strong>No Draft:</strong> All 32 teams available to everyone</li>
+                            <li><strong>Multiple players CAN pick the same team</strong></li>
+                            <li><strong>You</strong> cannot use the same team twice in YOUR picks</li>
+                            <li>You can change your pick until the deadline</li>
+                            <li>Picks lock when the first game of the week starts</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <!-- NFL Week 16 Schedule -->
                 <div class="card">
                     <div class="card-header bg-info text-white">
@@ -349,10 +674,6 @@
                                 <strong>BAL Ravens</strong> @ HOU Texans
                             </div>
                             <div class="list-group-item schedule-game px-2 py-2">
-                                <small class="text-muted d-block">Sat 12/21 - 8:15 PM ET</small>
-                                LAC Chargers @ <strong>NE Patriots</strong>
-                            </div>
-                            <div class="list-group-item schedule-game px-2 py-2">
                                 <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
                                 <strong>PHI Eagles</strong> @ WAS Commanders
                             </div>
@@ -361,43 +682,10 @@
                                 <strong>BUF Bills</strong> @ LAR Rams
                             </div>
                             <div class="list-group-item schedule-game px-2 py-2">
-                                <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
-                                CIN Bengals @ <strong>CLE Browns</strong>
-                            </div>
-                            <div class="list-group-item schedule-game px-2 py-2">
-                                <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
-                                <strong>MIN Vikings</strong> @ SEA Seahawks
-                            </div>
-                            <div class="list-group-item schedule-game px-2 py-2">
-                                <small class="text-muted d-block">Sun 12/22 - 4:05 PM ET</small>
-                                <strong>DEN Broncos</strong> @ LAC Chargers
-                            </div>
-                            <div class="list-group-item schedule-game px-2 py-2">
-                                <small class="text-muted d-block">Sun 12/22 - 4:25 PM ET</small>
-                                <strong>ATL Falcons</strong> @ NYG Giants
-                            </div>
-                            <div class="list-group-item schedule-game px-2 py-2">
                                 <small class="text-muted d-block">Sun 12/22 - 8:20 PM ET</small>
                                 <strong>TB Buccaneers</strong> @ DAL Cowboys
                             </div>
-                            <div class="list-group-item schedule-game px-2 py-2">
-                                <small class="text-muted d-block">Mon 12/23 - 8:15 PM ET</small>
-                                <strong>GB Packers</strong> @ NO Saints
-                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Help Card -->
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <h6><i class="bi bi-info-circle"></i> Selection Rules</h6>
-                        <ul class="mb-0 small">
-                            <li>You can only use each team once per league</li>
-                            <li>Eliminated teams score 0 points if selected</li>
-                            <li>You can change your pick until the deadline</li>
-                            <li>Picks lock when the first game of the week starts</li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -413,16 +701,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Simple countdown timer simulation
-        function updateCountdown() {
-            // This is just for demo - in real app would calculate from actual deadline
-            const countdownEl = document.querySelector('.countdown-timer');
-            if (countdownEl) {
-                // Placeholder countdown logic would go here
-            }
-        }
-        setInterval(updateCountdown, 1000);
-
         // Team card click handler
         document.querySelectorAll('.team-card:not(.disabled)').forEach(card => {
             card.addEventListener('click', function() {

@@ -17,7 +17,7 @@
 This guide covers setting up the FFL Playoffs application for local development. The application consists of:
 - **Main API** (Spring Boot Java application)
 - **Auth Service** (Token validation service)
-- **PostgreSQL Database**
+- **MongoDB Database**
 - **Envoy Proxy** (optional for local development)
 
 ## Prerequisites
@@ -28,7 +28,7 @@ This guide covers setting up the FFL Playoffs application for local development.
 |---------------|---------------|-----------------------------------|
 | Java          | 17+           | Main API runtime                  |
 | Gradle        | 8.0+          | Build tool                        |
-| PostgreSQL    | 14+           | Database                          |
+| MongoDB       | 6+            | Database                          |
 | Docker        | 20.10+        | Containerization (optional)       |
 | Git           | 2.30+         | Version control                   |
 | IDE           | IntelliJ/VSCode | Development environment        |
@@ -78,47 +78,46 @@ java -version
 
 ---
 
-### 3. Install PostgreSQL
+### 3. Install MongoDB
 
 **macOS (Homebrew)**:
 ```bash
-brew install postgresql@14
-brew services start postgresql@14
+brew tap mongodb/brew
+brew install mongodb-community@6.0
+brew services start mongodb-community@6.0
 ```
 
 **Ubuntu/Debian**:
 ```bash
 sudo apt update
-sudo apt install postgresql postgresql-contrib
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
+sudo apt install -y mongodb-org
+sudo systemctl start mongod
+sudo systemctl enable mongod
 ```
 
 **Docker (Alternative)**:
 ```bash
-docker run --name ffl-postgres \
-  -e POSTGRES_USER=ffl_user \
-  -e POSTGRES_PASSWORD=ffl_password \
-  -e POSTGRES_DB=ffl_playoffs \
-  -p 5432:5432 \
-  -d postgres:14
+docker run --name ffl-mongodb \
+  -p 27017:27017 \
+  -d mongo:6
 ```
 
 ---
 
-### 4. Create Database
+### 4. Configure Database
 
 ```bash
-# Connect to PostgreSQL
-psql -U postgres
+# MongoDB will automatically create the database on first connection
+# No manual database creation needed
 
-# Create database and user
-CREATE DATABASE ffl_playoffs;
-CREATE USER ffl_user WITH ENCRYPTED PASSWORD 'ffl_password';
-GRANT ALL PRIVILEGES ON DATABASE ffl_playoffs TO ffl_user;
+# Optional: Connect to MongoDB shell to verify
+mongosh
 
-# Exit psql
-\q
+# List databases
+show dbs
+
+# Exit MongoDB shell
+exit
 ```
 
 ---
@@ -132,21 +131,13 @@ spring:
   application:
     name: ffl-playoffs-api
 
-  datasource:
-    url: jdbc:postgresql://localhost:5432/ffl_playoffs
-    username: ffl_user
-    password: ffl_password
-    driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        default_schema: public
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ffl_playoffs
+      # Optional: Uncomment for authentication
+      # username: ffl_user
+      # password: ffl_password
+      # authentication-database: admin
 
   jackson:
     serialization:
@@ -170,9 +161,7 @@ logging:
   level:
     com.ffl.playoffs: DEBUG
     org.springframework: INFO
-    org.hibernate: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.data.mongodb: DEBUG
 
 # Development-specific settings
 management:
@@ -199,10 +188,9 @@ Create `.env` file in project root:
 
 ```bash
 # Database
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=ffl_playoffs
-DB_USERNAME=ffl_user
+MONGO_HOST=localhost
+MONGO_PORT=27017
+MONGO_DATABASE=ffl_playoffs
 DB_PASSWORD=ffl_password
 
 # NFL API (for external data integration)
@@ -261,17 +249,15 @@ Create `docker-compose.yml` in project root:
 version: '3.8'
 
 services:
-  postgres:
-    image: postgres:14
-    container_name: ffl-postgres
+  mongodb:
+    image: mongo:6
+    container_name: ffl-mongodb
     environment:
-      POSTGRES_DB: ffl_playoffs
-      POSTGRES_USER: ffl_user
-      POSTGRES_PASSWORD: ffl_password
+      MONGO_INITDB_DATABASE: ffl_playoffs
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongodb_data:/data/db
 
   api:
     build:
@@ -280,18 +266,16 @@ services:
     container_name: ffl-api
     environment:
       SPRING_PROFILES_ACTIVE: dev
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ffl_playoffs
-      DB_USERNAME: ffl_user
-      DB_PASSWORD: ffl_password
+      MONGO_HOST: mongodb
+      MONGO_PORT: 27017
+      MONGO_DATABASE: ffl_playoffs
     ports:
       - "8080:8080"
     depends_on:
-      - postgres
+      - mongodb
 
 volumes:
-  postgres_data:
+  mongodb_data:
 ```
 
 **Run with Docker Compose**:

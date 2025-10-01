@@ -157,79 +157,163 @@ Week 1──* DefensiveStats
 
 ---
 
-## Database Schema
+## Database Schema (MongoDB)
 
-### Key Tables
+### Collections
 
-**nfl_players**
-```sql
-CREATE TABLE nfl_players (
-    id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    position VARCHAR(20) NOT NULL,
-    nfl_team VARCHAR(50) NOT NULL,
-    jersey_number INTEGER,
-    active BOOLEAN DEFAULT true,
-    created_at TIMESTAMP DEFAULT NOW()
-);
+**nflPlayers**
+```javascript
+{
+  _id: Long,                    // NFL player ID
+  name: String,                 // Full name
+  firstName: String,
+  lastName: String,
+  position: String,             // QB, RB, WR, TE, K, DEF
+  nflTeam: String,              // Team name
+  nflTeamAbbreviation: String,
+  jerseyNumber: Number,
+  status: String,               // ACTIVE, INJURED, OUT, QUESTIONABLE, DOUBTFUL, BYE
 
-CREATE INDEX idx_nfl_players_position ON nfl_players(position);
-CREATE INDEX idx_nfl_players_team ON nfl_players(nfl_team);
+  // Season stats
+  gamesPlayed: Number,
+  fantasyPoints: Number,
+  averagePointsPerGame: Number,
+
+  // Position-specific stats
+  passingYards: Number,
+  passingTouchdowns: Number,
+  interceptions: Number,
+  rushingYards: Number,
+  rushingTouchdowns: Number,
+  receptions: Number,
+  receivingYards: Number,
+  receivingTouchdowns: Number,
+  fieldGoalsMade: Number,
+  sacks: Number,
+  defensiveTouchdowns: Number,
+
+  externalPlayerId: String,     // External API ID
+  createdAt: ISODate,
+  updatedAt: ISODate
+}
+
+// Indexes
+db.nflPlayers.createIndex({ position: 1 })
+db.nflPlayers.createIndex({ nflTeam: 1 })
+db.nflPlayers.createIndex({ name: "text" })
 ```
 
 **rosters**
-```sql
-CREATE TABLE rosters (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    league_player_id UUID NOT NULL REFERENCES league_players(id),
-    is_locked BOOLEAN DEFAULT false,
-    locked_at TIMESTAMP,
-    complete BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(league_player_id)
-);
+```javascript
+{
+  _id: UUID,
+  leaguePlayerId: UUID,         // Reference to league player
+  gameId: UUID,                 // Reference to game
+  slots: [                      // Embedded roster slots
+    {
+      id: UUID,
+      position: String,         // QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX
+      nflPlayerId: Long,        // Reference to NFL player
+      slotOrder: Number
+    }
+  ],
+  isLocked: Boolean,
+  lockedAt: ISODate,
+  rosterDeadline: ISODate,
+  createdAt: ISODate,
+  updatedAt: ISODate
+}
 
-CREATE INDEX idx_rosters_league_player ON rosters(league_player_id);
-CREATE INDEX idx_rosters_locked ON rosters(is_locked);
+// Indexes
+db.rosters.createIndex({ leaguePlayerId: 1 }, { unique: true })
+db.rosters.createIndex({ gameId: 1 })
+db.rosters.createIndex({ isLocked: 1 })
 ```
 
-**roster_slots**
-```sql
-CREATE TABLE roster_slots (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    roster_id UUID NOT NULL REFERENCES rosters(id),
-    position VARCHAR(20) NOT NULL,
-    nfl_player_id BIGINT REFERENCES nfl_players(id),
-    slot_order INTEGER NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(roster_id, slot_order)
-);
+**games**
+```javascript
+{
+  _id: UUID,
+  name: String,
+  code: String,
+  creatorId: UUID,
+  status: String,               // CREATED, WAITING_FOR_PLAYERS, IN_PROGRESS, COMPLETED
+  startingWeek: Number,
+  currentWeek: Number,
+  numberOfWeeks: Number,
+  eliminationMode: String,
 
-CREATE INDEX idx_roster_slots_roster ON roster_slots(roster_id);
-CREATE INDEX idx_roster_slots_player ON roster_slots(nfl_player_id);
+  // Configuration lock
+  configurationLockedAt: ISODate,
+  lockReason: String,
+  firstGameStartTime: ISODate,
+
+  // Embedded players
+  players: [
+    {
+      id: UUID,
+      gameId: UUID,
+      name: String,
+      email: String,
+      status: String,           // INVITED, ACTIVE, ELIMINATED
+      joinedAt: ISODate,
+      isEliminated: Boolean,
+      teamSelections: []        // Embedded team selections
+    }
+  ],
+
+  // Embedded scoring rules
+  scoringRules: {
+    pprRules: { ... },
+    fieldGoalRules: { ... },
+    defensiveRules: { ... }
+  },
+
+  createdAt: ISODate,
+  updatedAt: ISODate
+}
+
+// Indexes
+db.games.createIndex({ code: 1 }, { unique: true })
+db.games.createIndex({ creatorId: 1 })
+db.games.createIndex({ status: 1 })
 ```
 
-**player_stats**
-```sql
-CREATE TABLE player_stats (
-    id BIGSERIAL PRIMARY KEY,
-    nfl_player_id BIGINT NOT NULL REFERENCES nfl_players(id),
-    week INTEGER NOT NULL,
-    game_id VARCHAR(50),
-    passing_yards INTEGER DEFAULT 0,
-    passing_tds INTEGER DEFAULT 0,
-    rushing_yards INTEGER DEFAULT 0,
-    rushing_tds INTEGER DEFAULT 0,
-    receptions INTEGER DEFAULT 0,
-    receiving_yards INTEGER DEFAULT 0,
-    receiving_tds INTEGER DEFAULT 0,
-    fantasy_points DECIMAL(10,2),
-    created_at TIMESTAMP DEFAULT NOW(),
-    UNIQUE(nfl_player_id, week)
-);
+**playerStats** (Weekly stats per NFL player)
+```javascript
+{
+  _id: ObjectId,
+  nflPlayerId: Long,
+  week: Number,
+  gameId: String,
 
-CREATE INDEX idx_player_stats_player_week ON player_stats(nfl_player_id, week);
-CREATE INDEX idx_player_stats_week ON player_stats(week);
+  // Offensive stats
+  passingYards: Number,
+  passingTouchdowns: Number,
+  interceptions: Number,
+  rushingYards: Number,
+  rushingTouchdowns: Number,
+  receptions: Number,
+  receivingYards: Number,
+  receivingTouchdowns: Number,
+
+  // Kicking stats
+  fieldGoalsMade: Number,
+  extraPointsMade: Number,
+
+  // Defensive stats
+  sacks: Number,
+  interceptionsDef: Number,
+  fumbleRecoveries: Number,
+  defensiveTouchdowns: Number,
+
+  fantasyPoints: Number,
+  createdAt: ISODate
+}
+
+// Indexes
+db.playerStats.createIndex({ nflPlayerId: 1, week: 1 }, { unique: true })
+db.playerStats.createIndex({ week: 1 })
 ```
 
 ---

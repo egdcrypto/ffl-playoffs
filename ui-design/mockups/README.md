@@ -20,9 +20,6 @@ These mockups demonstrate a **roster-based fantasy football system** where:
 5. **league-standings.html** - League player rankings with expandable roster details and total scores
 6. **index.html** - Mockups index page with navigation to all screens
 
-### Legacy (Reference Only)
-7. **leaderboard.html** - OLD team-based survivor pool model (DEPRECATED - see league-standings.html instead)
-
 ### Pending
 - **admin-dashboard.html** - Admin league management (pending)
 - **league-config.html** - League configuration screen with roster slot configuration (pending)
@@ -159,7 +156,6 @@ After stakeholder approval:
 | my-roster.html | ✅ Complete | Position-grouped roster view |
 | league-standings.html | ✅ Complete | League player rankings |
 | index.html | ✅ Complete | Navigation page |
-| leaderboard.html | ⚠️ Legacy | Team-based survivor pool (DEPRECATED) |
 | admin-dashboard.html | 🔲 Pending | Admin league management |
 | league-config.html | 🔲 Pending | Roster configuration |
 | super-admin-dashboard.html | 🔲 Pending | Platform administration |

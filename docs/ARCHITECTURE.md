@@ -376,7 +376,7 @@ public class NFLApiClient implements NFLDataProvider {
 **Responsibilities**:
 - Enforce league lifecycle rules
 - Manage week progression
-- Validate league configuration (startingWeek + numberOfWeeks ≤ 18)
+- Validate league configuration (startingWeek + numberOfWeeks - 1 ≤ 22)
 - Control player membership
 
 #### 2. Player Aggregate

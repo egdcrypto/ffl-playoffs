@@ -238,6 +238,50 @@ When menu open:
 Home > My Leagues > League Name > Make Picks
 ```
 
+**Navigation Pattern Decision:**
+
+The FFL Playoffs application uses **tab-based navigation** for primary screen navigation instead of traditional breadcrumbs. This design decision was made for the following reasons:
+
+1. **Flat Information Architecture**: Player-facing screens (Dashboard, Browse Players, My Roster, Standings) are peers at the same level, not a hierarchical structure. Tab navigation better represents this relationship.
+
+2. **Quick Context Switching**: Users frequently switch between viewing their roster, browsing players, and checking standings. Tabs provide faster navigation than breadcrumbs.
+
+3. **Mobile-First Design**: Tab navigation adapts better to mobile interfaces with a horizontal scrolling tab bar or hamburger menu, whereas breadcrumbs can become cramped.
+
+4. **Single League Context**: When viewing a specific league, all actions are scoped to that league. There's no need for multi-level breadcrumbs when the context is already clear.
+
+**When Breadcrumbs ARE Used:**
+- Admin configuration flows (Admin Dashboard > League Config > Scoring Rules)
+- Multi-step forms where users need to track progress
+- Deep hierarchical navigation (e.g., Super Admin > Admin Management > User Details)
+
+**Implementation:**
+```html
+<!-- Player Navigation Tabs -->
+<ul class="navbar-nav">
+  <li class="nav-item">
+    <a class="nav-link active" href="player-dashboard.html">Dashboard</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="my-roster.html">My Roster</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="player-selection.html">Build Roster</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="league-standings.html">Standings</a>
+  </li>
+</ul>
+
+<!-- Admin Breadcrumbs -->
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+    <li class="breadcrumb-item active">League Configuration</li>
+  </ol>
+</nav>
+```
+
 ---
 
 ### 5. Table Component

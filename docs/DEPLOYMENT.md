@@ -107,6 +107,108 @@ The FFL Playoffs API is deployed as a **three-service Kubernetes pod** with:
 
 ---
 
+### Localhost-Only Binding (Zero-Trust Security)
+
+**CRITICAL SECURITY REQUIREMENT**: The Main API (port 8080) and Auth Service (port 9191) MUST bind to localhost (127.0.0.1) ONLY.
+
+**Why Localhost-Only Binding?**
+- **Prevents Direct Access**: External clients cannot reach the API or Auth Service directly
+- **Enforces Envoy Gateway**: ALL traffic MUST go through Envoy (the only service binding to 0.0.0.0)
+- **Zero-Trust Model**: Even if an attacker gains pod network access, they cannot bypass authentication
+- **Defense in Depth**: Multiple layers of security (network policy + localhost binding + Envoy auth)
+
+#### Configuration
+
+**Main API (Spring Boot)**
+
+In `application.yml` or `application-production.yml`:
+
+```yaml
+server:
+  address: 127.0.0.1  # Bind to localhost ONLY
+  port: 8080
+
+management:
+  server:
+    address: 127.0.0.1  # Actuator also localhost-only
+    port: 8081
+```
+
+Or via environment variables:
+
+```yaml
+env:
+- name: SERVER_ADDRESS
+  value: "127.0.0.1"
+- name: SERVER_PORT
+  value: "8080"
+- name: MANAGEMENT_SERVER_ADDRESS
+  value: "127.0.0.1"
+- name: MANAGEMENT_SERVER_PORT
+  value: "8081"
+```
+
+**Auth Service (Spring Boot)**
+
+```yaml
+server:
+  address: 127.0.0.1  # Bind to localhost ONLY
+  port: 9191
+```
+
+**Envoy Sidecar (External Entry Point)**
+
+Envoy is the ONLY service that binds to 0.0.0.0 (all interfaces):
+
+```yaml
+static_resources:
+  listeners:
+  - name: main_listener
+    address:
+      socket_address:
+        address: 0.0.0.0  # Bind to all interfaces (external access)
+        port_value: 443
+```
+
+#### Verification
+
+**Test localhost binding:**
+
+```bash
+# From within the pod - these should work
+kubectl exec -it ffl-playoffs-api-<hash> -c api -- curl http://127.0.0.1:8080/actuator/health
+kubectl exec -it ffl-playoffs-api-<hash> -c auth-service -- curl http://127.0.0.1:9191/health
+
+# From outside the pod - these should FAIL (connection refused)
+kubectl run test-pod --rm -it --image=curlimages/curl -- curl http://<pod-ip>:8080/actuator/health
+# Expected: Connection refused or timeout
+
+# Only Envoy port 443 should be accessible externally
+curl https://api.ffl-playoffs.com/api/v1/public/health
+# Expected: Success (goes through Envoy)
+```
+
+#### Troubleshooting
+
+**Problem**: API is accessible directly on pod IP (bypassing Envoy)
+
+**Solution**: Verify `server.address` is set to `127.0.0.1` in application.yml
+
+**Problem**: Health checks failing
+
+**Solution**: Ensure health check probes target localhost, not pod IP:
+```yaml
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8081  # Port only, defaults to pod IP
+    scheme: HTTP
+```
+
+Spring Boot will accept health checks from any interface even when bound to localhost.
+
+---
+
 ### Envoy Configuration
 
 **File**: `/etc/envoy/envoy.yaml` (mounted as ConfigMap)
@@ -724,6 +826,181 @@ spec:
     ports:
     - protocol: TCP
       port: 443
+```
+
+---
+
+### Bootstrap PAT Setup
+
+**Purpose**: Create the first SUPER_ADMIN user and Personal Access Token to bootstrap the authentication system.
+
+**⚠️ CRITICAL**: This process is required for initial deployment. Without a bootstrap PAT, no API access is possible since all endpoints require authentication.
+
+#### Step 1: Create Bootstrap SUPER_ADMIN User
+
+Connect to MongoDB and create the first user directly in the database:
+
+```bash
+# Connect to MongoDB
+kubectl exec -it mongodb-0 -n default -- mongosh mongodb://localhost:27017/ffl_playoffs
+
+# Or for local development
+mongosh mongodb://ffl_user:ffl_password@localhost:27017/ffl_playoffs
+```
+
+Create the bootstrap user:
+
+```javascript
+// Switch to database
+use ffl_playoffs
+
+// Create first SUPER_ADMIN user
+db.users.insertOne({
+  _id: UUID("00000000-0000-0000-0000-000000000001"),
+  email: "admin@ffl-playoffs.com",
+  name: "Bootstrap Admin",
+  googleId: null,  // No Google ID for bootstrap user
+  role: "SUPER_ADMIN",
+  createdAt: new Date(),
+  updatedAt: new Date()
+})
+```
+
+**Verification**:
+```javascript
+db.users.findOne({ email: "admin@ffl-playoffs.com" })
+```
+
+#### Step 2: Generate Bootstrap PAT Token
+
+Generate a secure token and hash it:
+
+```bash
+# Generate a secure random token (32 bytes = 64 hex characters)
+TOKEN_SECRET=$(openssl rand -hex 32)
+echo "Bootstrap PAT Token: pat_${TOKEN_SECRET}"
+
+# IMPORTANT: Save this token securely - it's shown only once!
+# Example: pat_a1b2c3d4e5f6...
+
+# Hash the token with bcrypt (cost factor 12)
+TOKEN_HASH=$(htpasswd -bnBC 12 "" "pat_${TOKEN_SECRET}" | tr -d ':\n' | sed 's/$2y/$2a/')
+echo "Token Hash: ${TOKEN_HASH}"
+```
+
+#### Step 3: Insert Bootstrap PAT into Database
+
+```javascript
+// In MongoDB shell
+use ffl_playoffs
+
+// Insert bootstrap PAT
+db.personalAccessTokens.insertOne({
+  _id: UUID("00000000-0000-0000-0000-000000000002"),
+  name: "Bootstrap PAT",
+  tokenIdentifier: "bootstrap-pat-001",  // Unique identifier for lookup
+  tokenHash: "<TOKEN_HASH from step 2>",
+  scope: "ADMIN",
+  expiresAt: null,  // No expiration for bootstrap token
+  createdBy: UUID("00000000-0000-0000-0000-000000000001"),
+  createdAt: new Date(),
+  lastUsedAt: null,
+  revoked: false
+})
+```
+
+**Verification**:
+```javascript
+db.personalAccessTokens.findOne({ name: "Bootstrap PAT" })
+```
+
+#### Step 4: Test Bootstrap PAT
+
+Test the bootstrap token with a simple API call:
+
+```bash
+# Using the bootstrap PAT token
+curl -H "Authorization: Bearer pat_a1b2c3d4e5f6..." \
+  https://api.ffl-playoffs.com/api/v1/superadmin/health
+
+# Expected response:
+# {"status": "UP"}
+```
+
+#### Step 5: Create Additional Admins via API
+
+Once bootstrap PAT is working, create additional admins via API:
+
+```bash
+# Create new admin using bootstrap PAT
+curl -X POST https://api.ffl-playoffs.com/api/v1/superadmin/admins \
+  -H "Authorization: Bearer pat_a1b2c3d4e5f6..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "admin2@ffl-playoffs.com",
+    "name": "Admin User",
+    "role": "ADMIN"
+  }'
+
+# Create PAT for the new admin
+curl -X POST https://api.ffl-playoffs.com/api/v1/superadmin/pats \
+  -H "Authorization: Bearer pat_a1b2c3d4e5f6..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Admin API Token",
+    "scope": "ADMIN",
+    "expiresAt": "2026-12-31T23:59:59Z"
+  }'
+```
+
+#### Security Best Practices
+
+1. **Rotate Bootstrap PAT**: After creating additional admin users and tokens, consider revoking the bootstrap PAT
+2. **Secure Storage**: Store bootstrap PAT in a secrets manager (Kubernetes Secret, AWS Secrets Manager, HashiCorp Vault)
+3. **Audit Logging**: Monitor all bootstrap PAT usage for suspicious activity
+4. **Time-Bound Expiration**: Set expiration dates on all non-bootstrap PATs
+5. **Principle of Least Privilege**: Use READ_ONLY or WRITE scope PATs for services that don't need ADMIN access
+
+#### Kubernetes Secret for Bootstrap PAT
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ffl-playoffs-bootstrap-pat
+  namespace: ffl-playoffs
+type: Opaque
+data:
+  bootstrap-pat: <base64-encoded-token>  # base64 encode pat_a1b2c3d4e5f6...
+```
+
+Mount in deployment:
+
+```yaml
+env:
+- name: BOOTSTRAP_PAT
+  valueFrom:
+    secretKeyRef:
+      name: ffl-playoffs-bootstrap-pat
+      key: bootstrap-pat
+```
+
+#### Troubleshooting Bootstrap PAT
+
+**Problem**: PAT authentication fails with 403
+
+**Solutions**:
+1. Verify token hash in database matches your bcrypt hash
+2. Check token prefix is `pat_` (not `bearer` or other)
+3. Verify user exists and has SUPER_ADMIN role
+4. Check Auth Service logs for validation errors
+5. Ensure MongoDB connection is working
+
+**Problem**: Token hash mismatch
+
+**Solution**: Regenerate hash using exact same token string:
+```bash
+echo -n "pat_a1b2c3d4e5f6..." | htpasswd -bnBC 12 "" | tr -d ':\n' | sed 's/$2y/$2a/'
 ```
 
 ---

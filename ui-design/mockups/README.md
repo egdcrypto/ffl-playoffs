@@ -20,10 +20,8 @@ These mockups demonstrate a **roster-based fantasy football system** where:
 5. **league-standings.html** - League player rankings with expandable roster details and total scores
 6. **index.html** - Mockups index page with navigation to all screens
 
-### Pending
-- **admin-dashboard.html** - Admin league management (pending)
-- **league-config.html** - League configuration screen with roster slot configuration (pending)
-- **super-admin-dashboard.html** - Platform-wide administration (pending)
+### All Core Mockups Complete
+All primary mockups have been completed.
 
 ## Key Features
 
@@ -157,6 +155,6 @@ After stakeholder approval:
 | my-roster.html | ✅ Complete | Position-grouped roster view |
 | league-standings.html | ✅ Complete | League player rankings |
 | index.html | ✅ Complete | Navigation page |
-| admin-dashboard.html | 🔲 Pending | Admin league management |
-| league-config.html | 🔲 Pending | Roster configuration |
-| super-admin-dashboard.html | 🔲 Pending | Platform administration |
+| admin-dashboard.html | ✅ Complete | Admin league management |
+| league-config.html | ✅ Complete | Roster & scoring configuration |
+| super-admin-dashboard.html | ✅ Complete | Platform administration |

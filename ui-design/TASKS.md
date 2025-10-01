@@ -1,7 +1,7 @@
 # UI/UX Design Tasks - FFL Playoffs
 
 ## Status: Complete
-Last Updated: 2025-10-01
+Last Updated: 2025-10-01 22:30
 
 ---
 
@@ -30,6 +30,11 @@ Last Updated: 2025-10-01
 ### Bonus Screens Completed
 - [x] Score Breakdown Screen - Detailed scoring for week/player
 - [x] Roster Management Screen - Draft-style player selection
+
+### Admin HTML Mockups - COMPLETED
+- [x] Admin Dashboard HTML mockup
+- [x] League Configuration Screen HTML mockup
+- [x] Super Admin Dashboard HTML mockup
 
 ### Low Priority (Supporting) - Future Enhancement
 - [ ] Profile Settings Screen

@@ -111,16 +111,22 @@ X-Google-Id: google-oauth2|123456789
 
 **Header Format**:
 ```
-Authorization: Bearer pat_<random-token-string>
+Authorization: Bearer pat_<identifier>_<random-string>
 ```
+
+**Token Format**: `pat_<32-char-identifier>_<64-char-random>`
+- `identifier`: UUID (without hyphens) for efficient database lookup
+- `random`: Cryptographically secure random string
+- Example: `pat_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6_ABCDefgh123...xyz789`
 
 **Token Validation Flow**:
 1. Service sends request with PAT (prefix `pat_`)
 2. Envoy calls Auth Service
 3. Auth Service:
-   - Detects PAT prefix
-   - Hashes the PAT using bcrypt
-   - Queries PersonalAccessToken table
+   - Detects PAT prefix (`pat_`)
+   - Extracts token identifier (middle part)
+   - Queries PersonalAccessToken table by tokenIdentifier
+   - Verifies full token against stored bcrypt hash
    - Validates token not expired and not revoked
    - Extracts PAT scope (READ_ONLY, WRITE, ADMIN)
    - Updates lastUsedAt timestamp
@@ -247,7 +253,7 @@ POST /api/v1/superadmin/pats
 {
   "id": 123,
   "name": "analytics-service-token",
-  "token": "pat_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+  "token": "pat_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6_ABCDefgh123...xyz789",
   "scope": "READ_ONLY",
   "createdAt": "2025-10-01T12:00:00Z",
   "expiresAt": "2026-10-01T12:00:00Z",
@@ -394,12 +400,12 @@ POST /api/v1/admin/leagues
 ```json
 {
   "error": "INVALID_LEAGUE_CONFIGURATION",
-  "message": "startingWeek + numberOfWeeks - 1 must be ≤ 18",
+  "message": "startingWeek + numberOfWeeks - 1 must be ≤ 22",
   "details": {
-    "startingWeek": 17,
+    "startingWeek": 20,
     "numberOfWeeks": 4,
-    "maxWeek": 20,
-    "allowed": 18
+    "maxWeek": 23,
+    "allowed": 22
   }
 }
 ```
@@ -1123,7 +1129,7 @@ curl -X GET https://api.ffl-playoffs.com/api/v1/player/leagues/1/leaderboard \
 
 ```bash
 curl -X GET https://api.ffl-playoffs.com/api/v1/service/scores?leagueId=1&week=2 \
-  -H "Authorization: Bearer pat_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
+  -H "Authorization: Bearer pat_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6_ABCDefgh123...xyz789"
 ```
 
 ## Error Handling
@@ -1234,8 +1240,8 @@ curl -X GET https://api.ffl-playoffs.com/api/v1/service/scores?leagueId=1&week=2
   "message": "Request validation failed",
   "details": {
     "field": "startingWeek",
-    "error": "must be between 1 and 18",
-    "provided": 20
+    "error": "must be between 1 and 22",
+    "provided": 25
   }
 }
 ```
@@ -1243,12 +1249,12 @@ curl -X GET https://api.ffl-playoffs.com/api/v1/service/scores?leagueId=1&week=2
 ```json
 {
   "error": "INVALID_LEAGUE_CONFIGURATION",
-  "message": "startingWeek + numberOfWeeks - 1 cannot exceed 18",
+  "message": "startingWeek + numberOfWeeks - 1 cannot exceed 22",
   "details": {
-    "startingWeek": 17,
+    "startingWeek": 20,
     "numberOfWeeks": 4,
-    "calculatedMaxWeek": 20,
-    "allowed": 18
+    "calculatedMaxWeek": 23,
+    "allowed": 22
   }
 }
 ```

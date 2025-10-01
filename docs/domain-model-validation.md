@@ -102,12 +102,12 @@ public void updateScoringRules(ScoringRules newRules) {
 public void updateStartingWeek(Integer newStartingWeek) {
     validateConfigurationMutable(); // VALIDATION GUARD
 
-    if (newStartingWeek < 1 || newStartingWeek > 18) {
+    if (newStartingWeek < 1 || newStartingWeek > 22) {
         throw new InvalidStartingWeekException();
     }
 
     // Additional validation
-    if (newStartingWeek + this.numberOfWeeks - 1 > 18) {
+    if (newStartingWeek + this.numberOfWeeks - 1 > 22) {
         throw new LeagueExceedsNFLSeasonException();
     }
 

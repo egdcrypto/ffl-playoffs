@@ -83,6 +83,99 @@ Team defense performance for a specific game/week.
 - `defensiveTDs`, `safeties`
 - `fantasyPoints` - Calculated defensive points
 
+#### LeaguePlayer (Junction Entity)
+Junction entity linking Users to Leagues/Games, enabling multi-league membership.
+
+**Purpose**: Represents a user's membership in a specific league with league-scoped data and status tracking.
+
+**Attributes**:
+- `id` - Unique identifier (UUID)
+- `userId` - Reference to User (UUID)
+- `leagueId` - Reference to League/Game (UUID)
+- `status` - Membership status (LeaguePlayerStatus enum)
+- `joinedAt` - Timestamp when user accepted invitation and became active
+- `invitedAt` - Timestamp when invitation was sent
+- `lastActiveAt` - Last activity timestamp for engagement tracking
+- `invitationToken` - Secure token for invitation acceptance (cleared after use)
+- `createdAt` - Record creation timestamp
+- `updatedAt` - Last update timestamp
+
+**LeaguePlayerStatus Enum Values**:
+- `INVITED` - Invitation pending, user hasn't responded
+- `ACTIVE` - User accepted invitation and is active league member
+- `DECLINED` - User declined the invitation
+- `INACTIVE` - Admin deactivated the member (reversible)
+- `REMOVED` - Admin removed the member from league (final)
+
+**Business Methods**:
+- `acceptInvitation()` - Accept invitation and transition to ACTIVE status
+- `declineInvitation()` - Decline invitation and transition to DECLINED status
+- `deactivate()` - Admin action to deactivate active player
+- `reactivate()` - Admin action to reactivate inactive player
+- `remove()` - Admin action to remove player from league
+- `updateLastActive()` - Update activity timestamp
+- `isActive()` - Check if player is active
+- `isPending()` - Check if invitation is pending
+- `canParticipate()` - Check if player can participate in league activities
+
+**Status Lifecycle**:
+```
+INVITED → ACTIVE (acceptInvitation)
+INVITED → DECLINED (declineInvitation)
+ACTIVE → INACTIVE (deactivate)
+INACTIVE → ACTIVE (reactivate)
+* → REMOVED (remove - final state)
+```
+
+**Multi-League Support**: A User can have multiple LeaguePlayer records, one for each league they're a member of.
+
+#### PersonalAccessToken (PAT)
+API access token for programmatic authentication and authorization.
+
+**Purpose**: Enables server-to-server authentication and API integrations without requiring Google OAuth.
+
+**Attributes**:
+- `id` - Unique identifier (UUID)
+- `name` - Human-readable token name (e.g., "CI/CD Pipeline Token")
+- `tokenIdentifier` - UUID without hyphens from token (for efficient lookup)
+- `tokenHash` - BCrypt hashed full token value (secure storage)
+- `scope` - Access level (PATScope enum)
+- `expiresAt` - Optional expiration timestamp (nullable for non-expiring tokens)
+- `createdBy` - User ID who created the token (UUID)
+- `createdAt` - Token creation timestamp
+- `lastUsedAt` - Last usage timestamp for tracking
+- `revoked` - Boolean flag indicating if token is revoked
+
+**Token Format**: `pat_<identifier>_<random>`
+- Complete token is 99 characters: prefix (4) + identifier (32) + separator (1) + random (62+)
+- Identifier is stored in `tokenIdentifier` for fast database lookups
+- Full token is BCrypt hashed and stored in `tokenHash`
+
+**PATScope Enum Values**:
+- `READ_ONLY` - Can only read data (GET requests)
+- `WRITE` - Can read and modify data (GET, POST, PUT, DELETE)
+- `ADMIN` - Full access including administrative operations
+
+**Scope Hierarchy**:
+```
+ADMIN > WRITE > READ_ONLY
+(Admin has all permissions, Write has READ_ONLY + write permissions)
+```
+
+**Business Methods**:
+- `isValid()` - Check if token is valid (not revoked and not expired)
+- `hasScope(PATScope requiredScope)` - Check if token has required permission level
+- `revoke()` - Revoke the token (irreversible)
+- `updateLastUsed()` - Update last used timestamp
+- `isExpired()` - Check if token has expired
+- `validateOrThrow()` - Validate token and throw exception if invalid
+
+**Security Notes**:
+- Token values are BCrypt hashed before storage
+- Only the hash is stored in the database
+- The raw token is shown to the user ONLY once at creation time
+- Revoked tokens cannot be reactivated (must create new token)
+
 ---
 
 ## Key Business Rules
@@ -141,18 +234,25 @@ League Player Total Score = SUM(all 9 NFL players' fantasy points)
 ## Entity Relationships
 
 ```
-League 1──* LeaguePlayer
-League 1──1 RosterConfiguration
+User 1──* LeaguePlayer           // Users can join multiple leagues
+User 1──* PersonalAccessToken    // Users can create multiple API tokens
 
-LeaguePlayer 1──1 Roster
-Roster 1──* RosterSlot
-RosterSlot *──1 NFLPlayer
+League 1──* LeaguePlayer         // Leagues have multiple members
+League 1──1 RosterConfiguration  // Each league has one roster configuration
 
-NFLPlayer 1──* PlayerStats
+LeaguePlayer 1──1 Roster         // Each league member has one roster
+LeaguePlayer has LeaguePlayerStatus (enum)
+
+Roster 1──* RosterSlot           // Rosters contain multiple position slots
+RosterSlot *──1 NFLPlayer        // Slots reference NFL players
+
+NFLPlayer 1──* PlayerStats       // NFL players have weekly stats
 NFLPlayer has Position (enum)
 
-Week 1──* PlayerStats
-Week 1──* DefensiveStats
+PersonalAccessToken has PATScope (enum)
+
+Week 1──* PlayerStats            // Weeks contain player statistics
+Week 1──* DefensiveStats         // Weeks contain defensive statistics
 ```
 
 ---
@@ -314,6 +414,55 @@ db.games.createIndex({ status: 1 })
 // Indexes
 db.playerStats.createIndex({ nflPlayerId: 1, week: 1 }, { unique: true })
 db.playerStats.createIndex({ week: 1 })
+```
+
+**leaguePlayers** (Junction table for user-league membership)
+```javascript
+{
+  _id: UUID,
+  userId: UUID,                 // Reference to User
+  leagueId: UUID,               // Reference to League/Game
+  status: String,               // INVITED, ACTIVE, DECLINED, INACTIVE, REMOVED
+  joinedAt: ISODate,            // When user accepted invitation and became active
+  invitedAt: ISODate,           // When invitation was sent
+  lastActiveAt: ISODate,        // Last activity timestamp
+  invitationToken: String,      // Secure invitation token (nullable, cleared after use)
+  createdAt: ISODate,
+  updatedAt: ISODate
+}
+
+// Indexes
+db.leaguePlayers.createIndex({ userId: 1, leagueId: 1 }, { unique: true })
+db.leaguePlayers.createIndex({ userId: 1 })
+db.leaguePlayers.createIndex({ leagueId: 1 })
+db.leaguePlayers.createIndex({ status: 1 })
+db.leaguePlayers.createIndex({ invitationToken: 1 }, { sparse: true })
+```
+
+**personalAccessTokens** (API access tokens for programmatic authentication)
+```javascript
+{
+  _id: UUID,
+  name: String,                 // Human-readable token name
+  tokenIdentifier: String,      // UUID without hyphens (for fast lookup, indexed)
+  tokenHash: String,            // BCrypt hashed FULL token (pat_<identifier>_<random>)
+  scope: String,                // READ_ONLY, WRITE, ADMIN
+  expiresAt: ISODate,           // Optional expiration (nullable for non-expiring)
+  createdBy: UUID,              // User ID who created this token
+  createdAt: ISODate,
+  lastUsedAt: ISODate,          // Last usage timestamp
+  revoked: Boolean              // Revocation flag
+}
+
+// Indexes
+db.personalAccessTokens.createIndex({ tokenIdentifier: 1 }, { unique: true })
+db.personalAccessTokens.createIndex({ createdBy: 1 })
+db.personalAccessTokens.createIndex({ revoked: 1 })
+db.personalAccessTokens.createIndex({ expiresAt: 1 }, { sparse: true })
+
+// Token Format: pat_<identifier>_<random>
+// - tokenIdentifier: extracted from middle part (32 chars)
+// - tokenHash: bcrypt hash of complete token for verification
 ```
 
 ---

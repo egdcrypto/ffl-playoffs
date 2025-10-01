@@ -18,15 +18,17 @@ Feature: Team Selection
     And my pick for week 1 should be "Kansas City Chiefs"
     And the team "Kansas City Chiefs" should be marked as used by me
 
-  Scenario: Player cannot select the same team twice
+  Scenario: Player cannot select the same team twice across their own weeks
     Given I selected "Dallas Cowboys" for week 1
     And it is now week 2 of the game
     And the pick deadline for week 2 is "2025-10-12 13:00:00"
     And the current time is "2025-10-12 10:00:00"
+    And other players may have also selected "Dallas Cowboys" for their weeks
     When I attempt to select team "Dallas Cowboys" for week 2
     Then the selection should fail
-    And I should receive error "You have already selected this team in a previous week"
+    And I should receive error "You have already selected this team in week 1"
     And my pick for week 2 should remain unset
+    But other players can still select "Dallas Cowboys" for any of their weeks
 
   Scenario: Player updates pick before deadline
     Given it is week 1 of the game
@@ -56,16 +58,18 @@ Feature: Team Selection
     And I should receive error "Pick deadline has passed for week 1"
     And my pick for week 1 should remain "Philadelphia Eagles"
 
-  Scenario: Player views available teams for selection
+  Scenario: Player views all NFL teams for selection
     Given it is week 2 of the game
     And I have selected the following teams:
       | week | team              |
       | 1    | Dallas Cowboys    |
-    When I request available teams for week 2
-    Then I should receive a list of 31 teams
-    And the list should not include "Dallas Cowboys"
-    And all teams should have their current season record
-    And all teams should have their upcoming opponent
+    When I request teams for week 2 selection
+    Then I should see all 32 NFL teams
+    And "Dallas Cowboys" should be marked as "already used by me"
+    And other teams should be marked as "available"
+    And all teams should display their current season record
+    And all teams should display their upcoming opponent
+    And teams used by other players should still be selectable
 
   Scenario: Player makes selections for all 4 weeks
     Given the game allows advance picks
@@ -152,13 +156,28 @@ Feature: Team Selection
       | Chiefs           | Bills             | 49ers               | Bills               | fail    | error "Team already selected in week 2"         |
       | Chiefs           | Bills             | 49ers               | 49ers               | fail    | error "Team already selected in week 3"         |
 
-  Scenario: Multiple players can select the same team
+  Scenario: Multiple players can independently select the same team
     Given player "player1" selected "Dallas Cowboys" for week 1
-    And I am player "player2"
+    And player "player2" selected "Dallas Cowboys" for week 1
+    And player "player3" selected "Dallas Cowboys" for week 1
+    And I am player "player4"
     And it is week 1 of the game
     When I select team "Dallas Cowboys" for week 1
     Then my selection should be saved successfully
     And my pick for week 1 should be "Dallas Cowboys"
+    And all 4 players have independently selected "Dallas Cowboys"
+    And there is no limit on how many players can pick the same team
+
+  Scenario: NOT a draft system - all teams always available to all players
+    Given the league has 10 players
+    And it is week 2 of the game
+    And 5 players have already selected "Kansas City Chiefs" for week 2
+    When I view the available teams
+    Then I should see all 32 NFL teams listed
+    And "Kansas City Chiefs" should be marked as "available"
+    And I should be able to select "Kansas City Chiefs" even though 5 others picked it
+    And there is NO concept of team availability based on other players' picks
+    And each player makes independent selections without affecting others
 
   Scenario: Player views pick deadline countdown
     Given it is week 1 of the game

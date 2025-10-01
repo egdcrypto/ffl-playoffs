@@ -109,23 +109,29 @@ The system implements a three-tier role hierarchy:
   - Player profile management within league context
 
 ### 2. Team Selection
-- **Weekly Team Picks**
-  - Players select one NFL team per week for the configured game duration
-  - Cannot select the same team twice across all weeks in the game
+- **Weekly Team Picks (ENTIRE NFL TEAMS, NOT Individual Players)**
+  - **IMPORTANT**: Players select one ENTIRE NFL TEAM per week (e.g., "Kansas City Chiefs")
+  - This is NOT a traditional fantasy draft - no individual player selection
+  - This is a team-based survivor pool with PPR scoring of the team's total stats
+  - Players cannot select the same team twice across all weeks in the game (personal restriction only)
+  - Multiple league players CAN independently select the same NFL team (no draft, no availability restrictions)
   - Selection deadline before games start each week
-  - View available teams for selection
+  - View all 32 NFL teams for selection
+  - Teams used by player are grayed out (personal history only)
   - Edit picks before deadline
   - Number of weeks determined by league configuration (1-17 weeks)
 
 ### 3. Scoring System
-- **PPR Scoring Rules**
+- **PPR Scoring Rules (Team-Based)**
+  - **IMPORTANT**: Scoring is based on the ENTIRE NFL TEAM's cumulative offensive performance
   - Standard PPR (Points Per Reception) scoring
-  - Touchdowns: 6 points
-  - Receptions: 1 point per reception
-  - Passing yards: 1 point per 25 yards
-  - Rushing/Receiving yards: 1 point per 10 yards
+  - Touchdowns: 6 points (all team TDs)
+  - Receptions: 1 point per reception (all team receptions)
+  - Passing yards: 1 point per 25 yards (team total passing)
+  - Rushing/Receiving yards: 1 point per 10 yards (team totals)
   - Extra Points: 1 point
   - Two-Point Conversions: 2 points
+  - Example: If "Kansas City Chiefs" throw for 300 yards, rush for 120 yards, have 25 receptions, and score 4 TDs, the player who selected them gets all those points
 
 - **Field Goal Scoring (Configurable by Distance)**
   - Admin can configure points by distance range

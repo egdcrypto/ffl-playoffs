@@ -731,6 +731,302 @@ GET /api/v1/player/leagues/{leagueId}/scores/{weekNumber}
 
 ---
 
+
+#### Search NFL Players
+```http
+GET /api/v1/player/nfl-players?position=QB&team=Kansas+City+Chiefs&page=0&size=20&sort=fantasyPoints,desc
+```
+**Auth**: Authenticated user
+
+**Query Parameters**:
+| Parameter | Type   | Required | Description                           |
+|-----------|--------|----------|---------------------------------------|
+| position  | string | No       | Filter by position (QB, RB, WR, TE, K, DEF) |
+| team      | string | No       | Filter by NFL team name               |
+| name      | string | No       | Search by player name (partial match) |
+| page      | int    | No       | Page number (default: 0)              |
+| size      | int    | No       | Page size (default: 20, max: 100)     |
+| sort      | string | No       | Sort criteria (e.g., fantasyPoints,desc) |
+
+**Response**:
+```json
+{
+  "players": [
+    {
+      "id": 1001,
+      "name": "Patrick Mahomes",
+      "firstName": "Patrick",
+      "lastName": "Mahomes",
+      "position": "QB",
+      "nflTeam": "Kansas City Chiefs",
+      "nflTeamAbbreviation": "KC",
+      "jerseyNumber": 15,
+      "status": "ACTIVE",
+      "stats": {
+        "gamesPlayed": 8,
+        "fantasyPoints": 215.4,
+        "averagePointsPerGame": 26.9,
+        "passingYards": 2159,
+        "passingTouchdowns": 18,
+        "interceptions": 5,
+        "completionPercentage": 68.5
+      }
+    }
+  ],
+  "pagination": {
+    "page": 0,
+    "size": 20,
+    "totalElements": 125,
+    "totalPages": 7,
+    "hasNext": true,
+    "hasPrevious": false
+  }
+}
+```
+
+#### Get NFL Player Details
+```http
+GET /api/v1/player/nfl-players/{playerId}
+```
+**Auth**: Authenticated user
+
+**Response**:
+```json
+{
+  "id": 1001,
+  "name": "Patrick Mahomes",
+  "firstName": "Patrick",
+  "lastName": "Mahomes",
+  "position": "QB",
+  "nflTeam": "Kansas City Chiefs",
+  "nflTeamAbbreviation": "KC",
+  "jerseyNumber": 15,
+  "status": "ACTIVE",
+  "seasonStats": {
+    "gamesPlayed": 8,
+    "fantasyPoints": 215.4,
+    "averagePointsPerGame": 26.9,
+    "passingYards": 2159,
+    "passingTouchdowns": 18,
+    "interceptions": 5,
+    "rushingYards": 89,
+    "rushingTouchdowns": 2
+  },
+  "gameByGameStats": [
+    {
+      "week": 1,
+      "opponent": "vs Detroit Lions",
+      "fantasyPoints": 28.6,
+      "passingYards": 326,
+      "passingTouchdowns": 3,
+      "interceptions": 0,
+      "rushingYards": 15
+    }
+  ]
+}
+```
+
+#### Get My Roster
+```http
+GET /api/v1/player/leagues/{leagueId}/roster
+```
+**Auth**: Authenticated user (member of league)
+
+**Response**:
+```json
+{
+  "rosterId": "550e8400-e29b-41d4-a716-446655440000",
+  "leaguePlayerId": "660e8400-e29b-41d4-a716-446655440001",
+  "gameId": "770e8400-e29b-41d4-a716-446655440002",
+  "isLocked": false,
+  "rosterDeadline": "2025-09-10T13:00:00Z",
+  "totalScore": 862.8,
+  "slots": [
+    {
+      "slotId": "slot-uuid-1",
+      "position": "QB",
+      "slotOrder": 1,
+      "slotLabel": "QB",
+      "nflPlayer": {
+        "id": 1001,
+        "name": "Patrick Mahomes",
+        "position": "QB",
+        "nflTeam": "Kansas City Chiefs",
+        "fantasyPoints": 215.4
+      }
+    },
+    {
+      "slotId": "slot-uuid-2",
+      "position": "RB",
+      "slotOrder": 1,
+      "slotLabel": "RB1",
+      "nflPlayer": {
+        "id": 2001,
+        "name": "Christian McCaffrey",
+        "position": "RB",
+        "nflTeam": "San Francisco 49ers",
+        "fantasyPoints": 178.2
+      }
+    },
+    {
+      "slotId": "slot-uuid-7",
+      "position": "FLEX",
+      "slotOrder": 1,
+      "slotLabel": "FLEX",
+      "nflPlayer": {
+        "id": 3005,
+        "name": "Stefon Diggs",
+        "position": "WR",
+        "nflTeam": "Buffalo Bills",
+        "fantasyPoints": 142.8
+      }
+    }
+  ],
+  "filledSlotCount": 9,
+  "totalSlotCount": 9,
+  "isComplete": true,
+  "missingPositions": []
+}
+```
+
+#### Assign Player to Roster Slot
+```http
+POST /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}/assign
+```
+**Auth**: Authenticated user (member of league)
+
+**Request**:
+```json
+{
+  "nflPlayerId": 1001
+}
+```
+
+**Response**:
+```json
+{
+  "slotId": "slot-uuid-1",
+  "position": "QB",
+  "nflPlayer": {
+    "id": 1001,
+    "name": "Patrick Mahomes",
+    "position": "QB",
+    "nflTeam": "Kansas City Chiefs"
+  },
+  "message": "Player assigned successfully"
+}
+```
+
+**Validation Errors**:
+```json
+{
+  "error": "PLAYER_ALREADY_ON_ROSTER",
+  "message": "Patrick Mahomes is already on your roster in position QB",
+  "details": {
+    "nflPlayerId": 1001,
+    "existingSlot": "QB"
+  }
+}
+```
+
+```json
+{
+  "error": "POSITION_MISMATCH",
+  "message": "WR cannot fill TE slot",
+  "details": {
+    "playerPosition": "WR",
+    "slotPosition": "TE",
+    "eligiblePositions": ["TE"]
+  }
+}
+```
+
+```json
+{
+  "error": "ROSTER_LOCKED",
+  "message": "Roster is locked - no changes allowed",
+  "details": {
+    "rosterDeadline": "2025-09-10T13:00:00Z",
+    "lockedAt": "2025-09-10T13:00:00Z"
+  }
+}
+```
+
+#### Remove Player from Roster Slot
+```http
+DELETE /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}
+```
+**Auth**: Authenticated user (member of league)
+
+**Response**:
+```json
+{
+  "slotId": "slot-uuid-1",
+  "position": "QB",
+  "message": "Player removed from slot successfully"
+}
+```
+
+#### Drop and Add Player (Roster Transaction)
+```http
+POST /api/v1/player/leagues/{leagueId}/roster/transactions
+```
+**Auth**: Authenticated user (member of league)
+
+**Request**:
+```json
+{
+  "slotId": "slot-uuid-1",
+  "dropNflPlayerId": 1001,
+  "addNflPlayerId": 1002
+}
+```
+
+**Response**:
+```json
+{
+  "slotId": "slot-uuid-1",
+  "position": "QB",
+  "droppedPlayer": {
+    "id": 1001,
+    "name": "Patrick Mahomes"
+  },
+  "addedPlayer": {
+    "id": 1002,
+    "name": "Josh Allen"
+  },
+  "message": "Transaction completed successfully"
+}
+```
+
+#### Get Roster Configuration
+```http
+GET /api/v1/player/leagues/{leagueId}/roster-config
+```
+**Auth**: Authenticated user (member of league)
+
+**Response**:
+```json
+{
+  "leagueId": 1,
+  "leagueName": "2025 NFL Playoffs Pool",
+  "rosterConfiguration": {
+    "positionSlots": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 2,
+      "TE": 1,
+      "FLEX": 1,
+      "K": 1,
+      "DEF": 1
+    },
+    "totalSlots": 9,
+    "flexEligible": ["RB", "WR", "TE"],
+    "superflexEligible": ["QB", "RB", "WR", "TE"]
+  }
+}
+```
+
 ### Service Endpoints (PAT Only)
 
 #### Bulk Fetch Scores (Analytics)

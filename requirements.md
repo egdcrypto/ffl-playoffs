@@ -1,7 +1,33 @@
 # FFL Playoffs Game - Requirements
 
+## Table of Contents
+1. [Overview](#overview)
+2. [System Architecture](#system-architecture)
+3. [Core Features](#core-features)
+   - [User Management and Role Hierarchy](#1-user-management-and-role-hierarchy)
+   - [Team Selection](#2-team-selection)
+   - [Scoring System](#3-scoring-system)
+   - [League/Game Creation](#4-leaguegame-creation-and-configuration)
+   - [Leaderboard & Standings](#5-leaderboard--standings)
+   - [Data Integration](#6-data-integration)
+   - [Admin Tools](#7-admin-tools)
+   - [Authentication & Authorization](#8-authentication--authorization)
+4. [Technical Requirements](#technical-requirements)
+5. [Technology Stack](#technology-stack)
+6. [Initial Deliverables](#initial-deliverables)
+7. [Setup and Bootstrap Process](#setup-and-bootstrap-process)
+
 ## Overview
-A Fantasy Football League playoff game where players pick teams for a configurable duration (1-17 weeks, default 4 weeks) starting at any week of the NFL season (weeks 1-18). If a player's chosen team loses, that team no longer earns points for the remainder of the game. Uses standard PPR (Points Per Reception) scoring rules.
+
+### Product Description
+A Fantasy Football League playoff game where players pick teams for a configurable duration (1-17 weeks, default 4 weeks) starting at any week of the NFL season (weeks 1-18). If a player's selected team loses, that team no longer earns points for the remainder of the game. Uses standard PPR (Points Per Reception) scoring rules.
+
+### Key Differentiators
+- **Elimination Mechanic**: Losing teams score zero for remaining weeks (not found in traditional fantasy)
+- **Flexible Scheduling**: Start at any NFL week, not just week 1
+- **League-Scoped Players**: Players belong to specific leagues, supporting multi-league participation
+- **Enterprise-Grade Security**: Envoy sidecar with custom auth service, Google OAuth, and PATs
+- **Hexagonal Architecture**: Clean separation of concerns for maintainability and testability
 
 ## System Architecture
 - **API**: Headless Java-based REST API
@@ -98,10 +124,50 @@ The system implements a three-tier role hierarchy:
   - Receptions: 1 point per reception
   - Passing yards: 1 point per 25 yards
   - Rushing/Receiving yards: 1 point per 10 yards
-  - Field Goals: 3 points
   - Extra Points: 1 point
   - Two-Point Conversions: 2 points
-  - Defensive/Special Teams scoring
+
+- **Field Goal Scoring (Configurable by Distance)**
+  - Admin can configure points by distance range
+  - Default scoring:
+    - 0-39 yards: 3 points
+    - 40-49 yards: 4 points
+    - 50+ yards: 5 points
+  - Each league can customize these values
+  - Game results track field goal distance for accurate scoring
+
+- **Defensive Scoring (Configurable)**
+  - Admin can configure all defensive scoring rules
+  - Default defensive scoring:
+    - Sacks: 1 point
+    - Interceptions: 2 points
+    - Fumble Recovery: 2 points
+    - Safety: 2 points
+    - Defensive/Special Teams TD: 6 points
+
+  - **Points Allowed Scoring Tiers** (configurable):
+    - 0 points allowed: 10 points
+    - 1-6 points allowed: 7 points
+    - 7-13 points allowed: 4 points
+    - 14-20 points allowed: 1 point
+    - 21-27 points allowed: 0 points
+    - 28-34 points allowed: -1 point
+    - 35+ points allowed: -4 points
+
+  - **Total Yards Allowed Scoring Tiers** (configurable):
+    - 0-99 yards allowed: 10 points
+    - 100-199 yards allowed: 7 points
+    - 200-299 yards allowed: 5 points
+    - 300-349 yards allowed: 3 points
+    - 350-399 yards allowed: 0 points
+    - 400-449 yards allowed: -3 points
+    - 450+ yards allowed: -5 points
+
+  - **Total Defensive Points Calculation**:
+    - Sum of: individual defensive plays + points allowed tier + yards allowed tier
+    - Example: 3 sacks (3 pts) + 1 INT (2 pts) + 10 points allowed (7 pts) + 250 yards allowed (5 pts) = 17 fantasy points
+
+  - Each league can customize all defensive scoring rules and tiers
 
 - **Elimination Rules**
   - If a player's selected team loses, that team is "eliminated"
@@ -118,7 +184,11 @@ The system implements a three-tier role hierarchy:
     - Starting NFL week (1-18, default: 1) - which week of NFL season to begin
     - Number of weeks (configurable: 1-17 weeks, default: 4)
     - Validation: startingWeek + numberOfWeeks - 1 ≤ 18 (cannot exceed NFL season)
-    - Scoring rules (PPR settings)
+    - **Scoring rules configuration**:
+      - PPR settings (passing/rushing/receiving yards per point)
+      - Field goal scoring by distance (0-39, 40-49, 50+ yards)
+      - Defensive scoring rules (sacks, interceptions, fumbles, TDs)
+      - Points allowed scoring tiers
     - Pick deadline times for each week
     - Maximum number of players
     - Public or private league
@@ -326,19 +396,25 @@ The system implements a three-tier role hierarchy:
 ### Data Model
 - **Entities**
   - User (with role: SUPER_ADMIN, ADMIN, PLAYER; includes googleId, email, name)
-  - League/Game (owned by an admin; includes startingWeek, numberOfWeeks)
+  - League/Game (owned by an admin; includes startingWeek, numberOfWeeks, scoringRules)
   - LeaguePlayer (junction table: league membership, league-scoped player role)
   - Team (NFL teams)
   - Week (league week with nflWeekNumber mapping)
   - TeamSelection (player's team pick for a specific NFL week in a league)
   - Score (calculated per player per NFL week per league)
-  - GameResult (NFL game outcomes for specific NFL weeks)
+  - GameResult (NFL game outcomes for specific NFL weeks; includes field goal distances, defensive stats)
   - AdminInvitation (super admin → admin)
   - PlayerInvitation (admin → player for specific league, includes leagueId)
-  - LeagueConfiguration (includes startingWeek and numberOfWeeks)
+  - LeagueConfiguration (includes startingWeek, numberOfWeeks, scoringRules)
   - PersonalAccessToken (stored in database: id, name, tokenHash, scope, expiresAt, createdBy, createdAt, lastUsedAt, revoked, revokedAt)
   - PATScope (READ_ONLY, WRITE, ADMIN)
   - AuditLog (for admin and PAT activity tracking)
+
+- **Value Objects (Scoring Configuration)**
+  - ScoringRules (contains all scoring configuration for a league)
+  - FieldGoalScoringRules (fg0to39Points, fg40to49Points, fg50PlusPoints)
+  - DefensiveScoringRules (sackPoints, interceptionPoints, fumbleRecoveryPoints, safetyPoints, defensiveTDPoints, pointsAllowedTiers, yardsAllowedTiers)
+  - PPRScoringRules (passingYardsPerPoint, rushingYardsPerPoint, receivingYardsPerPoint, receptionPoints, touchdownPoints)
 
 - **Key Relationships**
   - User has role (SUPER_ADMIN, ADMIN, PLAYER)

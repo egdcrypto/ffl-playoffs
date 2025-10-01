@@ -1,1777 +1,1246 @@
-# API Integration - FFL Playoffs
+# API Integration Mapping
 
-## Overview
-This document maps each UI screen to the backend API endpoints it consumes, including request/response formats, loading states, error handling, and data flow.
-
----
+This document maps each UI screen to its corresponding API endpoints, detailing the data flow between frontend and backend.
 
 ## Table of Contents
-1. [Authentication](#authentication)
-2. [Player Dashboard](#player-dashboard)
-3. [Team Selection Screen](#team-selection-screen)
-4. [Leaderboard Screen](#leaderboard-screen)
-5. [Admin Dashboard](#admin-dashboard)
-6. [League Configuration](#league-configuration)
-7. [Super Admin Dashboard](#super-admin-dashboard)
-8. [Invitation System](#invitation-system)
-9. [Common Patterns](#common-patterns)
+1. [Login Screen](#1-login-screen)
+2. [Player Dashboard](#2-player-dashboard)
+3. [Team Selection Screen](#3-team-selection-screen)
+4. [Leaderboard Screen](#4-leaderboard-screen)
+5. [Admin Dashboard](#5-admin-dashboard)
+6. [League Configuration Screen](#6-league-configuration-screen)
+7. [Invitation Acceptance Screen](#7-invitation-acceptance-screen)
+8. [Super Admin Dashboard](#8-super-admin-dashboard)
+9. [Score Breakdown Screen](#9-score-breakdown-screen)
+10. [Roster Management Screen](#10-roster-management-screen)
 
 ---
 
-## Authentication
+## 1. Login Screen
 
-### Google OAuth Flow
+### Purpose
+Google OAuth authentication flow for user login.
 
-**Endpoints:**
+### API Endpoints
 
-#### 1. Initiate OAuth
-```
-GET /api/auth/google
-```
-**Purpose:** Redirect user to Google OAuth consent screen
+#### On Page Load
+None - This is client-side Google OAuth flow
 
-**Response:**
-```json
-{
-  "redirectUrl": "https://accounts.google.com/o/oauth2/v2/auth?..."
-}
+#### On Google Sign-In Success
+**All subsequent requests** include:
+```http
+Header: Authorization: Bearer <google-jwt-token>
 ```
 
-**UI State:**
-- Show loading spinner
-- Redirect to Google
+### User Flow
+1. User clicks "Sign in with Google" button
+2. Google OAuth popup opens
+3. User authenticates with Google
+4. Frontend receives Google JWT token
+5. Frontend stores JWT in localStorage/cookie
+6. Frontend redirects to Player Dashboard
+7. All subsequent API calls include JWT in Authorization header
+
+### Authentication Headers (Automatically Added)
+After JWT validation, Envoy adds these headers:
+```
+X-User-Id: 12345
+X-User-Email: user@example.com
+X-User-Role: PLAYER | ADMIN | SUPER_ADMIN
+X-Google-Id: google-oauth2|123456789
+```
+
+### Error States
+- Google OAuth popup blocked (browser)
+- User cancels OAuth flow (redirect back)
+- Invalid JWT token (401 error on first API call)
+- User not invited (403 error - show "Contact admin" message)
 
 ---
 
-#### 2. OAuth Callback
-```
-GET /api/auth/callback?code=AUTHORIZATION_CODE
-```
-**Purpose:** Exchange authorization code for tokens
+## 2. Player Dashboard
 
-**Query Parameters:**
-- `code`: Authorization code from Google
-- `state`: CSRF protection token
+### Purpose
+Main landing page showing all leagues, upcoming deadlines, and quick actions.
 
-**Response:**
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expiresIn": 3600,
-  "user": {
-    "id": "user-123",
-    "email": "john@example.com",
-    "name": "John Doe",
-    "picture": "https://...",
-    "roles": ["player", "admin"]
-  }
-}
+### API Endpoints
+
+#### On Page Load
+```http
+GET /api/v1/player/leagues
+Authorization: Bearer <jwt>
 ```
 
-**UI Actions:**
-- Store tokens in localStorage/sessionStorage
-- Redirect to appropriate dashboard based on roles
-- Initialize user context
-
-**Error Handling:**
-- Invalid code: Show error, redirect to login
-- Network error: Show retry option
-- Server error: Show error message
-
----
-
-#### 3. Token Refresh
-```
-POST /api/auth/refresh
-```
-**Purpose:** Get new access token using refresh token
-
-**Request:**
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Response:**
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "expiresIn": 3600
-}
-```
-
-**UI Actions:**
-- Silently update access token
-- Retry failed requests with new token
-- If refresh fails, redirect to login
-
----
-
-#### 4. Logout
-```
-POST /api/auth/logout
-```
-**Purpose:** Invalidate tokens
-
-**Request:**
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Successfully logged out"
-}
-```
-
-**UI Actions:**
-- Clear localStorage/sessionStorage
-- Clear user context
-- Redirect to login screen
-
----
-
-## Player Dashboard
-
-### Get Player Leagues
-
-```
-GET /api/player/leagues
-```
-**Purpose:** Fetch all leagues the player is part of
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
+**Response**: List of leagues player is part of
 ```json
 {
   "leagues": [
     {
-      "id": "league-123",
-      "name": "Office League",
-      "admin": {
-        "id": "user-456",
-        "name": "John Doe"
-      },
+      "id": 1,
+      "name": "2025 NFL Playoffs Pool",
+      "adminName": "John Admin",
+      "currentWeek": 2,
+      "myRank": 3,
+      "myScore": 142.5,
       "playerCount": 12,
-      "currentWeek": 6,
-      "totalWeeks": 18,
-      "startDate": "2024-09-07T00:00:00Z",
-      "playerStatus": {
-        "rank": 3,
-        "totalPoints": 145,
-        "isEliminated": false,
-        "hasSubmittedPick": false,
-        "pickDeadline": "2024-09-14T20:00:00Z"
-      }
+      "nextDeadline": "2025-10-05T13:00:00Z",
+      "needsPicks": true
     }
   ]
 }
 ```
 
-**UI Mapping:**
-- Display league cards with name, admin, player count
-- Show current week and total weeks
-- Display player rank and points
-- Show "Make Picks" button if `hasSubmittedPick: false`
-- Show deadline countdown
-- Gray out eliminated leagues
+### Data Display
+- **League Cards**: Show league name, current week, rank, score
+- **Action Buttons**: "Make Picks" (if needsPicks), "View Leaderboard", "View League"
+- **Deadline Countdown**: Calculate from `nextDeadline` timestamp
+- **Visual Indicator**: Highlight leagues that need picks
 
-**Loading State:**
-- Show skeleton cards (3-4 placeholders)
+### User Actions
 
-**Error Handling:**
-- Network error: Show error banner with retry button
-- 401 Unauthorized: Refresh token or redirect to login
-- 500 Server error: Show error message
+#### Click "Make Picks"
+Navigate to: [Team Selection Screen](#3-team-selection-screen) for that league
 
----
+#### Click "View Leaderboard"
+Navigate to: [Leaderboard Screen](#4-leaderboard-screen) for that league
 
-### Get Player Stats
+#### Click "View League"
+Navigate to: League Details page (shows league info, admin, rules)
 
-```
-GET /api/player/stats
-```
-**Purpose:** Get aggregate statistics across all leagues
+### Polling/Refresh Strategy
+- Auto-refresh every 60 seconds if deadlines are within 24 hours
+- Pull-to-refresh on mobile
+- Manual refresh button
 
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "stats": {
-    "activeLeagues": 3,
-    "totalPoints": 445,
-    "bestRank": 1,
-    "totalWins": 15,
-    "totalLosses": 3,
-    "eliminatedLeagues": 1
-  }
-}
-```
-
-**UI Mapping:**
-- Display in "Quick Stats" card
-- Show active leagues count
-- Show total points and best rank
+### Error States
+- Empty state: "You're not in any leagues yet. Ask an admin for an invitation."
+- API error: Show error banner with retry button
+- Loading state: Skeleton cards
 
 ---
 
-### Get Pending Invitations
+## 3. Team Selection Screen
 
-```
-GET /api/player/invitations
-```
-**Purpose:** Get pending league invitations
+### Purpose
+Weekly team picks interface showing available teams, eliminated teams, and deadline.
 
-**Headers:**
-```
-Authorization: Bearer {accessToken}
+### API Endpoints
+
+#### On Page Load
+```http
+GET /api/v1/player/leagues/{leagueId}/selections
+Authorization: Bearer <jwt>
 ```
 
-**Response:**
+**Response**: Player's selections and available teams
 ```json
 {
-  "invitations": [
-    {
-      "id": "invite-789",
-      "league": {
-        "id": "league-456",
-        "name": "Neighborhood League",
-        "playerCount": 12,
-        "startWeek": 7
-      },
-      "invitedBy": {
-        "id": "user-999",
-        "name": "Tom Anderson"
-      },
-      "invitedAt": "2024-09-10T10:00:00Z",
-      "expiresAt": "2024-09-17T10:00:00Z"
-    }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display invitation cards in "Pending Invitations" section
-- Show league name, inviter name, start week
-- Show "Accept" and "Decline" buttons
-
----
-
-### Accept Invitation
-
-```
-POST /api/invitations/{invitationId}/accept
-```
-**Purpose:** Accept a league invitation
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "message": "Invitation accepted",
-  "league": {
-    "id": "league-456",
-    "name": "Neighborhood League"
-  }
-}
-```
-
-**UI Actions:**
-- Show success toast: "You've joined Neighborhood League!"
-- Remove invitation from pending list
-- Add new league to leagues list
-- Refresh dashboard
-
-**Error Handling:**
-- 404: Invitation expired or not found
-- 409: Already a member
-- 400: League has started or is full
-
----
-
-### Decline Invitation
-
-```
-POST /api/invitations/{invitationId}/decline
-```
-**Purpose:** Decline a league invitation
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "message": "Invitation declined"
-}
-```
-
-**UI Actions:**
-- Remove invitation from pending list
-- Show toast: "Invitation declined"
-
----
-
-## Team Selection Screen
-
-### Get Current Week Info
-
-```
-GET /api/leagues/{leagueId}/current-week
-```
-**Purpose:** Get current week number and deadline
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "currentWeek": 6,
-  "deadline": "2024-09-14T20:00:00Z",
-  "hasStarted": false,
-  "isLocked": false,
-  "nflWeekStartTime": "2024-09-14T20:00:00Z"
-}
-```
-
-**UI Mapping:**
-- Display week number in header
-- Show countdown timer to deadline
-- Lock UI if `isLocked: true`
-
----
-
-### Get Available Teams
-
-```
-GET /api/teams?week=6
-```
-**Purpose:** Get all NFL teams with current records
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Query Parameters:**
-- `week`: Current NFL week
-
-**Response:**
-```json
-{
-  "teams": [
-    {
-      "id": "team-buf",
-      "abbreviation": "BUF",
-      "name": "Buffalo Bills",
-      "division": "AFC East",
-      "conference": "AFC",
-      "wins": 6,
-      "losses": 0,
-      "logoUrl": "https://..."
-    }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display team cards grouped by division
-- Show team abbreviation, name, and record
-- Show team logo
-
----
-
-### Get Player's Pick History
-
-```
-GET /api/picks/{leagueId}/history
-```
-**Purpose:** Get all teams the player has used
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "usedTeams": [
+  "currentWeek": 2,
+  "deadline": "2025-10-05T13:00:00Z",
+  "locked": false,
+  "selections": [
     {
       "week": 1,
-      "teamId": "team-ne",
-      "teamName": "New England Patriots",
-      "result": "win",
-      "points": 24
-    },
-    {
-      "week": 3,
-      "teamId": "team-cle",
-      "teamName": "Cleveland Browns",
-      "result": "loss",
-      "points": 14
+      "nflWeek": 15,
+      "teamName": "Kansas City Chiefs",
+      "eliminated": false,
+      "score": 87.5,
+      "gameStatus": "FINAL"
     }
+  ],
+  "eliminatedTeams": ["Kansas City Chiefs"],
+  "availableTeams": [
+    "Buffalo Bills",
+    "San Francisco 49ers",
+    "Philadelphia Eagles"
   ]
 }
 ```
 
-**UI Mapping:**
-- Gray out used teams (mark as unavailable)
-- Show "USED" badge on used team cards
-- Count used teams (e.g., "5 of 32 teams used")
+#### Make Team Selection
+```http
+POST /api/v1/player/leagues/{leagueId}/selections
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+  "week": 2,
+  "teamName": "Buffalo Bills"
+}
+```
+
+**Response**: Confirmation
+```json
+{
+  "id": 124,
+  "playerId": 10,
+  "leagueId": 1,
+  "week": 2,
+  "nflWeek": 16,
+  "teamName": "Buffalo Bills",
+  "eliminated": false,
+  "locked": false,
+  "createdAt": "2025-10-01T12:00:00Z"
+}
+```
+
+### Data Display
+- **Deadline Timer**: Countdown from `deadline`, color-coded (green > 24h, yellow < 24h, red < 1h)
+- **Past Selections**: Show previous weeks with scores (read-only)
+- **Available Teams Grid**: Show NFL team logos, grayed out if eliminated
+- **Selected Team Highlight**: Visual indicator for current week selection
+
+### User Actions
+
+#### Select Team (Click Team Logo)
+1. Highlight selected team
+2. Enable "Confirm Selection" button
+3. Show confirmation modal
+
+#### Confirm Selection
+1. POST to `/api/v1/player/leagues/{leagueId}/selections`
+2. Show loading spinner on button
+3. On success: Show success toast, update UI
+4. On error: Show error message (see error states)
+
+### Error States
+
+#### Team Already Selected
+```json
+{
+  "error": "TEAM_ALREADY_SELECTED",
+  "message": "You selected Kansas City Chiefs in week 1"
+}
+```
+**UI**: Show error modal with details, prevent selection
+
+#### Deadline Passed
+```json
+{
+  "error": "SELECTION_DEADLINE_PASSED",
+  "message": "Selection deadline for week 2 has passed"
+}
+```
+**UI**: Lock entire UI, show "Picks are locked" message
+
+#### Already Made Selection
+**UI**: Show current selection, allow change with "Update Pick" button (DELETE + POST)
+
+### Responsive Behavior
+- **Mobile**: Vertical scrolling grid, 2 columns
+- **Tablet**: 3-4 column grid
+- **Desktop**: 6-8 column grid with larger logos
 
 ---
 
-### Submit Pick
+## 4. Leaderboard Screen
 
-```
-POST /api/picks
-```
-**Purpose:** Submit team selection for current week
+### Purpose
+Rankings, scores, and elimination tracking for league.
 
-**Headers:**
-```
-Authorization: Bearer {accessToken}
+### API Endpoints
+
+#### On Page Load
+```http
+GET /api/v1/player/leagues/{leagueId}/leaderboard
+Authorization: Bearer <jwt>
 ```
 
-**Request:**
+**Response**: Rankings and scores
 ```json
 {
-  "leagueId": "league-123",
-  "week": 6,
-  "teamId": "team-buf"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Pick submitted successfully",
-  "pick": {
-    "id": "pick-789",
-    "week": 6,
-    "team": {
-      "id": "team-buf",
-      "name": "Buffalo Bills"
-    },
-    "submittedAt": "2024-09-12T15:30:00Z",
-    "canEdit": true,
-    "deadline": "2024-09-14T20:00:00Z"
-  }
-}
-```
-
-**UI Actions:**
-- Show success toast: "Pick submitted! Good luck!"
-- Redirect to Player Dashboard
-- Update league card to show "Picks submitted ✓"
-
-**Error Handling:**
-- 400: Invalid team (already used, doesn't exist)
-- 409: Deadline passed
-- 409: Team already picked by user this week
-- 500: Server error, show retry
-
-**Loading State:**
-- Disable "Confirm" button
-- Show spinner with "Submitting..."
-
----
-
-### Update Pick
-
-```
-PUT /api/picks/{pickId}
-```
-**Purpose:** Update team selection before deadline
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Request:**
-```json
-{
-  "teamId": "team-mia"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Pick updated successfully",
-  "pick": {
-    "id": "pick-789",
-    "week": 6,
-    "team": {
-      "id": "team-mia",
-      "name": "Miami Dolphins"
-    },
-    "updatedAt": "2024-09-13T10:15:00Z"
-  }
-}
-```
-
-**UI Actions:**
-- Show success toast: "Pick updated!"
-- Update UI to reflect new selection
-
----
-
-## Leaderboard Screen
-
-### Get Leaderboard
-
-```
-GET /api/leagues/{leagueId}/leaderboard
-```
-**Purpose:** Get current standings for league
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "league": {
-    "id": "league-123",
-    "name": "Office League",
-    "currentWeek": 6,
-    "totalWeeks": 18
-  },
-  "standings": [
+  "currentWeek": 2,
+  "leaderboard": [
     {
       "rank": 1,
-      "player": {
-        "id": "user-456",
-        "name": "Sarah Johnson"
-      },
-      "currentPick": {
-        "team": "Kansas City Chiefs",
-        "teamId": "team-kc"
-      },
-      "weekPoints": 24,
-      "totalPoints": 162,
-      "streak": {
-        "type": "win",
-        "count": 6
-      },
-      "isActive": true,
-      "isEliminated": false,
-      "isCurrentUser": false
-    }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display table with rank, player, team, points, streak
-- Highlight current user's row
-- Show medals (🥇🥈🥉) for top 3
-- Show eliminated players grayed out with ⚫ badge
-- Show active status (✓ or ✗)
-
-**Loading State:**
-- Show skeleton table rows
-
-**Refresh:**
-- Auto-refresh every 30 seconds during game time
-- Manual pull-to-refresh on mobile
-
----
-
-### Get Weekly Results
-
-```
-GET /api/leagues/{leagueId}/weekly-results?week=6
-```
-**Purpose:** Get results for a specific week
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Query Parameters:**
-- `week`: Week number (optional, defaults to current week)
-
-**Response:**
-```json
-{
-  "week": 6,
-  "results": [
-    {
-      "player": {
-        "id": "user-456",
-        "name": "Sarah Johnson"
-      },
-      "team": "Kansas City Chiefs",
-      "points": 24,
-      "result": "win",
-      "opponentScore": 17
-    }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display in "Weekly Results" tab
-- Show team picked, score, and result
-- Sort by points descending
-
----
-
-### Get League Stats
-
-```
-GET /api/leagues/{leagueId}/stats
-```
-**Purpose:** Get aggregate league statistics
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "stats": {
-    "activePlayers": 7,
-    "eliminatedPlayers": 2,
-    "totalPlayers": 9,
-    "averagePoints": 132,
-    "highestWeekScore": 24,
-    "weeksRemaining": 12,
-    "totalTeamsUsed": 54
-  }
-}
-```
-
-**UI Mapping:**
-- Display in "League Stats" card below leaderboard
-- Show key metrics
-
----
-
-## Admin Dashboard
-
-### Get Admin Leagues
-
-```
-GET /api/admin/leagues
-```
-**Purpose:** Get all leagues where user is admin
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "leagues": [
-    {
-      "id": "league-123",
-      "name": "Office League",
-      "playerCount": 12,
-      "activePlayers": 10,
-      "eliminatedPlayers": 2,
-      "currentWeek": 6,
-      "totalWeeks": 18,
-      "startDate": "2024-09-07T00:00:00Z",
-      "pendingPicks": 2,
-      "nextDeadline": "2024-09-14T20:00:00Z"
-    }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display league cards with admin controls
-- Show player stats (active, eliminated, pending picks)
-- Show "Manage" button for each league
-
----
-
-### Get League Activity
-
-```
-GET /api/leagues/{leagueId}/activity?limit=10
-```
-**Purpose:** Get recent activity for a league
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Query Parameters:**
-- `limit`: Number of events to return (default 10)
-
-**Response:**
-```json
-{
-  "activity": [
-    {
-      "id": "activity-1",
-      "type": "pick_submitted",
-      "player": {
-        "id": "user-456",
-        "name": "Sarah Johnson"
-      },
-      "details": "Submitted picks for Week 6",
-      "timestamp": "2024-09-12T15:30:00Z"
+      "playerId": 15,
+      "playerName": "Jane Player",
+      "totalScore": 342.5,
+      "weeklyScores": [87.5, 92.0, 85.0, 78.0],
+      "eliminatedTeams": 0,
+      "isMe": false
     },
     {
-      "id": "activity-2",
-      "type": "player_joined",
-      "player": {
-        "id": "user-789",
-        "name": "Tom Anderson"
-      },
-      "details": "Joined the league",
-      "timestamp": "2024-09-10T10:00:00Z"
+      "rank": 2,
+      "playerId": 10,
+      "playerName": "You",
+      "totalScore": 320.0,
+      "weeklyScores": [75.0, 88.5, 92.5, 64.0],
+      "eliminatedTeams": 1,
+      "isMe": true
     }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display in "Recent Activity" section
-- Show player name, action, and time ago
-- Auto-refresh every minute
-
----
-
-### Get Pending Picks
-
-```
-GET /api/leagues/{leagueId}/pending-picks
-```
-**Purpose:** Get players who haven't submitted picks
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Response:**
-```json
-{
-  "week": 6,
-  "deadline": "2024-09-14T20:00:00Z",
-  "pendingPlayers": [
-    {
-      "id": "user-999",
-      "name": "Bob Smith",
-      "email": "bob@example.com"
-    }
-  ]
-}
-```
-
-**UI Mapping:**
-- Display in "Pending Actions" alert
-- Show count of pending players
-- Show "Send Reminder" button
-
----
-
-### Send Pick Reminder
-
-```
-POST /api/notifications/reminder
-```
-**Purpose:** Send email reminder to players who haven't picked
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Request:**
-```json
-{
-  "leagueId": "league-123",
-  "week": 6,
-  "playerIds": ["user-999"]
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Reminders sent",
-  "sentCount": 1
-}
-```
-
-**UI Actions:**
-- Show success toast: "Reminder sent to 1 player"
-- Disable "Send Reminder" button temporarily
-
----
-
-### Create League
-
-```
-POST /api/leagues
-```
-**Purpose:** Create a new league
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Request:**
-```json
-{
-  "name": "Office League",
-  "description": "Weekly NFL survivor pool",
-  "startingWeek": 1,
-  "endingWeek": 18,
-  "deadlineDay": "thursday",
-  "deadlineTime": "18:00:00",
-  "timezone": "America/New_York",
-  "scoringType": "team_total",
-  "defensiveScoring": {
-    "enabled": true,
-    "rules": [
-      {"pointsAllowed": 0, "bonus": 10},
-      {"pointsAllowed": 6, "bonus": 7}
-    ]
-  },
-  "fieldGoalBonuses": {
-    "enabled": true,
-    "rules": [
-      {"minYards": 40, "maxYards": 49, "bonus": 3},
-      {"minYards": 50, "maxYards": null, "bonus": 5}
-    ]
-  },
-  "eliminationRule": "loss_eliminates",
-  "canReuseTeams": false
-}
-```
-
-**Response:**
-```json
-{
-  "message": "League created successfully",
-  "league": {
-    "id": "league-123",
-    "name": "Office League",
-    "code": "OFF2024XYZ",
-    "adminId": "user-456",
-    "createdAt": "2024-09-01T12:00:00Z"
-  }
-}
-```
-
-**UI Actions:**
-- Show success modal with league code
-- Provide "Copy Code" and "Invite Players" buttons
-- Redirect to Admin Dashboard
-
-**Error Handling:**
-- 400: Validation errors (show field-specific errors)
-- 409: League name already exists
-- 500: Server error
-
----
-
-### Invite Players
-
-```
-POST /api/invitations
-```
-**Purpose:** Invite players to join league
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Request:**
-```json
-{
-  "leagueId": "league-123",
-  "emails": [
-    "player1@example.com",
-    "player2@example.com"
   ],
-  "message": "Join my league!"
+  "myRank": 2,
+  "totalPlayers": 12
 }
 ```
 
-**Response:**
+#### Get Week-Specific Leaderboard
+```http
+GET /api/v1/player/leagues/{leagueId}/leaderboard?week=1
+Authorization: Bearer <jwt>
+```
+
+### Data Display
+- **Ranking Table**: Rank, Name, Total Score, Weekly Scores
+- **Highlight Current User**: Different background color for "me"
+- **Eliminated Badge**: Red badge showing elimination count
+- **Weekly Breakdown**: Expandable row to show week-by-week scores
+- **Filters**: Toggle between "All Weeks" and specific week
+
+### User Actions
+
+#### Click Player Name
+Navigate to: Player Detail page (shows all their picks and scores)
+
+#### Click Weekly Score
+Show modal with score breakdown for that week/player
+
+#### Change Week Filter
+Update query parameter and reload:
+```http
+GET /api/v1/player/leagues/{leagueId}/leaderboard?week=2
+```
+
+### Polling/Refresh Strategy
+- Auto-refresh every 30 seconds during live games
+- Pull-to-refresh on mobile
+- Show "Last updated: X seconds ago" timestamp
+
+### Error States
+- Empty state: "No scores yet. Come back after Week 1!"
+- Loading: Skeleton table rows
+- API error: Show error with retry button
+
+### Responsive Behavior
+- **Mobile**: Stacked card view, show rank/name/total only
+- **Tablet**: Collapsed table, expandable for weekly scores
+- **Desktop**: Full table with all columns visible
+
+---
+
+## 5. Admin Dashboard
+
+### Purpose
+Admin control center for managing leagues, inviting players, viewing stats.
+
+### API Endpoints
+
+#### On Page Load
+```http
+GET /api/v1/admin/leagues/{leagueId}
+Authorization: Bearer <jwt>
+```
+
+**Response**: League details
 ```json
 {
-  "message": "Invitations sent",
-  "sentCount": 2,
-  "invitations": [
+  "id": 1,
+  "name": "2025 NFL Playoffs Pool",
+  "description": "Our annual playoff pool",
+  "adminId": 5,
+  "startingWeek": 15,
+  "numberOfWeeks": 4,
+  "currentWeek": 16,
+  "active": true,
+  "playerCount": 12,
+  "scoringRules": { /* full rules object */ },
+  "createdAt": "2025-09-15T10:00:00Z"
+}
+```
+
+#### Get All Players in League
+```http
+GET /api/v1/admin/leagues/{leagueId}/players
+Authorization: Bearer <jwt>
+```
+
+**Response**: Player list
+```json
+{
+  "players": [
     {
-      "id": "invite-1",
+      "id": 10,
       "email": "player1@example.com",
-      "status": "sent",
-      "inviteUrl": "https://ffl.com/invite/abc123"
+      "name": "John Player",
+      "joinedAt": "2025-09-20T10:00:00Z",
+      "teamSelections": 3,
+      "totalScore": 265.5,
+      "rank": 2
     }
   ]
 }
 ```
 
-**UI Actions:**
-- Show success toast: "Invitations sent to 2 players"
-- Close modal
-- Optionally show invite URLs to copy
-
----
-
-## League Configuration
-
-### Get League Configuration
-
-```
-GET /api/leagues/{leagueId}/config
-```
-**Purpose:** Get current league configuration
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
+#### Get All Player Selections (Admin View)
+```http
+GET /api/v1/admin/leagues/{leagueId}/selections
+Authorization: Bearer <jwt>
 ```
 
-**Response:**
+**Response**: All selections across all players
 ```json
 {
-  "config": {
-    "name": "Office League",
-    "description": "Weekly NFL survivor pool",
-    "code": "OFF2024XYZ",
-    "startingWeek": 1,
-    "endingWeek": 18,
-    "deadlineDay": "thursday",
-    "deadlineTime": "18:00:00",
-    "timezone": "America/New_York",
-    "scoringType": "team_total",
-    "defensiveScoring": {
-      "enabled": true,
-      "rules": []
-    },
-    "fieldGoalBonuses": {
-      "enabled": true,
-      "rules": []
-    },
-    "eliminationRule": "loss_eliminates",
-    "canReuseTeams": false,
-    "isLocked": false,
-    "hasStarted": false
-  }
-}
-```
-
-**UI Mapping:**
-- Populate form fields with current values
-- Show league code for sharing
-- Lock fields if `isLocked: true` or `hasStarted: true`
-
----
-
-### Update League Configuration
-
-```
-PUT /api/leagues/{leagueId}/config
-```
-**Purpose:** Update league configuration
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Request:**
-```json
-{
-  "name": "Office League 2024",
-  "description": "Updated description",
-  "deadlineTime": "19:00:00"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Configuration updated",
-  "config": {
-    "name": "Office League 2024"
-  }
-}
-```
-
-**UI Actions:**
-- Show success toast: "Configuration saved"
-- Update UI with new values
-
-**Error Handling:**
-- 400: Validation errors
-- 403: League has started, cannot modify
-- 409: Conflict (e.g., week already passed)
-
----
-
-### Validate Configuration
-
-```
-POST /api/leagues/{leagueId}/validate
-```
-**Purpose:** Validate configuration before saving
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-```
-
-**Request:**
-```json
-{
-  "startingWeek": 1,
-  "endingWeek": 18
-}
-```
-
-**Response:**
-```json
-{
-  "valid": true,
-  "errors": []
-}
-```
-
-Or if invalid:
-```json
-{
-  "valid": false,
-  "errors": [
+  "selections": [
     {
-      "field": "startingWeek",
-      "message": "Week 1 has already passed"
+      "playerId": 10,
+      "playerName": "John Player",
+      "week": 1,
+      "nflWeek": 15,
+      "teamName": "Kansas City Chiefs",
+      "eliminated": false,
+      "score": 87.5
     }
   ]
 }
 ```
 
-**UI Actions:**
-- Show inline validation errors
-- Disable "Save" button if invalid
+### User Actions
+
+#### Invite Player
+```http
+POST /api/v1/admin/leagues/{leagueId}/invitations
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+  "email": "newplayer@example.com",
+  "message": "Join our playoff pool!"
+}
+```
+
+**Response**: Invitation details
+```json
+{
+  "invitationId": "uuid-here",
+  "leagueId": 1,
+  "email": "newplayer@example.com",
+  "invitationUrl": "https://app.ffl-playoffs.com/accept-invite?token=xyz",
+  "expiresAt": "2025-10-08T12:00:00Z"
+}
+```
+
+**UI**: 
+1. Show "Invite Player" modal
+2. Email input + optional message textarea
+3. On success: Show invitation URL to copy, or "Email sent" confirmation
+4. Close modal, refresh player list
+
+#### Edit League Settings
+Navigate to: [League Configuration Screen](#6-league-configuration-screen)
+
+#### Activate League
+```http
+POST /api/v1/admin/leagues/{leagueId}/activate
+Authorization: Bearer <jwt>
+```
+
+**UI**: Show confirmation modal: "Once activated, starting week and number of weeks cannot be changed."
+
+### Data Display
+- **League Info Card**: Name, description, weeks, active status
+- **Player List Table**: Name, email, selections made, total score
+- **Quick Stats**: Total players, average score, most eliminated teams
+- **Action Buttons**: Invite Player, Edit Settings, View All Picks, Activate League
+
+### Error States
+- Not league owner (403): Redirect to player dashboard
+- League not found (404): Show error page
+- Invitation already sent: Show warning "Already invited"
 
 ---
 
-## Super Admin Dashboard
+## 6. League Configuration Screen
 
-### Get Platform Overview
+### Purpose
+Create or edit league settings, scoring rules, weeks.
 
-```
-GET /api/super-admin/overview
-```
-**Purpose:** Get platform-wide statistics
+### API Endpoints
 
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
-```
+#### Create New League
+```http
+POST /api/v1/admin/leagues
+Authorization: Bearer <jwt>
+Content-Type: application/json
 
-**Response:**
-```json
 {
-  "stats": {
-    "totalLeagues": 127,
-    "activeLeagues": 89,
-    "totalPlayers": 1543,
-    "activePlayers": 987,
-    "totalAdmins": 45,
-    "activeGames": 89
+  "name": "2025 NFL Playoffs Pool",
+  "description": "Our annual playoff pool",
+  "startingWeek": 15,
+  "numberOfWeeks": 4,
+  "isPublic": false,
+  "scoringRules": {
+    "pprRules": {
+      "passingYardsPerPoint": 25,
+      "rushingYardsPerPoint": 10,
+      "receivingYardsPerPoint": 10,
+      "receptionPoints": 1,
+      "touchdownPoints": 6
+    },
+    "fieldGoalRules": {
+      "fg0to39Points": 3,
+      "fg40to49Points": 4,
+      "fg50PlusPoints": 5
+    },
+    "defensiveRules": {
+      "sackPoints": 1,
+      "interceptionPoints": 2,
+      "fumbleRecoveryPoints": 2,
+      "safetyPoints": 2,
+      "defensiveTDPoints": 6,
+      "pointsAllowedTiers": [...],
+      "yardsAllowedTiers": [...]
+    }
   }
 }
 ```
 
-**UI Mapping:**
-- Display in "Platform Overview" card
-- Show key metrics
+**Response**: Created league
+```json
+{
+  "id": 1,
+  "name": "2025 NFL Playoffs Pool",
+  "adminId": 5,
+  "startingWeek": 15,
+  "numberOfWeeks": 4,
+  "weeks": [
+    {"leagueWeek": 1, "nflWeek": 15},
+    {"leagueWeek": 2, "nflWeek": 16},
+    {"leagueWeek": 3, "nflWeek": 17},
+    {"leagueWeek": 4, "nflWeek": 18}
+  ],
+  "active": false,
+  "createdAt": "2025-10-01T12:00:00Z"
+}
+```
+
+#### Update League Configuration
+```http
+PUT /api/v1/admin/leagues/{leagueId}/configuration
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+  "name": "Updated League Name",
+  "description": "Updated description",
+  "scoringRules": { /* updated rules */ }
+}
+```
+
+**Note**: `startingWeek` and `numberOfWeeks` cannot be changed once league is active.
+
+### Form Sections
+
+#### 1. Basic Info
+- League Name (text input)
+- Description (textarea)
+- Starting Week (number input, 1-18)
+- Number of Weeks (number input, 1-4)
+- Public/Private toggle
+
+#### 2. PPR Scoring Rules
+- Passing Yards per Point (number input)
+- Rushing Yards per Point (number input)
+- Receiving Yards per Point (number input)
+- Reception Points (number input)
+- Touchdown Points (number input)
+
+#### 3. Field Goal Rules
+- 0-39 yards (number input)
+- 40-49 yards (number input)
+- 50+ yards (number input)
+
+#### 4. Defensive Rules
+- Sack Points (number input)
+- Interception Points (number input)
+- Fumble Recovery Points (number input)
+- Safety Points (number input)
+- Defensive TD Points (number input)
+- Points Allowed Tiers (table input)
+- Yards Allowed Tiers (table input)
+
+### Validation
+
+#### Client-Side
+- All fields required
+- Starting week: 1-18
+- Number of weeks: 1-4
+- Max week validation: `startingWeek + numberOfWeeks - 1 <= 18`
+
+#### Server-Side Error
+```json
+{
+  "error": "INVALID_LEAGUE_CONFIGURATION",
+  "message": "startingWeek + numberOfWeeks - 1 must be ≤ 18",
+  "details": {
+    "startingWeek": 17,
+    "numberOfWeeks": 4,
+    "maxWeek": 20,
+    "allowed": 18
+  }
+}
+```
+
+**UI**: Show error message above form, highlight invalid fields
+
+### User Actions
+
+#### Save & Continue
+1. Validate form client-side
+2. POST to `/api/v1/admin/leagues` (or PUT for updates)
+3. Show loading spinner
+4. On success: Redirect to Admin Dashboard
+5. On error: Show error messages inline
+
+#### Cancel
+Navigate back to Admin Dashboard (show confirmation if form is dirty)
+
+### Responsive Behavior
+- **Mobile**: Single column, collapsible sections
+- **Tablet**: Two columns for scoring rules
+- **Desktop**: Three columns, side-by-side sections
 
 ---
 
-### Get All Admins
+## 7. Invitation Acceptance Screen
 
-```
-GET /api/super-admin/admins
-```
-**Purpose:** List all admin users
+### Purpose
+Player/Admin accepts invitation via email link.
 
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
+### API Endpoints
+
+#### On Page Load (with token query param)
+Extract `token` from URL: `/accept-invite?token=xyz`
+
+Store token, show Google Sign-In button
+
+#### Accept Player Invitation
+```http
+POST /api/v1/player/invitations/accept
+Authorization: Bearer <google-jwt-token>
+Content-Type: application/json
+
+{
+  "invitationToken": "xyz-token-from-url"
+}
 ```
 
-**Response:**
+**Response**: Success
+```json
+{
+  "userId": 10,
+  "leagueId": 1,
+  "leagueName": "2025 NFL Playoffs Pool",
+  "message": "Successfully joined league"
+}
+```
+
+#### Accept Admin Invitation
+```http
+POST /api/v1/superadmin/admins/invitations/accept
+Authorization: Bearer <google-jwt-token>
+Content-Type: application/json
+
+{
+  "invitationToken": "xyz-token-from-url"
+}
+```
+
+**Response**: Success
+```json
+{
+  "userId": 5,
+  "role": "ADMIN",
+  "message": "Successfully upgraded to admin"
+}
+```
+
+### User Flow
+1. User clicks email link
+2. Landing page shows: "You've been invited to [League Name]"
+3. "Sign in with Google to accept" button
+4. User authenticates with Google
+5. Frontend calls accept endpoint with token + JWT
+6. On success: Redirect to Player Dashboard (or Admin Dashboard)
+7. Show success toast: "You've joined [League Name]!"
+
+### Error States
+
+#### Invalid Token
+```json
+{
+  "error": "INVALID_INVITATION_TOKEN",
+  "message": "This invitation link is invalid or has expired"
+}
+```
+**UI**: Show error page: "Invalid invitation. Contact the league admin."
+
+#### Token Expired
+```json
+{
+  "error": "INVITATION_EXPIRED",
+  "message": "This invitation expired on 2025-10-08"
+}
+```
+**UI**: Show error page: "Invitation expired. Contact the league admin for a new invitation."
+
+#### Already Accepted
+```json
+{
+  "error": "INVITATION_ALREADY_ACCEPTED",
+  "message": "You've already joined this league"
+}
+```
+**UI**: Redirect to Player Dashboard with toast: "You're already in this league!"
+
+---
+
+## 8. Super Admin Dashboard
+
+### Purpose
+System-wide administration for managing admins, PATs, and viewing all leagues.
+
+### API Endpoints
+
+#### Get All Admins
+```http
+GET /api/v1/superadmin/admins
+Authorization: Bearer <jwt>
+```
+
+**Response**: List of admins
 ```json
 {
   "admins": [
     {
-      "id": "user-456",
-      "email": "john@example.com",
-      "name": "John Doe",
-      "leagueCount": 3,
-      "status": "active",
-      "createdAt": "2024-08-01T00:00:00Z",
-      "lastLoginAt": "2024-09-12T10:00:00Z"
+      "id": 1,
+      "email": "admin1@example.com",
+      "name": "John Admin",
+      "createdAt": "2025-09-01T10:00:00Z",
+      "active": true,
+      "leagueCount": 3
     }
   ]
 }
 ```
 
-**UI Mapping:**
-- Display in table format
-- Show email, name, league count, status
-- Show "Manage" button for each admin
-
----
-
-### Create Admin
-
-```
-POST /api/super-admin/admins
-```
-**Purpose:** Create a new admin user
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
+#### Get All PATs
+```http
+GET /api/v1/superadmin/pats
+Authorization: Bearer <jwt>
 ```
 
-**Request:**
-```json
-{
-  "email": "newadmin@example.com",
-  "name": "New Admin",
-  "sendInviteEmail": true
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Admin created",
-  "admin": {
-    "id": "user-999",
-    "email": "newadmin@example.com",
-    "status": "pending"
-  }
-}
-```
-
-**UI Actions:**
-- Show success toast: "Admin created and invitation sent"
-- Add new admin to table
-- Close modal
-
----
-
-### Delete Admin
-
-```
-DELETE /api/super-admin/admins/{adminId}
-```
-**Purpose:** Remove admin user
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
-```
-
-**Response:**
-```json
-{
-  "message": "Admin removed"
-}
-```
-
-**UI Actions:**
-- Show confirmation modal before deleting
-- Remove admin from table
-- Show toast: "Admin removed"
-
----
-
-### Get Personal Access Tokens
-
-```
-GET /api/super-admin/pats
-```
-**Purpose:** List all Personal Access Tokens
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
-```
-
-**Response:**
+**Response**: List of PATs (tokens hidden)
 ```json
 {
   "tokens": [
     {
-      "id": "pat-123",
-      "name": "API Integration",
-      "createdAt": "2024-09-01T00:00:00Z",
-      "lastUsedAt": "2024-09-12T15:30:00Z",
-      "expiresAt": null
+      "id": 123,
+      "name": "analytics-service-token",
+      "scope": "READ_ONLY",
+      "createdAt": "2025-10-01T12:00:00Z",
+      "lastUsedAt": "2025-10-01T14:30:00Z",
+      "expiresAt": "2026-10-01T12:00:00Z",
+      "revoked": false
     }
   ]
 }
 ```
 
-**UI Mapping:**
-- Display in table format
-- Show token name, created date, last used
-- Show "Revoke" button for each token
-
----
-
-### Create Personal Access Token
-
-```
-POST /api/super-admin/pats
-```
-**Purpose:** Create a new Personal Access Token
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
+#### Get All Leagues (System-Wide)
+```http
+GET /api/v1/superadmin/leagues
+Authorization: Bearer <jwt>
 ```
 
-**Request:**
-```json
-{
-  "name": "API Integration",
-  "expiresAt": "2025-09-01T00:00:00Z"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Token created",
-  "token": {
-    "id": "pat-123",
-    "name": "API Integration",
-    "value": "pat_xxxxxxxxxxxxxxxxxxx"
-  }
-}
-```
-
-**UI Actions:**
-- Show modal with token value (only shown once)
-- Provide "Copy Token" button
-- Warn user to save token securely
-- Add token to table
-
----
-
-### Revoke Personal Access Token
-
-```
-DELETE /api/super-admin/pats/{tokenId}
-```
-**Purpose:** Revoke a Personal Access Token
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
-```
-
-**Response:**
-```json
-{
-  "message": "Token revoked"
-}
-```
-
-**UI Actions:**
-- Show confirmation modal
-- Remove token from table
-- Show toast: "Token revoked"
-
----
-
-### Get All Leagues
-
-```
-GET /api/super-admin/leagues?page=1&limit=20
-```
-**Purpose:** List all leagues on the platform
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
-```
-
-**Query Parameters:**
-- `page`: Page number (default 1)
-- `limit`: Items per page (default 20)
-- `status`: Filter by status (active, ended)
-- `adminId`: Filter by admin
-
-**Response:**
+**Response**: All leagues across all admins
 ```json
 {
   "leagues": [
     {
-      "id": "league-123",
-      "name": "Office League",
-      "admin": {
-        "id": "user-456",
-        "name": "John Doe"
-      },
+      "id": 1,
+      "name": "2025 NFL Playoffs Pool",
+      "adminId": 5,
+      "adminEmail": "admin@example.com",
+      "startingWeek": 15,
+      "numberOfWeeks": 4,
+      "active": true,
       "playerCount": 12,
-      "currentWeek": 6,
-      "totalWeeks": 18,
-      "status": "active"
+      "createdAt": "2025-09-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+### User Actions
+
+#### Invite Admin
+```http
+POST /api/v1/superadmin/admins/invitations
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+  "email": "newadmin@example.com",
+  "message": "You've been invited to be an admin"
+}
+```
+
+**Response**: Invitation URL
+```json
+{
+  "invitationId": "uuid-here",
+  "email": "newadmin@example.com",
+  "invitationUrl": "https://app.ffl-playoffs.com/accept-admin-invite?token=xyz",
+  "expiresAt": "2025-10-08T12:00:00Z"
+}
+```
+
+#### Create PAT
+```http
+POST /api/v1/superadmin/pats
+Authorization: Bearer <jwt>
+Content-Type: application/json
+
+{
+  "name": "analytics-service-token",
+  "scope": "READ_ONLY",
+  "expiresInDays": 365
+}
+```
+
+**Response**: Token shown ONLY once
+```json
+{
+  "id": 123,
+  "name": "analytics-service-token",
+  "token": "pat_a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+  "scope": "READ_ONLY",
+  "createdAt": "2025-10-01T12:00:00Z",
+  "expiresAt": "2026-10-01T12:00:00Z",
+  "warning": "Save this token - it will not be shown again"
+}
+```
+
+**UI**: Show modal with token, "Copy to Clipboard" button, warning message
+
+#### Revoke PAT
+```http
+DELETE /api/v1/superadmin/pats/{patId}
+Authorization: Bearer <jwt>
+```
+
+**Response**: 204 No Content
+
+**UI**: Show confirmation modal: "Are you sure? This will break any services using this token."
+
+### Data Display
+- **Admins Table**: Name, Email, League Count, Active status, Actions
+- **PATs Table**: Name, Scope, Last Used, Expires, Revoke button
+- **Leagues Table**: Name, Admin, Player Count, Active status, View button
+
+### Error States
+- Not super admin (403): Redirect to Player Dashboard
+- PAT creation limit reached: Show error "Maximum 10 active PATs allowed"
+
+---
+
+## 9. Score Breakdown Screen
+
+### Purpose
+Detailed score breakdown for a specific week and player.
+
+### API Endpoints
+
+#### Get Score Breakdown
+```http
+GET /api/v1/player/leagues/{leagueId}/scores/{weekNumber}
+Authorization: Bearer <jwt>
+```
+
+**Response**: Detailed score breakdown
+```json
+{
+  "playerId": 10,
+  "playerName": "John Player",
+  "week": 1,
+  "nflWeek": 15,
+  "teamName": "Kansas City Chiefs",
+  "totalScore": 87.5,
+  "breakdown": {
+    "passingYards": {"value": 300, "points": 12.0},
+    "rushingYards": {"value": 120, "points": 12.0},
+    "receivingYards": {"value": 250, "points": 25.0},
+    "receptions": {"value": 20, "points": 20.0},
+    "touchdowns": {"value": 3, "points": 18.0},
+    "fieldGoals": {
+      "fg0to39": {"count": 1, "points": 3.0},
+      "fg40to49": {"count": 0, "points": 0.0},
+      "fg50Plus": {"count": 1, "points": 5.0}
+    },
+    "defensive": {
+      "sacks": {"value": 2, "points": 2.0},
+      "interceptions": {"value": 1, "points": 2.0},
+      "fumbleRecoveries": {"value": 0, "points": 0.0},
+      "safeties": {"value": 0, "points": 0.0},
+      "defensiveTDs": {"value": 0, "points": 0.0},
+      "pointsAllowed": {"value": 10, "tier": "7-13", "points": 4.0},
+      "yardsAllowed": {"value": 280, "tier": "200-299", "points": 5.0},
+      "total": 13.0
+    }
+  },
+  "eliminated": false,
+  "gameStatus": "FINAL"
+}
+```
+
+### Data Display
+- **Team Header**: Team logo, name, week, NFL week
+- **Total Score**: Large display of total points
+- **Breakdown Sections**:
+  - Offensive Stats (passing, rushing, receiving, TDs)
+  - Kicking Stats (field goals by distance)
+  - Defensive Stats (sacks, INTs, points/yards allowed)
+- **Points Calculation**: Show value + points for each stat
+- **Elimination Status**: Red badge if eliminated
+
+### User Actions
+
+#### Close/Back
+Navigate back to Leaderboard or Player Dashboard
+
+#### View Different Week
+Week selector dropdown, reload with new week parameter
+
+### Responsive Behavior
+- **Mobile**: Stacked sections, collapsible categories
+- **Tablet**: Two-column layout (offense/defense)
+- **Desktop**: Three-column layout with summary sidebar
+
+---
+
+## 10. Roster Management Screen
+
+### Purpose
+Draft-style roster building with NFL player search and assignment.
+
+### API Endpoints
+
+#### Get My Roster
+```http
+GET /api/v1/player/leagues/{leagueId}/roster
+Authorization: Bearer <jwt>
+```
+
+**Response**: Current roster state
+```json
+{
+  "rosterId": "550e8400-e29b-41d4-a716-446655440000",
+  "leaguePlayerId": "660e8400-e29b-41d4-a716-446655440001",
+  "gameId": "770e8400-e29b-41d4-a716-446655440002",
+  "isLocked": false,
+  "rosterDeadline": "2025-09-10T13:00:00Z",
+  "totalScore": 0,
+  "slots": [
+    {
+      "slotId": "slot-uuid-1",
+      "position": "QB",
+      "slotOrder": 1,
+      "slotLabel": "QB",
+      "nflPlayer": null
+    },
+    {
+      "slotId": "slot-uuid-2",
+      "position": "RB",
+      "slotOrder": 1,
+      "slotLabel": "RB1",
+      "nflPlayer": {
+        "id": 2001,
+        "name": "Christian McCaffrey",
+        "position": "RB",
+        "nflTeam": "San Francisco 49ers",
+        "fantasyPoints": 178.2
+      }
+    }
+  ],
+  "filledSlotCount": 5,
+  "totalSlotCount": 9,
+  "isComplete": false,
+  "missingPositions": ["QB", "WR1", "TE", "K"]
+}
+```
+
+#### Get Roster Configuration
+```http
+GET /api/v1/player/leagues/{leagueId}/roster-config
+Authorization: Bearer <jwt>
+```
+
+**Response**: Position slot requirements
+```json
+{
+  "leagueId": 1,
+  "leagueName": "2025 NFL Playoffs Pool",
+  "rosterConfiguration": {
+    "positionSlots": {
+      "QB": 1,
+      "RB": 2,
+      "WR": 2,
+      "TE": 1,
+      "FLEX": 1,
+      "K": 1,
+      "DEF": 1
+    },
+    "totalSlots": 9,
+    "flexEligible": ["RB", "WR", "TE"],
+    "superflexEligible": []
+  }
+}
+```
+
+#### Search NFL Players
+```http
+GET /api/v1/player/nfl-players?position=QB&name=Mahomes&page=0&size=20&sort=fantasyPoints,desc
+Authorization: Bearer <jwt>
+```
+
+**Response**: Player search results
+```json
+{
+  "players": [
+    {
+      "id": 1001,
+      "name": "Patrick Mahomes",
+      "firstName": "Patrick",
+      "lastName": "Mahomes",
+      "position": "QB",
+      "nflTeam": "Kansas City Chiefs",
+      "nflTeamAbbreviation": "KC",
+      "jerseyNumber": 15,
+      "status": "ACTIVE",
+      "stats": {
+        "gamesPlayed": 8,
+        "fantasyPoints": 215.4,
+        "averagePointsPerGame": 26.9
+      }
     }
   ],
   "pagination": {
-    "page": 1,
-    "limit": 20,
-    "total": 127,
-    "pages": 7
+    "page": 0,
+    "size": 20,
+    "totalElements": 125,
+    "totalPages": 7,
+    "hasNext": true
   }
 }
 ```
 
-**UI Mapping:**
-- Display in paginated table
-- Show league name, admin, players, week, status
-- Provide filters and search
+#### Assign Player to Slot
+```http
+POST /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}/assign
+Authorization: Bearer <jwt>
+Content-Type: application/json
 
----
-
-### Get System Health
-
-```
-GET /api/super-admin/system-health
-```
-**Purpose:** Get system health metrics
-
-**Headers:**
-```
-Authorization: Bearer {accessToken}
-X-Super-Admin-Token: {superAdminToken}
+{
+  "nflPlayerId": 1001
+}
 ```
 
-**Response:**
+**Response**: Updated slot
 ```json
 {
-  "health": {
-    "api": {
-      "status": "healthy",
-      "uptime": 99.9,
-      "latency": 45
-    },
-    "database": {
-      "status": "healthy",
-      "connections": 42,
-      "maxConnections": 100
-    },
-    "cache": {
-      "status": "healthy",
-      "hitRate": 87.5
-    }
-  }
+  "slotId": "slot-uuid-1",
+  "position": "QB",
+  "nflPlayer": {
+    "id": 1001,
+    "name": "Patrick Mahomes",
+    "position": "QB",
+    "nflTeam": "Kansas City Chiefs"
+  },
+  "message": "Player assigned successfully"
 }
 ```
 
-**UI Mapping:**
-- Display in "System Health" card
-- Show status indicators (✓ or ✗)
-- Show key metrics
-
----
-
-## Invitation System
-
-### Get Invitation Details (Public)
-
+#### Remove Player from Slot
+```http
+DELETE /api/v1/player/leagues/{leagueId}/roster/slots/{slotId}
+Authorization: Bearer <jwt>
 ```
-GET /api/invitations/{token}
-```
-**Purpose:** Get invitation details using public token
 
-**No authentication required**
-
-**Response:**
+**Response**: Empty slot
 ```json
 {
-  "invitation": {
-    "id": "invite-789",
-    "league": {
-      "name": "Office League",
-      "playerCount": 12,
-      "startWeek": 7,
-      "description": "Weekly NFL survivor pool"
-    },
-    "invitedBy": {
-      "name": "John Doe"
-    },
-    "invitedAt": "2024-09-10T10:00:00Z",
-    "expiresAt": "2024-09-17T10:00:00Z",
-    "status": "pending"
-  }
+  "slotId": "slot-uuid-1",
+  "position": "QB",
+  "message": "Player removed from slot successfully"
 }
 ```
 
-**UI Mapping:**
-- Display league details
-- Show who invited
-- Show "Sign in to accept" button
+### User Interface
 
-**Error Handling:**
-- 404: Invalid or expired token
-- 410: Already accepted/declined
+#### Layout
+```
+┌─────────────────────────────────────────────┐
+│ Your Roster          5/9 filled   [Lock: 2h]│
+├───────────────┬─────────────────────────────┤
+│               │                             │
+│ Roster Slots  │   Player Search             │
+│               │                             │
+│ [QB] Empty    │   Position: [QB ▼]          │
+│ [RB1] CMC     │   Search: [______]          │
+│ [RB2] Empty   │                             │
+│ [WR1] Empty   │   [Patrick Mahomes] 215.4   │
+│ [WR2] Empty   │   [Josh Allen]      198.2   │
+│ [TE] Empty    │   [Lamar Jackson]   192.8   │
+│ [FLEX] Empty  │                             │
+│ [K] Empty     │   [Next] [Prev]             │
+│ [DEF] Empty   │                             │
+│               │                             │
+└───────────────┴─────────────────────────────┘
+```
+
+### User Actions
+
+#### Search for Player
+1. Select position filter (optional)
+2. Type in search box (debounced, 300ms)
+3. API call: `GET /api/v1/player/nfl-players?position=QB&name=Mahomes`
+4. Update player list
+
+#### Drag Player to Slot
+1. Drag player from search results
+2. Drop on empty slot
+3. API call: `POST .../slots/{slotId}/assign`
+4. On success: Update roster UI, show success toast
+5. On error: Show error modal (position mismatch, etc.)
+
+#### Click Player to Add
+1. Click player in search results
+2. Show "Add to which slot?" modal
+3. Display eligible slots (based on position)
+4. Select slot
+5. API call: `POST .../slots/{slotId}/assign`
+6. Update UI
+
+#### Remove Player from Slot
+1. Click "X" button on filled slot
+2. Show confirmation: "Remove [Player Name]?"
+3. API call: `DELETE .../slots/{slotId}`
+4. Update UI, player removed
+
+### Error States
+
+#### Position Mismatch
+```json
+{
+  "error": "POSITION_MISMATCH",
+  "message": "WR cannot fill TE slot",
+  "details": {
+    "playerPosition": "WR",
+    "slotPosition": "TE",
+    "eligiblePositions": ["TE"]
+  }
+}
+```
+**UI**: Show error toast: "Justin Jefferson (WR) cannot fill TE slot"
+
+#### Player Already on Roster
+```json
+{
+  "error": "PLAYER_ALREADY_ON_ROSTER",
+  "message": "Patrick Mahomes is already on your roster in position QB"
+}
+```
+**UI**: Highlight existing slot, show error toast
+
+#### Roster Locked
+```json
+{
+  "error": "ROSTER_LOCKED",
+  "message": "Roster is locked - no changes allowed",
+  "details": {
+    "rosterDeadline": "2025-09-10T13:00:00Z",
+    "lockedAt": "2025-09-10T13:00:00Z"
+  }
+}
+```
+**UI**: Gray out entire roster, show banner: "Roster locked. Season has started."
+
+### Responsive Behavior
+- **Mobile**: Stacked layout, tabs for Roster/Search
+- **Tablet**: Side-by-side, narrower search panel
+- **Desktop**: Full two-panel layout
 
 ---
 
 ## Common Patterns
 
-### Pagination
-```
-GET /api/resource?page=1&limit=20
-```
+### Loading States
+All API calls should show loading indicators:
+- **Button loading**: Spinner icon + disabled state
+- **Page loading**: Skeleton screens matching final layout
+- **Table loading**: Skeleton rows
+- **Card loading**: Skeleton cards
 
-**Response:**
+### Error Handling
+Standard error response format:
 ```json
 {
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "limit": 20,
-    "total": 150,
-    "pages": 8,
-    "hasNext": true,
-    "hasPrev": false
-  }
+  "error": "ERROR_CODE",
+  "message": "Human-readable error message",
+  "details": { /* context */ },
+  "timestamp": "2025-10-01T12:00:00Z",
+  "path": "/api/v1/..."
 }
 ```
 
-**UI Actions:**
-- Show page numbers
-- Enable/disable prev/next buttons
-- Show total count
+Error UI patterns:
+- **Inline errors**: Show below form fields
+- **Toast notifications**: For success/error after actions
+- **Modal dialogs**: For critical errors requiring acknowledgment
+- **Error pages**: For 404, 403, 500 errors
+
+### Authentication
+All authenticated endpoints require:
+```http
+Authorization: Bearer <google-jwt-token>
+```
+
+On 401 Unauthorized response:
+1. Clear stored JWT
+2. Redirect to Login Screen
+3. Show toast: "Session expired. Please sign in again."
+
+On 403 Forbidden response:
+1. Show error page: "You don't have permission to access this resource."
+2. Provide "Go to Dashboard" button
+
+### Polling Strategy
+For real-time updates during live games:
+- Poll every 30 seconds for leaderboard
+- Poll every 60 seconds for score breakdowns
+- Stop polling when games are final
+- Use exponential backoff on errors
 
 ---
 
-### Sorting
+## API Base URL
+
+All endpoints use base URL:
 ```
-GET /api/resource?sortBy=name&sortOrder=asc
-```
-
-**Query Parameters:**
-- `sortBy`: Field to sort by
-- `sortOrder`: asc or desc
-
-**UI Actions:**
-- Click column header to sort
-- Show sort indicator (↑ or ↓)
-- Toggle sort order on click
-
----
-
-### Filtering
-```
-GET /api/resource?filter[status]=active&filter[week]=6
+https://<pod-ip>/api/v1
 ```
 
-**Query Parameters:**
-- `filter[field]`: Value to filter by
-
-**UI Actions:**
-- Provide filter dropdowns or inputs
-- Apply filters on change
-- Show active filters with "Clear" option
-
----
-
-### Search
+For local development:
 ```
-GET /api/resource?search=office
-```
-
-**Query Parameters:**
-- `search`: Search term
-
-**UI Actions:**
-- Provide search input
-- Debounce input (300ms)
-- Show "No results" if empty
-
----
-
-## Error Response Format
-
-All errors follow this format:
-
-```json
-{
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Invalid request",
-    "details": [
-      {
-        "field": "email",
-        "message": "Invalid email format"
-      }
-    ]
-  }
-}
-```
-
-**Common Error Codes:**
-- `VALIDATION_ERROR`: 400 - Invalid input
-- `UNAUTHORIZED`: 401 - Not authenticated
-- `FORBIDDEN`: 403 - Not authorized
-- `NOT_FOUND`: 404 - Resource not found
-- `CONFLICT`: 409 - Conflict (e.g., duplicate)
-- `INTERNAL_ERROR`: 500 - Server error
-
-**UI Error Handling:**
-- Show field-specific errors inline
-- Show general errors in toast/banner
-- Provide retry option for network errors
-- Log errors to monitoring service
-
----
-
-## Loading States
-
-### Initial Load
-- Show skeleton screens
-- Match layout of actual content
-
-### Refresh
-- Show subtle spinner in header
-- Pull-to-refresh on mobile
-
-### Submit Actions
-- Disable button
-- Show spinner in button
-- Change button text to "Submitting..."
-
-### Background Updates
-- Silent updates (e.g., leaderboard refresh)
-- Optional: show small indicator
-
----
-
-## Real-time Updates
-
-### WebSocket Connection (Optional)
-
-**Connect:**
-```
-ws://api.ffl.com/ws?token={accessToken}
-```
-
-**Subscribe to Leaderboard:**
-```json
-{
-  "action": "subscribe",
-  "channel": "league.123.leaderboard"
-}
-```
-
-**Receive Updates:**
-```json
-{
-  "channel": "league.123.leaderboard",
-  "event": "standings_updated",
-  "data": {
-    "standings": []
-  }
-}
-```
-
-**UI Actions:**
-- Connect on leaderboard screen mount
-- Subscribe to league-specific channel
-- Update UI when receiving data
-- Animate changes (e.g., rank up/down)
-- Disconnect on unmount
-
----
-
-## Caching Strategy
-
-### Cache Duration
-- User profile: 5 minutes
-- Leagues list: 2 minutes
-- Leaderboard: 30 seconds (or real-time)
-- Team data: 1 hour
-- Configuration: Until modified
-
-### Cache Invalidation
-- Manual refresh (pull-to-refresh)
-- After mutations (create, update, delete)
-- Token expiration
-- Logout
-
-### Implementation
-- Use React Query, SWR, or similar
-- Stale-while-revalidate pattern
-- Optimistic updates for better UX
-
----
-
-## Rate Limiting
-
-**Response Headers:**
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 95
-X-RateLimit-Reset: 1694700000
-```
-
-**UI Handling:**
-- Show warning if approaching limit
-- If limited (429), show retry-after timer
-- For non-critical requests, implement backoff
-
----
-
-## Security Headers
-
-**All requests should include:**
-```
-Authorization: Bearer {accessToken}
-X-CSRF-Token: {csrfToken}
-```
-
-**Super admin requests also include:**
-```
-X-Super-Admin-Token: {superAdminToken}
-```
-
-**Response Security Headers:**
-```
-X-Content-Type-Options: nosniff
-X-Frame-Options: DENY
-X-XSS-Protection: 1; mode=block
+http://localhost:443/api/v1
 ```
 
 ---
 
-## API Versioning
-
-**Base URL:**
-```
-https://api.ffl.com/v1/...
-```
-
-**Version in Header:**
-```
-Accept: application/vnd.ffl.v1+json
-```
-
-**UI Handling:**
-- Always use latest stable version
-- Handle deprecated endpoint warnings
-- Graceful degradation for breaking changes
-
----
-
-## Offline Support (Future)
-
-### Service Worker
-- Cache API responses
-- Queue mutations when offline
-- Sync when back online
-
-### UI Indicators
-- Show offline banner
-- Disable actions that require network
-- Queue optimistic updates
-- Show sync status
-
----
-
-## Performance Optimization
-
-### Reduce API Calls
-- Combine related data in single endpoint
-- Use pagination to limit data
-- Cache aggressively
-- Debounce search and filters
-
-### Optimize Payloads
-- Request only needed fields
-- Compress responses (gzip)
-- Use CDN for static assets
-
-### Lazy Loading
-- Load data on demand (infinite scroll)
-- Lazy load images and heavy components
-- Code split by route
-
----
-
-## Monitoring & Analytics
-
-### Track API Calls
-- Log all requests/responses
-- Monitor latency
-- Track error rates
-- Alert on failures
-
-### User Analytics
-- Track screen views
-- Track user actions (clicks, submits)
-- Monitor conversion rates
-- A/B test features
-
-### Tools
-- Sentry for error tracking
-- Google Analytics for usage
-- DataDog/New Relic for performance
-- LogRocket for session replay
-
+## Next Steps
+1. Implement authentication flow with Google OAuth
+2. Create API client service layer with error handling
+3. Build state management for API responses
+4. Implement polling/refresh strategies
+5. Add request caching to minimize API calls

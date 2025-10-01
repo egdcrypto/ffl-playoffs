@@ -178,42 +178,50 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And "player1" should still have "Patrick Mahomes"
     And "player2" should have "Josh Allen"
 
-  # Player Availability After Drafting
+  # No Ownership Model - Multiple League Players Can Select Same NFL Player
 
-  Scenario: NFL player becomes unavailable after being drafted
+  Scenario: Multiple league players can draft the same NFL player (no ownership model)
     Given all NFL players are available
-    When league player "player1" drafts "Patrick Mahomes" (id: 101)
-    Then "Patrick Mahomes" should be marked as DRAFTED
-    And "Patrick Mahomes" should show "Drafted by player1"
-    When league player "player2" attempts to draft "Patrick Mahomes" (id: 101)
-    Then the draft should fail
-    And the error should be "PLAYER_ALREADY_DRAFTED_BY_OTHER"
-    And the error message should be "Patrick Mahomes has already been drafted by player1"
+    When league player "player1" drafts "Patrick Mahomes" (id: 101) to position "QB"
+    Then the draft should succeed
+    And league player "player1" roster should have "Patrick Mahomes"
+    When league player "player2" drafts "Patrick Mahomes" (id: 101) to position "SUPERFLEX"
+    Then the draft should succeed
+    And league player "player2" roster should have "Patrick Mahomes"
+    And "Patrick Mahomes" should be available to all other league members
+    And there is NO exclusive ownership of NFL players
 
-  Scenario: League player views available NFL players filtered by position
-    Given the following NFL players have been drafted:
-      | nflPlayerId | draftedBy |
-      | 101         | player1   |
-      | 103         | player2   |
-      | 105         | player3   |
-    When I request available NFL players for position "QB"
-    Then I should see all QB players except "Patrick Mahomes"
-    And "Josh Allen" should be marked as "AVAILABLE"
-    And "Patrick Mahomes" should be marked as "DRAFTED by player1"
+  Scenario: League player views ALL NFL players filtered by position (no availability filtering)
+    Given league player "player1" has drafted:
+      | nflPlayerId | name            | position |
+      | 101         | Patrick Mahomes | QB       |
+    And league player "player2" has drafted:
+      | nflPlayerId | name            | position |
+      | 101         | Patrick Mahomes | QB       |
+    When I request NFL players for position "QB"
+    Then I should see ALL QB players including "Patrick Mahomes"
+    And I should see ALL QB players including "Josh Allen"
+    And all players should be marked as "AVAILABLE" regardless of who drafted them
+    And the UI should show that other league members have selected these players (for informational purposes only)
 
-  Scenario: League player views all available NFL players for FLEX position
-    Given the following NFL players have been drafted:
-      | nflPlayerId | name                 | position | draftedBy |
-      | 103         | Christian McCaffrey  | RB       | player1   |
-      | 105         | Tyreek Hill          | WR       | player2   |
-      | 107         | Travis Kelce         | TE       | player3   |
-    When I request available NFL players for position "FLEX"
-    Then I should see all RB players except "Christian McCaffrey"
-    And I should see all WR players except "Tyreek Hill"
-    And I should see all TE players except "Travis Kelce"
+  Scenario: League player views ALL NFL players for FLEX position (no ownership restrictions)
+    Given league player "player1" has drafted:
+      | nflPlayerId | name                 | position |
+      | 103         | Christian McCaffrey  | RB       |
+    And league player "player2" has drafted:
+      | nflPlayerId | name                 | position |
+      | 105         | Tyreek Hill          | WR       |
+    And league player "player3" has drafted:
+      | nflPlayerId | name                 | position |
+      | 107         | Travis Kelce         | TE       |
+    When I request NFL players for position "FLEX"
+    Then I should see ALL RB players including "Christian McCaffrey"
+    And I should see ALL WR players including "Tyreek Hill"
+    And I should see ALL TE players including "Travis Kelce"
     And I should NOT see QB players
     And I should NOT see K players
     And I should NOT see DEF players
+    And all FLEX-eligible players remain available to all league members
 
   # Roster Validation
 
@@ -323,7 +331,7 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     When I drop "Christian McCaffrey" from my roster
     Then the drop should succeed
     And "Christian McCaffrey" should be removed from my roster
-    And "Christian McCaffrey" should become available to all league players
+    And "Christian McCaffrey" remains available to all league players
     And my RB position should have 1 empty slot
 
   Scenario: League player CANNOT drop NFL player after first game starts (PERMANENT LOCK)

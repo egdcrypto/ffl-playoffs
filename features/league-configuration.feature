@@ -391,3 +391,80 @@ Feature: League Configuration
     When players make selections in each league
     Then each league uses its own configuration independently
     And team selections are scoped to each league
+
+  # Roster Configuration
+
+  Scenario: Configure standard roster with all positions
+    Given the admin is configuring a new league
+    When the admin sets roster configuration:
+      | position   | slots |
+      | QB         | 1     |
+      | RB         | 2     |
+      | WR         | 2     |
+      | TE         | 1     |
+      | FLEX       | 1     |
+      | K          | 1     |
+      | DEF        | 1     |
+    Then the roster configuration is saved
+    And the total roster size is 9
+    And all league players must fill 9 position slots
+
+  Scenario: Configure superflex roster
+    Given the admin is configuring a new league
+    When the admin sets roster configuration:
+      | position   | slots |
+      | QB         | 1     |
+      | RB         | 2     |
+      | WR         | 3     |
+      | TE         | 1     |
+      | FLEX       | 1     |
+      | SUPERFLEX  | 1     |
+      | K          | 1     |
+      | DEF        | 1     |
+    Then the roster configuration is saved
+    And the total roster size is 11
+    And the SUPERFLEX slot accepts QB, RB, WR, or TE
+
+  Scenario: Roster configuration with multiple RBs and WRs
+    Given the admin is configuring a new league
+    When the admin sets roster configuration:
+      | position   | slots |
+      | QB         | 1     |
+      | RB         | 3     |
+      | WR         | 3     |
+      | TE         | 1     |
+      | FLEX       | 2     |
+      | K          | 1     |
+      | DEF        | 1     |
+    Then the roster configuration is saved
+    And the total roster size is 12
+
+  Scenario: Minimum roster configuration validation
+    Given the admin is configuring a new league
+    When the admin attempts to save roster configuration:
+      | position   | slots |
+      | RB         | 2     |
+      | WR         | 2     |
+    Then the configuration is rejected
+    And the error message is "Roster must have at least 1 QB or 1 SUPERFLEX slot"
+
+  Scenario: Maximum roster size validation
+    Given the admin is configuring a new league
+    When the admin attempts to save roster configuration with 25 total slots
+    Then the configuration is rejected
+    And the error message is "Roster configuration cannot exceed 20 total slots"
+
+  Scenario: Roster configuration cannot be changed after league starts
+    Given the league is configured with standard roster (9 players)
+    And the league has started
+    When the admin attempts to change roster configuration
+    Then the modification is rejected
+    And the error message is "Configuration cannot be modified after the first game has started"
+
+  Scenario: Each league can have different roster configuration
+    Given admin1 creates "League A" with 9-player roster (1 QB, 2 RB, 2 WR, 1 TE, 1 FLEX, 1 K, 1 DEF)
+    And admin2 creates "League B" with 11-player superflex roster
+    When players join each league
+    Then "League A" players must fill 9 position slots
+    And "League B" players must fill 11 position slots
+    And roster requirements are independent per league

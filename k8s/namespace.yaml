@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ffl-playoffs
+  labels:
+    name: ffl-playoffs
+    app: ffl-playoffs-api

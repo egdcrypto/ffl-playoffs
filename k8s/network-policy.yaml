@@ -1,0 +1,57 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ffl-playoffs-network-policy
+  namespace: ffl-playoffs
+spec:
+  podSelector:
+    matchLabels:
+      app: ffl-playoffs-api
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 443
+  # Allow traffic from within same namespace (for pod-to-pod communication)
+  - from:
+    - podSelector:
+        matchLabels:
+          app: ffl-playoffs-api
+  egress:
+  # Allow traffic to MongoDB
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: default
+      podSelector:
+        matchLabels:
+          app: mongodb
+    ports:
+    - protocol: TCP
+      port: 27017
+  # Allow traffic to Kubernetes DNS
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow HTTPS traffic to external APIs (NFL API, Google OAuth)
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

@@ -239,12 +239,33 @@ Behavior-Driven Development (BDD) specifications in `features/`:
 
 Interactive HTML mockups demonstrating the user interface:
 
-**📱 View Live Mockups:**
-- **[Mockups Index](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/index.html)** - All mockups in one place
-- **[Login Screen](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/login.html)** - Google OAuth authentication flow
-- **[Player Dashboard](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/player-dashboard.html)** - Main player view with leagues, stats, and actions
-- **[Team Selection](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/team-selection.html)** - Weekly team picker with all 32 NFL teams
-- **[Leaderboard](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/leaderboard.html)** - Rankings, scores, and elimination status
+> **📌 Setup Required:** To view mockups online, enable GitHub Pages:
+> 1. Go to [Repository Settings → Pages](https://github.com/egdcrypto/ffl-playoffs/settings/pages)
+> 2. Under "Build and deployment": Source = **Deploy from a branch**, Branch = **main**, Folder = **/ (root)**
+> 3. Click **Save** and wait 1-2 minutes for deployment
+
+**📱 View Live Mockups (GitHub Pages):**
+- **[Mockups Index](https://egdcrypto.github.io/ffl-playoffs/ui-design/mockups/index.html)** - All mockups in one place
+- **[Login Screen](https://egdcrypto.github.io/ffl-playoffs/ui-design/mockups/login.html)** - Google OAuth authentication flow
+- **[Player Dashboard](https://egdcrypto.github.io/ffl-playoffs/ui-design/mockups/player-dashboard.html)** - Main player view with leagues, stats, and actions
+- **[Team Selection](https://egdcrypto.github.io/ffl-playoffs/ui-design/mockups/team-selection.html)** - Weekly team picker with all 32 NFL teams
+- **[Leaderboard](https://egdcrypto.github.io/ffl-playoffs/ui-design/mockups/leaderboard.html)** - Rankings, scores, and elimination status
+
+**💻 View Locally:**
+Open the HTML files directly in your browser:
+```bash
+# Navigate to mockups directory
+cd ui-design/mockups/
+
+# Open in browser (macOS)
+open index.html
+
+# Open in browser (Linux)
+xdg-open index.html
+
+# Open in browser (Windows)
+start index.html
+```
 
 **📐 Design Documentation:**
 - [WIREFRAMES.md](ui-design/WIREFRAMES.md) - Detailed wireframes for all screens

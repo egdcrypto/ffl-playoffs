@@ -1,7 +1,15 @@
-Feature: Team Selection
+# ⚠️ DEPRECATED - LEGACY FEATURE FILE ⚠️
+# This feature file represents the OLD team-based survivor pool model.
+# The FFL Playoffs application now uses a ROSTER-BASED fantasy football model.
+# See player-roster-selection.feature and roster-management.feature for current specifications.
+
+Feature: Team Selection (DEPRECATED - LEGACY MODEL)
   As a player
   I want to select NFL teams for each week
   So that I can compete in the 4-week playoff game
+
+  NOTE: This is the LEGACY team-based survivor pool model.
+  Current model uses individual NFL player roster selection.
 
   Background:
     Given the game "2025 NFL Playoffs Pool" is active

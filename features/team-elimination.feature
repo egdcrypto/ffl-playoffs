@@ -1,7 +1,15 @@
-Feature: Team Elimination
+# ⚠️ DEPRECATED - LEGACY FEATURE FILE ⚠️
+# This feature file represents the OLD team-based survivor pool model.
+# The FFL Playoffs application now uses a ROSTER-BASED fantasy football model with NO eliminations.
+# Players compete with locked rosters for entire season - injured/poor performing players remain on roster.
+
+Feature: Team Elimination (DEPRECATED - LEGACY MODEL)
   As the system
   I want to eliminate teams that lose their games
   So that they score zero points for all remaining weeks according to game rules
+
+  NOTE: This is the LEGACY team-based survivor pool model.
+  Current model has NO eliminations - rosters are permanently locked.
 
   Background:
     Given the game "2025 NFL Playoffs Pool" is active

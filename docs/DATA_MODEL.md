@@ -1,5 +1,19 @@
 # FFL Playoffs Data Model
 
+> ⚠️ **CRITICAL UPDATE REQUIRED**: This document currently describes the **OLD team-based survivor pool model** and requires comprehensive updates to reflect the **NEW roster-based fantasy football model** with individual NFL player selection (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX) and ONE-TIME DRAFT permanent roster lock.
+>
+> **Missing Entities**: NFLPlayer, Roster, RosterSlot, Position, RosterConfiguration
+>
+> **Entities to Remove/Replace**: TeamSelection, Score (team-based)
+>
+> **Business Rules to Update**: Team elimination → Player injury/BYE, Team selection → Roster building with permanent lock
+>
+> Until this document is updated, refer to:
+> - `requirements.md` for current roster-based requirements
+> - `features/roster-management.feature` for roster business rules
+> - `features/player-selection.feature` for NFL player selection rules
+> - `docs/API.md` for roster management endpoints
+
 ## Table of Contents
 1. [Overview](#overview)
 2. [Entity Relationship Diagram](#entity-relationship-diagram)

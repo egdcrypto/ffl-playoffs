@@ -1,18 +1,51 @@
 # FFL Playoffs Data Model
 
-> ⚠️ **CRITICAL UPDATE REQUIRED**: This document currently describes the **OLD team-based survivor pool model** and requires comprehensive updates to reflect the **NEW roster-based fantasy football model** with individual NFL player selection (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX) and ONE-TIME DRAFT permanent roster lock.
+> # ⚠️ LEGACY DOCUMENT - COMPREHENSIVE UPDATE IN PROGRESS ⚠️
 >
-> **Missing Entities**: NFLPlayer, Roster, RosterSlot, Position, RosterConfiguration
+> **THIS DOCUMENT IS OBSOLETE** and describes the **OLD team-based survivor pool model** from 2024.
 >
-> **Entities to Remove/Replace**: TeamSelection, Score (team-based)
+> ## Current Model (Roster-Based Fantasy Football)
 >
-> **Business Rules to Update**: Team elimination → Player injury/BYE, Team selection → Roster building with permanent lock
+> The FFL Playoffs application now uses a **traditional fantasy football** model:
 >
-> Until this document is updated, refer to:
-> - `requirements.md` for current roster-based requirements
-> - `features/roster-management.feature` for roster business rules
-> - `features/player-selection.feature` for NFL player selection rules
-> - `docs/API.md` for roster management endpoints
+> ### Key Entities (NEW MODEL)
+> - **NFLPlayer** - Individual NFL players (QB, RB, WR, TE, K, DEF) with position, team, stats
+> - **Position** (enum) - QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX
+> - **RosterConfiguration** - League-specific roster structure (how many of each position)
+> - **RosterSlot** - Position slot definition with eligibility rules (FLEX, SUPERFLEX)
+> - **Roster** - League player's roster (one per league player)
+> - **RosterSelection** - Individual NFL player in a roster slot
+> - **PlayerStats** - Individual NFL player performance per game/week
+> - **DefensiveStats** - Team defense performance per game/week
+>
+> ### Key Business Rules (NEW MODEL)
+> - **ONE-TIME DRAFT**: Rosters built ONCE before season, permanently locked when first game starts
+> - **NO Elimination**: Players remain on roster entire season (injuries/poor performance don't eliminate)
+> - **Individual Player Scoring**: PPR scoring based on each NFL player's individual stats
+> - **Draft System**: Once an NFL player is drafted, they become unavailable to other league members
+> - **Roster Lock**: Permanently locked when first game starts - no changes for entire season
+>
+> ### Obsolete Entities (OLD MODEL - DO NOT USE)
+> - ~~TeamSelection~~ (replaced by RosterSelection)
+> - ~~Score (team-based)~~ (replaced by PlayerStats aggregation)
+> - ~~Team elimination mechanics~~ (no eliminations in new model)
+>
+> ---
+>
+> ## 📚 Current Documentation Sources
+>
+> **For current specifications, refer to:**
+> - **[requirements.md](../requirements.md)** - Complete roster-based requirements
+> - **[features/roster-management.feature](../features/roster-management.feature)** - Roster lock business rules
+> - **[features/player-roster-selection.feature](../features/player-roster-selection.feature)** - NFL player selection rules
+> - **[docs/API.md](API.md)** - Roster management REST endpoints
+> - **[features/data-integration.feature](../features/data-integration.feature)** - NFL player stats integration
+>
+> ---
+>
+> # LEGACY DOCUMENTATION BELOW (Team-Based Survivor Pool Model)
+>
+> The remainder of this document describes the obsolete team-based model and is retained only for historical reference.
 
 ## Table of Contents
 1. [Overview](#overview)

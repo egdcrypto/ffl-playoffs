@@ -5,17 +5,44 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/ffl_playoffs}
+      database: ${MONGODB_DATABASE:ffl_playoffs}
+      auto-index-creation: true
 
   jackson:
     serialization:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
 
+# CRITICAL SECURITY: API binds to localhost ONLY
+# External access ONLY through Envoy sidecar (port 443)
+# This prevents direct API access bypassing authentication
 server:
+  address: 127.0.0.1  # LOCALHOST ONLY - NO external access
   port: 8080
   error:
     include-message: always
     include-binding-errors: always
+  shutdown: graceful
+
+# Management/Actuator endpoints on separate port (localhost only)
+management:
+  server:
+    address: 127.0.0.1  # LOCALHOST ONLY
+    port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
 
 springdoc:
   api-docs:

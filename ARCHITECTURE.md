@@ -53,7 +53,7 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 ┌─────────────────────────────────────────────────────────────┐
 │                       DOMAIN LAYER                           │
 │  Aggregates │ Entities │ Value Objects │ Domain Logic       │
-│  League │ Player │ TeamSelection │ Score │ Week             │
+│  League │ Player │ PlayerRoster │ Score │ Week │ NFLPlayer  │
 │  Repository Interfaces (Ports) │ Domain Events              │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -63,7 +63,8 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 **Aggregates**:
 - `League` - Root aggregate for game/league management
 - `User` - User account with roles (SUPER_ADMIN, ADMIN, PLAYER)
-- `TeamSelection` - Player's team picks
+- `PlayerRoster` - Player's roster with individual NFL players
+- `NFLPlayer` - Individual NFL player data (QB, RB, WR, TE, K, DEF)
 - `Week` - Game week with NFL week mapping
 
 **Value Objects**:
@@ -75,14 +76,16 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 **Domain Events**:
 - `LeagueActivatedEvent`
 - `LeagueConfigurationLockedEvent` 🆕
-- `TeamEliminatedEvent`
+- `RosterLockedEvent` 🆕
+- `PlayerDraftedEvent` 🆕
 - `WeekCompletedEvent`
 - `ScoresCalculatedEvent`
 
 **Repository Interfaces (Ports)**:
 - `LeagueRepository`
 - `UserRepository`
-- `TeamSelectionRepository`
+- `PlayerRosterRepository`
+- `NFLPlayerRepository`
 - `WeekRepository`
 - `GameResultRepository`
 
@@ -92,13 +95,14 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 - `CreateLeagueUseCase`
 - `ActivateLeagueUseCase`
 - `UpdateLeagueConfigurationUseCase` 🆕 (validates configuration lock)
-- `SelectTeamUseCase`
+- `DraftPlayerUseCase` 🆕 (draft individual NFL player to roster)
+- `BuildRosterUseCase` 🆕 (complete roster building)
 - `CalculateScoresUseCase`
 - `InvitePlayerUseCase`
 
 **Application Services**:
 - `LeagueApplicationService` - Orchestrates league operations
-- `TeamSelectionApplicationService` - Manages team picks
+- `RosterApplicationService` - Manages roster building and player drafting
 - `ScoringApplicationService` - Calculates scores
 - `UserManagementApplicationService` - User and invitation management
 
@@ -203,7 +207,7 @@ The FFL Playoffs Game follows **Hexagonal Architecture** (Ports & Adapters) prin
 
 **Resource Ownership Validation** (enforced in API business logic):
 - Admins can only manage their own leagues
-- Players can only modify their own team selections
+- Players can only modify their own rosters (before roster lock)
 - Ownership checks performed in domain/application layer
 
 ---
@@ -250,17 +254,24 @@ class Week {
 }
 ```
 
-#### TeamSelection Entity
+#### PlayerRoster Entity
 ```java
-class TeamSelection {
+class PlayerRoster {
     Long id;
     Long playerId;
     Long leagueId;
-    Long weekId;
-    Integer nflWeekNumber;
-    String teamName;
-    Boolean isEliminated;
-    Integer eliminatedInWeek;
+    Boolean isLocked;
+    Instant lockedAt;
+    List<RosterSlot> rosterSlots; // QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX
+}
+
+class RosterSlot {
+    Long id;
+    Long rosterId;
+    Position position; // QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX
+    Long nflPlayerId;
+    String nflPlayerName;
+    String nflTeam;
 }
 ```
 

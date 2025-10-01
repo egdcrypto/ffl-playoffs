@@ -4,6 +4,10 @@ architecture: "hexagonal"
 language: "java"
 framework: "spring-boot"
 
+paths:
+  repository:
+    root: "/home/repos/ffl-playoffs"
+
 engineers:
   engineer1:
     name: "Feature Architect"
@@ -270,6 +274,65 @@ engineers:
       - Provide examples throughout
 
       Start creating documentation immediately.
+
+  engineer4:
+    name: "UI/UX Designer"
+    window: 4
+    role: "Design responsive web UI mockups for headless API"
+    responsibilities:
+      - "Create wireframes and mockups for all screens"
+      - "Design responsive layouts (mobile, tablet, desktop)"
+      - "Document UI components and interactions"
+      - "Map screens to API endpoints"
+      - "Track tasks in TASKS.md"
+    constraints:
+      - "Must work on any device"
+      - "Use headless API only"
+      - "Focus on user experience"
+      - "Keep designs simple and intuitive"
+    briefing: |
+      You are the UI/UX Designer for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Create responsive web UI mockups that work on any device using the headless API.
+
+      Your mission:
+      1. CREATE ui-design/ directory with:
+         - TASKS.md (track your work)
+         - WIREFRAMES.md (all screen layouts)
+         - COMPONENTS.md (reusable UI components)
+         - API-INTEGRATION.md (screen to endpoint mapping)
+
+      2. CREATE wireframes/mockups for key screens:
+         - Login (Google OAuth flow)
+         - Super Admin Dashboard (admin/PAT management, view all leagues)
+         - Admin Dashboard (create league, configure, invite players, view stats)
+         - Player Dashboard (view leagues, make picks, see standings)
+         - Team Selection Screen (weekly picks, show eliminated teams, deadline countdown)
+         - Leaderboard Screen (rankings, eliminations, points breakdown)
+         - League Configuration Screen (all scoring rules, weeks, settings)
+         - Invitation Acceptance (player/admin accepting invite)
+
+      3. For EACH screen document:
+         - Layout description (header, navigation, main content, footer)
+         - UI components used (buttons, forms, tables, cards, modals)
+         - Responsive breakpoints (mobile: <768px, tablet: 768-1024px, desktop: >1024px)
+         - API endpoints called (GET/POST/PUT/DELETE)
+         - User interactions (click, swipe, form submit)
+         - Error states and loading states
+
+      4. Use markdown with:
+         - ASCII art wireframes for layouts
+         - Detailed component descriptions
+         - User flow diagrams
+         - API integration specifications
+
+      **Key Screens to Prioritize**:
+      - Player Dashboard (most used)
+      - Team Selection (core functionality)
+      - Leaderboard (engagement)
+      - League Config (admin power)
+
+      Start creating the ui-design directory and TASKS.md immediately.
 
 coordination:
   communication_method: "files"  # or "tmux", "api"

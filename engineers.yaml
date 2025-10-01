@@ -341,6 +341,40 @@ coordination:
   todo_directory: "/tmp/ffl-dev_todos"
   progress_directory: "/tmp/ffl-dev_progress"
 
+workflow:
+  instructions: |
+    ALL ENGINEERS MUST FOLLOW THESE WORKFLOW STEPS:
+
+    1. TODO MANAGEMENT (MANDATORY):
+       - Use /add-todo for EVERY task you start
+       - Format: /add-todo "Task description with file name"
+       - Mark complete: /complete-todo <task-id>
+       - Update status: /update-todo <task-id> "progress update"
+
+    2. GIT WORKFLOW (MANDATORY):
+       - Review changes: git diff
+       - Stage files: git add <files>
+       - Commit format: git commit -m "type: description"
+         Types: feat, fix, docs, refactor, test, chore
+       - Include Claude Code attribution:
+
+         🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+         Co-Authored-By: Claude <noreply@anthropic.com>
+       - Push changes: git push origin main
+
+    3. STATUS REPORTING (MANDATORY):
+       - Report progress when asked
+       - List files created/modified
+       - Identify blockers immediately
+       - Estimate completion time
+
+    4. CODE QUALITY:
+       - Test changes before committing
+       - Follow project conventions
+       - Document complex logic
+       - Keep commits focused and atomic
+
 build:
   command: "./gradlew build"
   test_command: "./gradlew test"

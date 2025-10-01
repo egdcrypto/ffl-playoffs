@@ -253,9 +253,10 @@ Interactive HTML mockups demonstrating the user interface:
 **📱 View Live Mockups:**
 - **[Mockups Index](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/index.html)** - All mockups in one place
 - **[Login Screen](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/login.html)** - Google OAuth authentication flow
-- **[Player Dashboard](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-dashboard.html)** - Main player view with leagues, stats, and actions
-- **[Team Selection](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/team-selection.html)** - Weekly team picker with all 32 NFL teams
-- **[Leaderboard](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/leaderboard.html)** - Rankings, scores, and elimination status
+- **[Player Dashboard](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-dashboard.html)** - Main league player view with leagues, stats, and actions
+- **[Player Selection](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/player-selection.html)** - Draft individual NFL players with position filters (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
+- **[My Roster](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/my-roster.html)** - View your drafted NFL players organized by position with weekly scoring
+- **[League Standings](https://htmlpreview.github.io/?https://github.com/egdcrypto/ffl-playoffs/blob/main/ui-design/mockups/league-standings.html)** - League player rankings with expandable roster details
 
 > **✨ Repository is PUBLIC** - All mockups are accessible online via the links above!
 
@@ -298,8 +299,9 @@ ffl-playoffs/
 │   │   ├── index.html             # Mockups index page
 │   │   ├── login.html
 │   │   ├── player-dashboard.html
-│   │   ├── team-selection.html
-│   │   └── leaderboard.html
+│   │   ├── player-selection.html  # Draft NFL players by position
+│   │   ├── my-roster.html         # View drafted roster
+│   │   └── league-standings.html  # League player rankings
 │   ├── WIREFRAMES.md              # Screen wireframes
 │   ├── COMPONENTS.md              # UI component library
 │   ├── API-INTEGRATION.md         # API endpoint mappings

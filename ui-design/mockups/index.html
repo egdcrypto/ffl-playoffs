@@ -28,6 +28,24 @@
         .badge-position {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        .section-header {
+            border-left: 6px solid #667eea;
+            padding-left: 1rem;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+        }
+        .prelock-card {
+            border-left: 4px solid #198754;
+        }
+        .locked-card {
+            border-left: 4px solid #dc3545;
+        }
+        .state-description {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
 <body>
@@ -55,9 +73,13 @@
             </div>
         </div>
 
-        <h2 class="mb-3">Available Mockups</h2>
+        <!-- Authentication & General Mockups -->
+        <div class="section-header">
+            <h2><i class="bi bi-unlock-fill"></i> Authentication & General</h2>
+            <p class="text-muted mb-0">Core application screens available in all states</p>
+        </div>
 
-        <div class="row g-3">
+        <div class="row g-3 mb-4">
             <div class="col-md-6">
                 <a href="login.html" class="text-decoration-none">
                     <div class="card mockup-card">
@@ -77,68 +99,187 @@
                     <div class="card mockup-card">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-speedometer2 text-primary"></i> Player Dashboard
+                                <i class="bi bi-speedometer2 text-primary"></i> Player Dashboard <span class="badge bg-info badge-sm">Mixed State</span>
                             </h5>
-                            <p class="card-text text-muted">Main league player view with leagues, stats, weekly deadlines, and quick actions</p>
+                            <p class="card-text text-muted">Shows multiple leagues in different states (incomplete, locked, active)</p>
                             <span class="badge bg-primary">Core</span>
                         </div>
                     </div>
                 </a>
             </div>
+        </div>
 
+        <!-- Pre-Lock State Mockups -->
+        <div class="section-header">
+            <h2><i class="bi bi-unlock-fill text-success"></i> Pre-Lock State Mockups</h2>
+            <p class="text-muted mb-0">Before first game starts - roster building phase</p>
+        </div>
+
+        <div class="state-description">
+            <div class="row align-items-center">
+                <div class="col-md-1 text-center">
+                    <i class="bi bi-unlock-fill text-success" style="font-size: 3rem;"></i>
+                </div>
+                <div class="col-md-11">
+                    <h4 class="mb-2"><span class="badge bg-success">PRE-LOCK STATE</span> - Draft Phase</h4>
+                    <p class="mb-2"><strong>When:</strong> From league creation until the first NFL game of the season starts</p>
+                    <p class="mb-2"><strong>User Actions Available:</strong></p>
+                    <ul class="mb-0">
+                        <li>Browse and search for NFL players</li>
+                        <li>Draft players to fill all roster positions</li>
+                        <li>View incomplete roster with "Add Player" options</li>
+                        <li>Edit roster selections (drop/add players)</li>
+                        <li>See countdown timer to permanent roster lock</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
             <div class="col-md-6">
-                <a href="player-selection.html" class="text-decoration-none">
-                    <div class="card mockup-card">
+                <a href="player-selection-prelock.html" class="text-decoration-none">
+                    <div class="card prelock-card">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-person-plus-fill text-success"></i> Player Selection (Draft)
+                                <i class="bi bi-unlock-fill text-success"></i> Player Selection (Pre-Lock)
+                                <span class="badge bg-success badge-sm ms-2">Draft Active</span>
                             </h5>
-                            <p class="card-text text-muted">Draft individual NFL players with position filters (QB, RB, WR, TE, K, DEF), search, stats display, and pagination</p>
-                            <span class="badge badge-position">Draft</span>
-                            <span class="badge bg-warning text-dark">Positions</span>
+                            <p class="card-text text-muted">Draft NFL players with active "Add to Roster" buttons, countdown timer, and draft warnings. Shows available positions to fill.</p>
+                            <span class="badge bg-success">Pre-Lock</span>
+                            <span class="badge bg-warning text-dark">Editable</span>
+                            <span class="badge bg-info">Draft Phase</span>
                         </div>
                     </div>
                 </a>
             </div>
 
             <div class="col-md-6">
-                <a href="my-roster.html" class="text-decoration-none">
-                    <div class="card mockup-card">
+                <a href="my-roster-prelock.html" class="text-decoration-none">
+                    <div class="card prelock-card">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-clipboard-check text-info"></i> My Roster
+                                <i class="bi bi-unlock-fill text-success"></i> My Roster (Pre-Lock)
+                                <span class="badge bg-success badge-sm ms-2">Draft Active</span>
                             </h5>
-                            <p class="card-text text-muted">View your drafted NFL players organized by position slots with weekly scoring and game-by-game stats</p>
-                            <span class="badge bg-info">Roster</span>
-                            <span class="badge bg-success">Scoring</span>
+                            <p class="card-text text-muted">Incomplete roster with "Add Player" and "Drop Player" buttons, countdown to lock timer, empty position slots highlighted.</p>
+                            <span class="badge bg-success">Pre-Lock</span>
+                            <span class="badge bg-warning text-dark">Editable</span>
                         </div>
                     </div>
                 </a>
             </div>
 
             <div class="col-md-6">
-                <a href="league-standings.html" class="text-decoration-none">
-                    <div class="card mockup-card">
+                <a href="league-standings-prelock.html" class="text-decoration-none">
+                    <div class="card prelock-card">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-trophy text-warning"></i> League Standings
+                                <i class="bi bi-unlock-fill text-success"></i> League Standings (Pre-Lock)
+                                <span class="badge bg-success badge-sm ms-2">Draft Active</span>
                             </h5>
-                            <p class="card-text text-muted">League player rankings with expandable roster details, total scores, and weekly performance</p>
-                            <span class="badge bg-warning text-dark">Rankings</span>
+                            <p class="card-text text-muted">Shows roster completion status, players still drafting, countdown to lock. "View Draft Progress" for incomplete rosters.</p>
+                            <span class="badge bg-success">Pre-Lock</span>
+                            <span class="badge bg-info">Draft Progress</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Post-Lock State Mockups -->
+        <div class="section-header">
+            <h2><i class="bi bi-lock-fill text-danger"></i> Post-Lock State Mockups</h2>
+            <p class="text-muted mb-0">After first game starts - rosters permanently locked</p>
+        </div>
+
+        <div class="state-description">
+            <div class="row align-items-center">
+                <div class="col-md-1 text-center">
+                    <i class="bi bi-lock-fill text-danger" style="font-size: 3rem;"></i>
+                </div>
+                <div class="col-md-11">
+                    <h4 class="mb-2"><span class="badge bg-danger">POST-LOCK STATE</span> - Season Active (Read-Only)</h4>
+                    <p class="mb-2"><strong>When:</strong> From the moment the first NFL game starts until season ends</p>
+                    <p class="mb-2"><strong>User Actions Available:</strong></p>
+                    <ul class="mb-0">
+                        <li>View roster (read-only) - NO modifications allowed</li>
+                        <li>View player stats and weekly scores</li>
+                        <li>View league standings and rankings</li>
+                        <li>See "Roster Locked" badges and warnings</li>
+                        <li><strong>CANNOT:</strong> Add players, drop players, trade, use waiver wire, or make ANY roster changes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <a href="player-selection-locked.html" class="text-decoration-none">
+                    <div class="card locked-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-lock-fill text-danger"></i> Player Selection (Locked)
+                                <span class="badge bg-danger badge-sm ms-2">Roster Locked</span>
+                            </h5>
+                            <p class="card-text text-muted">Browse-only view with "Roster Locked" warnings. All "Add to Roster" buttons disabled. Shows lock timestamp.</p>
+                            <span class="badge bg-danger">Post-Lock</span>
+                            <span class="badge bg-secondary">Read-Only</span>
+                            <span class="badge bg-dark">No Draft</span>
                         </div>
                     </div>
                 </a>
             </div>
 
+            <div class="col-md-6">
+                <a href="my-roster-locked.html" class="text-decoration-none">
+                    <div class="card locked-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-lock-fill text-danger"></i> My Roster (Locked)
+                                <span class="badge bg-danger badge-sm ms-2">Roster Locked</span>
+                            </h5>
+                            <p class="card-text text-muted">Complete roster with NO edit buttons. Shows lock notice, weekly scoring, injured players remain on roster (cannot replace).</p>
+                            <span class="badge bg-danger">Post-Lock</span>
+                            <span class="badge bg-secondary">Read-Only</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="league-standings-locked.html" class="text-decoration-none">
+                    <div class="card locked-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-lock-fill text-danger"></i> League Standings (Locked)
+                                <span class="badge bg-danger badge-sm ms-2">Roster Locked</span>
+                            </h5>
+                            <p class="card-text text-muted">Rankings with locked roster badges. "View Roster" (read-only) buttons. Shows weekly scores and total points.</p>
+                            <span class="badge bg-danger">Post-Lock</span>
+                            <span class="badge bg-warning text-dark">Live Scoring</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Legacy Mockups -->
+        <div class="section-header">
+            <h2><i class="bi bi-archive-fill text-secondary"></i> Legacy Mockups</h2>
+            <p class="text-muted mb-0">Deprecated team-based survivor pool model - for reference only</p>
+        </div>
+
+        <div class="row g-3 mb-4">
             <div class="col-md-6">
                 <a href="leaderboard.html" class="text-decoration-none">
                     <div class="card mockup-card">
                         <div class="card-body">
                             <h5 class="card-title">
-                                <i class="bi bi-bar-chart-fill text-danger"></i> Leaderboard (Legacy)
+                                <i class="bi bi-bar-chart-fill text-secondary"></i> Leaderboard (Legacy)
                             </h5>
-                            <p class="card-text text-muted">Original team-based leaderboard view - retained for reference</p>
+                            <p class="card-text text-muted">Original team-based survivor pool leaderboard - retained for reference. See league-standings.html for current model.</p>
                             <span class="badge bg-secondary">Legacy</span>
+                            <span class="badge bg-dark">Deprecated</span>
                         </div>
                     </div>
                 </a>

@@ -43,10 +43,10 @@ FFL Playoffs is an **enterprise-grade fantasy football application** with a uniq
 
 ### 🏈 Roster-Based Gameplay
 
-- **Individual NFL Player Selection**: Draft individual players by position (QB, RB, WR, TE, K, DEF)
+- **Individual NFL Player Selection**: Build rosters by selecting individual NFL players by position (QB, RB, WR, TE, K, DEF)
+- **No Ownership Model**: Multiple league players CAN select the same NFL player—ALL players available to ALL league members
 - **Customizable Rosters**: FLEX positions (RB/WR/TE eligible) and SUPERFLEX positions (QB/RB/WR/TE eligible)
-- **Player Availability**: Multiple league players CAN select the same NFL player (no ownership restrictions)
-- **Position-Based Scoring**: PPR scoring based on each individual NFL player's performance
+- **Position-Based Scoring**: PPR scoring based on each individual NFL player's weekly performance
 - **Flexible Scheduling**: Start at any NFL week (1-22, including playoffs), run for any duration (1-17 weeks)
 
 ### 🔑 Key Differentiators

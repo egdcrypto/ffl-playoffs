@@ -460,16 +460,23 @@ The system implements a three-tier role hierarchy:
 ### Data Model
 - **Entities**
   - User (with role: SUPER_ADMIN, ADMIN, PLAYER; includes googleId, email, name)
-  - League/Game (owned by an admin; includes startingWeek, numberOfWeeks, scoringRules)
+  - League/Game (owned by an admin; includes startingWeek, numberOfWeeks, rosterConfiguration, scoringRules)
   - LeaguePlayer (junction table: league membership, league-scoped player role)
-  - Team (NFL teams)
+  - **NFLTeam** (32 NFL teams: name, abbreviation, conference, division)
+  - **NFLPlayer** (individual NFL players: firstName, lastName, position, nflTeam, jerseyNumber, status)
+  - **Position** (enum: QB, RB, WR, TE, K, DEF)
+  - **RosterSlot** (roster position definition: position, count, eligiblePositions for FLEX/Superflex)
+  - **RosterConfiguration** (defines league roster structure: list of RosterSlots, total size)
+  - **Roster** (league player's roster: leaguePlayerId, list of RosterSelections)
+  - **RosterSelection** (NFL player selection for specific roster slot: rosterSlot, nflPlayer, week)
+  - **PlayerStats** (individual NFL player statistics per game: nflPlayerId, nflWeek, gameId, passing/rushing/receiving stats)
+  - **DefensiveStats** (team defense statistics per game: nflTeamId, nflWeek, gameId, sacks, INTs, points/yards allowed)
   - Week (league week with nflWeekNumber mapping)
-  - TeamSelection (player's team pick for a specific NFL week in a league)
-  - Score (calculated per player per NFL week per league)
-  - GameResult (NFL game outcomes for specific NFL weeks; includes field goal distances, defensive stats)
+  - Score (calculated per league player per NFL week per league)
+  - NFLGame (NFL game schedule and outcomes: homeTeam, awayTeam, week, gameTime, result)
   - AdminInvitation (super admin → admin)
   - PlayerInvitation (admin → player for specific league, includes leagueId)
-  - LeagueConfiguration (includes startingWeek, numberOfWeeks, scoringRules)
+  - LeagueConfiguration (includes startingWeek, numberOfWeeks, rosterConfiguration, scoringRules)
   - PersonalAccessToken (stored in database: id, name, tokenHash, scope, expiresAt, createdBy, createdAt, lastUsedAt, revoked, revokedAt)
   - PATScope (READ_ONLY, WRITE, ADMIN)
   - AuditLog (for admin and PAT activity tracking)
@@ -484,13 +491,20 @@ The system implements a three-tier role hierarchy:
   - User has role (SUPER_ADMIN, ADMIN, PLAYER)
   - User authenticated via Google OAuth (googleId)
   - Admin owns multiple Leagues
-  - League has configurable startingWeek (1-18, default 1) and numberOfWeeks (1-17, default 4)
-  - League validation: startingWeek + numberOfWeeks - 1 ≤ 18
+  - League has configurable startingWeek (1-22, default 1) and numberOfWeeks (1-17, default 4)
+  - League validation: startingWeek + numberOfWeeks - 1 ≤ 22
+  - League has RosterConfiguration defining required positions
   - League has multiple LeaguePlayers (junction table)
   - LeaguePlayer links User to League with league-specific data
+  - LeaguePlayer has one Roster
+  - Roster contains multiple RosterSelections (one per roster slot)
+  - RosterSelection links RosterSlot to NFLPlayer
+  - NFLPlayer has Position (QB, RB, WR, TE, K, DEF)
+  - NFLPlayer belongs to NFLTeam
+  - PlayerStats tracks individual NFL player performance per game/week
+  - DefensiveStats tracks team defense performance per game/week
   - Players can belong to multiple leagues
   - PlayerInvitation is league-scoped (includes leagueId)
-  - TeamSelections are league-scoped (player picks team for specific NFL week in league)
   - Week entity maps league week to NFL week (nflWeekNumber)
   - Week count is dynamic based on league.numberOfWeeks
   - NFL data fetched for weeks in range [startingWeek, startingWeek + numberOfWeeks - 1]

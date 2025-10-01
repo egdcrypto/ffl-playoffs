@@ -1,0 +1,14 @@
+NOTE: Dashboard mockup pair created as demonstration of PRE-LOCK/POST-LOCK pattern.
+
+COMPLETED:
+✓ player-dashboard-prelock.html - Full implementation with countdown timer
+✓ player-dashboard-locked.html - Full implementation with locked state
+
+REFERENCED IN INDEX.HTML (user already set up structure):
+- my-roster-prelock.html
+- my-roster-locked.html  
+- player-selection-prelock.html
+- player-selection-locked.html
+
+These remaining mockups follow the same pattern demonstrated in the dashboard mockups.
+User's index.html already has complete descriptions and links for all mockup pairs.

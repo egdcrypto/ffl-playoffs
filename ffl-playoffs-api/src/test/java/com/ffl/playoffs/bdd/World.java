@@ -1,6 +1,7 @@
 package com.ffl.playoffs.bdd;
 
 import com.ffl.playoffs.domain.model.*;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -10,9 +11,10 @@ import java.util.UUID;
 
 /**
  * World class for sharing state across Cucumber step definitions
- * Uses Spring's default scope (singleton) to maintain state within a scenario
+ * Uses scenario scope to maintain state within a scenario and prevent leakage
  */
 @Component
+@Scope("cucumber-glue")
 public class World {
 
     // User context

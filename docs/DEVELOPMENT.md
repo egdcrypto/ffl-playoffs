@@ -289,7 +289,7 @@ docker-compose up -d
 
 ### Run Migrations
 
-The application uses Flyway for database migrations.
+The application uses MongoDB migrations for database schema changes.
 
 **Migrations location**: `ffl-playoffs-api/src/main/resources/db/migration/`
 
@@ -299,41 +299,60 @@ The application uses Flyway for database migrations.
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
-**Manual migration** (Flyway CLI):
+**Manual migration** (mongosh):
 ```bash
-flyway -url=jdbc:postgresql://localhost:5432/ffl_playoffs \
-  -user=ffl_user \
-  -password=ffl_password \
-  -locations=filesystem:./src/main/resources/db/migration \
-  migrate
+mongosh mongodb://ffl_user:ffl_password@localhost:27017/ffl_playoffs \
+  --file ./src/main/resources/db/migration/migration.js
 ```
 
 ---
 
 ### Seed Data (Development)
 
-Create seed data script: `src/main/resources/db/seed/dev-data.sql`
+Create seed data script: `src/main/resources/db/seed/dev-data.js`
 
-```sql
--- Insert test super admin
-INSERT INTO users (id, google_id, email, name, role, created_at, updated_at)
-VALUES
-  ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'google-admin-123', 'admin@ffl-playoffs.com', 'Test Admin', 'SUPER_ADMIN', NOW(), NOW());
+```javascript
+// Insert test super admin
+db.users.insertOne({
+  _id: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  googleId: "google-admin-123",
+  email: "admin@ffl-playoffs.com",
+  name: "Test Admin",
+  role: "SUPER_ADMIN",
+  createdAt: new Date(),
+  updatedAt: new Date()
+});
 
--- Insert test league
-INSERT INTO leagues (id, admin_id, name, description, starting_week, number_of_weeks, active, created_at, updated_at)
-VALUES
-  ('b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'Test League 2025', 'Development test league', 15, 4, true, NOW(), NOW());
+// Insert test league
+db.leagues.insertOne({
+  _id: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  adminId: "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  name: "Test League 2025",
+  description: "Development test league",
+  startingWeek: 15,
+  numberOfWeeks: 4,
+  active: true,
+  createdAt: new Date(),
+  updatedAt: new Date()
+});
 
--- Insert test scoring rules
-INSERT INTO scoring_rules (id, league_id, passing_yards_per_point, rushing_yards_per_point, receiving_yards_per_point, reception_points, touchdown_points, created_at, updated_at)
-VALUES
-  ('c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 25.0, 10.0, 10.0, 1.0, 6.0, NOW(), NOW());
+// Insert test scoring rules
+db.scoringRules.insertOne({
+  _id: "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a33",
+  leagueId: "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  passingYardsPerPoint: 25.0,
+  rushingYardsPerPoint: 10.0,
+  receivingYardsPerPoint: 10.0,
+  receptionPoints: 1.0,
+  touchdownPoints: 6.0,
+  createdAt: new Date(),
+  updatedAt: new Date()
+});
 ```
 
 **Load seed data**:
 ```bash
-psql -U ffl_user -d ffl_playoffs -f src/main/resources/db/seed/dev-data.sql
+mongosh mongodb://ffl_user:ffl_password@localhost:27017/ffl_playoffs -f src/main/resources/db/seed/dev-data.js
 ```
 
 ---
@@ -363,7 +382,7 @@ psql -U ffl_user -d ffl_playoffs -f src/main/resources/db/seed/dev-data.sql
 # Run integration tests (uses Testcontainers)
 ./gradlew integrationTest
 
-# Testcontainers will automatically start PostgreSQL Docker container
+# Testcontainers will automatically start MongoDB Docker container
 ```
 
 **Example Integration Test**:
@@ -373,10 +392,8 @@ psql -U ffl_user -d ffl_playoffs -f src/main/resources/db/seed/dev-data.sql
 class LeagueRepositoryIntegrationTest {
 
     @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:14")
-        .withDatabaseName("test")
-        .withUsername("test")
-        .withPassword("test");
+    static MongoDBContainer mongo = new MongoDBContainer("mongo:6")
+        .withExposedPorts(27017);
 
     @Test
     void shouldSaveAndRetrieveLeague() {
@@ -450,10 +467,10 @@ ffl-playoffs-api/
 │   │   │       │   │   └── PlayerController.java
 │   │   │       │   ├── persistence/             # Database adapters
 │   │   │       │   │   ├── GameRepositoryAdapter.java
-│   │   │       │   │   └── jpa/
-│   │   │       │   │       ├── GameJpaRepository.java
-│   │   │       │   │       └── entity/
-│   │   │       │   │           └── GameEntity.java
+│   │   │       │   │   └── mongodb/
+│   │   │       │   │       ├── GameMongoRepository.java
+│   │   │       │   │       └── document/
+│   │   │       │   │           └── GameDocument.java
 │   │   │       │   └── integration/             # External API clients
 │   │   │       │       └── NflApiClient.java
 │   │   │       └── config/                      # Spring configuration
@@ -464,10 +481,10 @@ ffl-playoffs-api/
 │   │       ├── application-dev.yml              # Dev config
 │   │       ├── application-prod.yml             # Prod config
 │   │       └── db/
-│   │           └── migration/                   # Flyway migrations
-│   │               ├── V1__create_users_table.sql
-│   │               ├── V2__create_leagues_table.sql
-│   │               └── V3__create_team_selections_table.sql
+│   │           └── migration/                   # MongoDB migrations
+│   │               ├── V1__create_users_collection.js
+│   │               ├── V2__create_leagues_collection.js
+│   │               └── V3__create_team_selections_collection.js
 │   └── test/
 │       ├── java/com/ffl/playoffs/
 │       │   ├── domain/                          # Domain tests
@@ -567,7 +584,7 @@ logging:
   level:
     com.ffl.playoffs: DEBUG
     org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
+    org.springframework.data.mongodb: DEBUG
 ```
 
 **Add logging to code**:
@@ -623,36 +640,37 @@ kill -9 <PID>
 
 **Diagnosis**:
 ```bash
-# Check if PostgreSQL is running
-pg_isready -h localhost -p 5432
+# Check if MongoDB is running
+mongosh --eval "db.adminCommand('ping')"
 
 # Check connection
-psql -U ffl_user -d ffl_playoffs -h localhost -p 5432
+mongosh mongodb://ffl_user:ffl_password@localhost:27017/ffl_playoffs
 ```
 
 **Solution**:
-- Verify PostgreSQL is running: `brew services list` (macOS)
+- Verify MongoDB is running: `brew services list` (macOS)
 - Check credentials in `application-dev.yml`
-- Verify database exists: `psql -U postgres -l`
+- Verify database exists: `mongosh --eval "show dbs"`
 
 ---
 
-### Issue: Flyway migration fails
+### Issue: MongoDB migration fails
 
-**Error**: `FlywayException: Validate failed: Migration checksum mismatch`
+**Error**: `Migration failed: Collection or index already exists`
 
 **Solution**:
 ```bash
-# Repair Flyway schema history
-flyway -url=jdbc:postgresql://localhost:5432/ffl_playoffs \
-  -user=ffl_user \
-  -password=ffl_password \
-  repair
+# Connect to MongoDB and check collections
+mongosh mongodb://ffl_user:ffl_password@localhost:27017/ffl_playoffs
+
+# Drop specific collection if needed
+db.collectionName.drop()
 
 # Or reset database (dev only!)
-psql -U postgres -c "DROP DATABASE ffl_playoffs;"
-psql -U postgres -c "CREATE DATABASE ffl_playoffs;"
-psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ffl_playoffs TO ffl_user;"
+mongosh --eval "use ffl_playoffs; db.dropDatabase()"
+
+# Recreate user
+mongosh --eval "use ffl_playoffs; db.createUser({user: 'ffl_user', pwd: 'ffl_password', roles: [{role: 'readWrite', db: 'ffl_playoffs'}]})"
 ```
 
 ---
@@ -664,8 +682,8 @@ psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ffl_playoffs TO ffl_user;"
 # Ensure Docker is running
 docker ps
 
-# Pull PostgreSQL image
-docker pull postgres:14
+# Pull MongoDB image
+docker pull mongo:6
 
 # Run with Docker socket mounted
 export DOCKER_HOST=unix:///var/run/docker.sock
@@ -677,8 +695,8 @@ export DOCKER_HOST=unix:///var/run/docker.sock
 
 - [Spring Boot Documentation](https://docs.spring.io/spring-boot/docs/current/reference/html/)
 - [Hexagonal Architecture Guide](https://alistair.cockburn.us/hexagonal-architecture/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
-- [Flyway Documentation](https://flywaydb.org/documentation/)
+- [MongoDB Documentation](https://www.mongodb.com/docs/)
+- [Spring Data MongoDB Documentation](https://docs.spring.io/spring-data/mongodb/docs/current/reference/html/)
 
 ---
 

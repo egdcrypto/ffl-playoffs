@@ -194,7 +194,7 @@ Sleeper is known for its modern, clean design and strong social features, appeal
 1. **sakusanpuwan/fantasy_league_full_stack**
    - Full-stack clone of fantasy football app
    - **Tech Stack:** SpringBoot + React
-   - **Features:** RESTful API, JWT authentication, PostgreSQL
+   - **Features:** RESTful API, JWT authentication, MongoDB
    - **Data Source:** Fantasy Premier League API
    - ✅ **Pros:** Complete authentication, database integration, modern stack
    - ❌ **Cons:** Focused on Premier League, not NFL

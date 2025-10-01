@@ -14,6 +14,7 @@ A Fantasy Football League playoff game where players pick NFL teams for a config
 - [Technology Stack](#technology-stack)
 - [Architecture](#architecture)
 - [Documentation](#documentation)
+  - [UI Mockups](#ui-mockups)
 - [Project Structure](#project-structure)
 - [Contributing](#contributing)
 - [License](#license)
@@ -234,6 +235,25 @@ Behavior-Driven Development (BDD) specifications in `features/`:
 - [team-elimination.feature](features/team-elimination.feature) - Elimination mechanics
 - [scoring-ppr.feature](features/scoring-ppr.feature) - PPR scoring calculations
 
+### UI Mockups
+
+Interactive HTML mockups demonstrating the user interface:
+
+**📱 View Live Mockups:**
+- **[Mockups Index](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/index.html)** - All mockups in one place
+- **[Login Screen](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/login.html)** - Google OAuth authentication flow
+- **[Player Dashboard](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/player-dashboard.html)** - Main player view with leagues, stats, and actions
+- **[Team Selection](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/team-selection.html)** - Weekly team picker with all 32 NFL teams
+- **[Leaderboard](https://raw.githack.com/egdcrypto/ffl-playoffs/main/ui-design/mockups/leaderboard.html)** - Rankings, scores, and elimination status
+
+**📐 Design Documentation:**
+- [WIREFRAMES.md](ui-design/WIREFRAMES.md) - Detailed wireframes for all screens
+- [COMPONENTS.md](ui-design/COMPONENTS.md) - Reusable UI component library
+- [API-INTEGRATION.md](ui-design/API-INTEGRATION.md) - Screen-to-endpoint mappings
+- [RESEARCH.md](ui-design/RESEARCH.md) - UI/UX research and framework analysis
+
+All mockups are responsive (mobile/tablet/desktop) and built with Bootstrap 5.
+
 ## Project Structure
 
 ```
@@ -260,7 +280,17 @@ ffl-playoffs/
 │   │   │       └── db/migration/  # Flyway migrations
 │   │   └── test/
 │   └── build.gradle
-├── ui-design/                     # UI design assets
+├── ui-design/                     # UI design and mockups
+│   ├── mockups/                   # Interactive HTML mockups
+│   │   ├── index.html             # Mockups index page
+│   │   ├── login.html
+│   │   ├── player-dashboard.html
+│   │   ├── team-selection.html
+│   │   └── leaderboard.html
+│   ├── WIREFRAMES.md              # Screen wireframes
+│   ├── COMPONENTS.md              # UI component library
+│   ├── API-INTEGRATION.md         # API endpoint mappings
+│   └── RESEARCH.md                # UI/UX research
 ├── requirements.md                # Full requirements document
 └── README.md                      # This file
 ```

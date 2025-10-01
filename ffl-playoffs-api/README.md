@@ -49,32 +49,33 @@ This project follows **Hexagonal Architecture** (Ports and Adapters), ensuring a
 ## Prerequisites
 
 - Java 17 or higher
-- MongoDB 6+ (for production/development)
+- MongoDB 6.0+ (for production/development)
 - Gradle 8.x (wrapper included)
 
 ## Getting Started
 
 ### 1. Database Setup
 
-Create a MongoDB database:
-
-```bash
-mongosh
-use ffl_playoffs
-db.createUser({user: "ffl_user", pwd: "ffl_password", roles: [{role: "readWrite", db: "ffl_playoffs"}]})
-exit
-```
-
-Or use Docker:
+Start MongoDB locally or use Docker:
 
 ```bash
 docker run -d \
   --name ffl-mongodb \
-  -e MONGO_INITDB_DATABASE=ffl_playoffs \
-  -e MONGO_INITDB_ROOT_USERNAME=ffl_user \
-  -e MONGO_INITDB_ROOT_PASSWORD=ffl_password \
   -p 27017:27017 \
+  -e MONGO_INITDB_DATABASE=ffl_playoffs \
   mongo:6
+```
+
+Or install MongoDB locally:
+```bash
+# macOS
+brew install mongodb-community@6.0
+
+# Ubuntu
+sudo apt install mongodb-org
+
+# Start MongoDB
+mongod --dbpath /path/to/data
 ```
 
 ### 2. Environment Configuration
@@ -82,11 +83,7 @@ docker run -d \
 Create a `.env` file or set environment variables:
 
 ```bash
-DB_HOST=localhost
-DB_PORT=27017
-DB_NAME=ffl_playoffs
-DB_USERNAME=ffl_user
-DB_PASSWORD=ffl_password
+MONGODB_URI=mongodb://localhost:27017/ffl_playoffs
 ```
 
 ### 3. Build the Project
@@ -155,9 +152,7 @@ This project uses standard Java conventions with Lombok to reduce boilerplate.
 
 ### Database Migrations
 
-Database schema changes should be managed through:
-- MongoDB migrations (recommended for production)
-- Or Spring Data MongoDB automatic index creation for development
+MongoDB is schemaless, but we use Spring Data MongoDB for document mapping. Schema validation and indexes are defined in the domain models using annotations.
 
 ## Project Structure Details
 

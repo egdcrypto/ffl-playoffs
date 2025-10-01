@@ -326,24 +326,38 @@ curl -X POST http://localhost:8080/api/v1/admin/leagues \
     "name": "2025 NFL Playoffs Pool",
     "startingWeek": 15,
     "numberOfWeeks": 4,
+    "rosterConfiguration": {
+      "positions": [
+        {"position": "QB", "count": 1},
+        {"position": "RB", "count": 2},
+        {"position": "WR", "count": 2},
+        {"position": "TE", "count": 1},
+        {"position": "K", "count": 1},
+        {"position": "DEF", "count": 1},
+        {"position": "FLEX", "count": 1, "eligiblePositions": ["RB", "WR", "TE"]},
+        {"position": "SUPERFLEX", "count": 1, "eligiblePositions": ["QB", "RB", "WR", "TE"]}
+      ]
+    },
     "scoringRules": {
       "pprRules": {
         "passingYardsPerPoint": 25,
+        "passingTouchdownPoints": 4,
         "rushingYardsPerPoint": 10,
-        "receptionPoints": 1
+        "receptionPoints": 1.0,
+        "receivingYardsPerPoint": 10
       }
     }
   }'
 ```
 
-### Make Team Selection (Player)
+### Draft NFL Player (Player)
 ```bash
-curl -X POST http://localhost:8080/api/v1/player/leagues/1/selections \
+curl -X POST http://localhost:8080/api/v1/player/leagues/1/roster/draft \
   -H "Authorization: Bearer <google-jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{
-    "week": 1,
-    "teamName": "Kansas City Chiefs"
+    "nflPlayerId": 12345,
+    "rosterSlot": "QB"
   }'
 ```
 
@@ -418,19 +432,20 @@ test: add integration tests for leaderboard
 ### Phase 1: Core Functionality (Current)
 - ✅ Hexagonal architecture setup
 - ✅ User management (SUPER_ADMIN, ADMIN, PLAYER)
-- ✅ League configuration with flexible start weeks
-- ✅ Team selection with elimination logic
-- ✅ PPR scoring with configurable rules
+- ✅ League configuration with flexible start weeks and roster configuration
+- ✅ Individual NFL player roster building with draft system
+- ✅ Position-based rosters (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
+- ✅ Individual player PPR scoring with configurable rules
 - ✅ Google OAuth authentication
 - ✅ Personal Access Token (PAT) system
-- ✅ Comprehensive documentation
+- ✅ Comprehensive documentation and UI mockups
 
 ### Phase 2: Enhanced Features (Q2 2025)
 - 🔲 Real-time score updates via WebSocket
-- 🔲 Email notifications for team eliminations
-- 🔲 Historical game archive
+- 🔲 Email notifications for roster updates and weekly scoring
+- 🔲 Historical game archive and season statistics
 - 🔲 Mobile app (React Native)
-- 🔲 Social features (comments, trash talk)
+- 🔲 Social features (league chat, player comparisons, trade system)
 
 ### Phase 3: Analytics & Insights (Q3 2025)
 - 🔲 Advanced statistics dashboard

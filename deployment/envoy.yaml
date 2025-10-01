@@ -1,0 +1,129 @@
+admin:
+  address:
+    socket_address:
+      address: 127.0.0.1
+      port_value: 9901
+
+static_resources:
+  listeners:
+  - name: listener_0
+    address:
+      socket_address:
+        address: 0.0.0.0
+        port_value: 443
+    filter_chains:
+    - filters:
+      - name: envoy.filters.network.http_connection_manager
+        typed_config:
+          "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+          stat_prefix: ingress_http
+          codec_type: AUTO
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: backend
+              domains: ["*"]
+              routes:
+              # Public endpoints (no auth required)
+              - match:
+                  prefix: "/health"
+                route:
+                  cluster: local_api
+              - match:
+                  prefix: "/api/v1/public/"
+                route:
+                  cluster: local_api
+
+              # Super Admin endpoints (require ADMIN PAT or SUPER_ADMIN role)
+              - match:
+                  prefix: "/api/v1/superadmin/"
+                route:
+                  cluster: local_api
+                typed_per_filter_config:
+                  envoy.filters.http.ext_authz:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                    check_settings:
+                      context_extensions:
+                        required_scope: "ADMIN"
+
+              # Admin endpoints (require WRITE/ADMIN PAT or ADMIN/SUPER_ADMIN role)
+              - match:
+                  prefix: "/api/v1/admin/"
+                route:
+                  cluster: local_api
+                typed_per_filter_config:
+                  envoy.filters.http.ext_authz:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                    check_settings:
+                      context_extensions:
+                        required_scope: "WRITE"
+
+              # Player endpoints (require any valid auth)
+              - match:
+                  prefix: "/api/v1/player/"
+                route:
+                  cluster: local_api
+                typed_per_filter_config:
+                  envoy.filters.http.ext_authz:
+                    "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                    check_settings:
+                      context_extensions:
+                        required_scope: "READ_ONLY"
+
+              # Default route (requires auth)
+              - match:
+                  prefix: "/"
+                route:
+                  cluster: local_api
+
+          http_filters:
+          # External authorization filter (calls auth service)
+          - name: envoy.filters.http.ext_authz
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+              transport_api_version: V3
+              grpc_service:
+                envoy_grpc:
+                  cluster_name: auth_service
+                timeout: 0.5s
+              failure_mode_allow: false
+              with_request_body:
+                max_request_bytes: 8192
+                allow_partial_message: true
+
+          # Router filter (must be last)
+          - name: envoy.filters.http.router
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+  # Main API cluster (localhost:8080)
+  - name: local_api
+    connect_timeout: 1s
+    type: STATIC
+    lb_policy: ROUND_ROBIN
+    load_assignment:
+      cluster_name: local_api
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 8080
+
+  # Auth service cluster (localhost:9191) - gRPC
+  - name: auth_service
+    connect_timeout: 0.5s
+    type: STATIC
+    lb_policy: ROUND_ROBIN
+    http2_protocol_options: {}
+    load_assignment:
+      cluster_name: auth_service
+      endpoints:
+      - lb_endpoints:
+        - endpoint:
+            address:
+              socket_address:
+                address: 127.0.0.1
+                port_value: 9191

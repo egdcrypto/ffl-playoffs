@@ -5,7 +5,7 @@
 2. [System Architecture](#system-architecture)
 3. [Core Features](#core-features)
    - [User Management and Role Hierarchy](#1-user-management-and-role-hierarchy)
-   - [Team Selection](#2-team-selection)
+   - [Roster Building and Player Selection](#2-roster-building-and-player-selection)
    - [Scoring System](#3-scoring-system)
    - [League/Game Creation](#4-leaguegame-creation-and-configuration)
    - [Leaderboard & Standings](#5-leaderboard--standings)
@@ -63,7 +63,7 @@ The system implements a three-tier role hierarchy:
 3. **PLAYER**
    - Regular participants (invite-only)
    - Can be invited only by ADMIN to specific leagues
-   - Can make team selections
+   - Can build rosters (select individual NFL players by position)
    - Can view standings and scores
    - Has participant-level permissions
 

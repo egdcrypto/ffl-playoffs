@@ -1,18 +1,6 @@
 # FFL Playoffs Architecture
 
-> ⚠️ **CRITICAL UPDATE REQUIRED**: This document currently describes the **OLD team-based survivor pool model** and requires comprehensive updates to reflect the **NEW roster-based fantasy football model** with individual NFL player selection (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX) and ONE-TIME DRAFT permanent roster lock.
->
-> **Update Required**:
-> - Replace TeamSelection → Roster/RosterSlot entities
-> - Replace team elimination logic → roster permanent lock logic
-> - Update use cases from MakeTeamSelectionUseCase → BuildRosterUseCase, AssignPlayerToSlotUseCase
-> - Update domain services from EliminationService → RosterValidationService
-> - Update domain events from TeamEliminatedEvent → RosterLockedEvent
->
-> Until this document is updated, refer to:
-> - `requirements.md` for current roster-based requirements
-> - `features/roster-management.feature` for roster business rules
-> - Domain entities: Position.java, NFLPlayer.java, Roster.java, RosterSlot.java, RosterConfiguration.java
+> **This document is under active development** as we complete the transition to the roster-based fantasy football model. See [DATA_MODEL.md](DATA_MODEL.md) for complete entity documentation.
 
 ## Table of Contents
 1. [Overview](#overview)

@@ -142,16 +142,22 @@ The system implements a three-tier role hierarchy:
   - Number of weeks determined by league configuration (1-17 weeks)
 
 ### 3. Scoring System
-- **PPR Scoring Rules (Team-Based)**
-  - **IMPORTANT**: Scoring is based on the ENTIRE NFL TEAM's cumulative offensive performance
-  - Standard PPR (Points Per Reception) scoring
-  - Touchdowns: 6 points (all team TDs)
-  - Receptions: 1 point per reception (all team receptions)
-  - Passing yards: 1 point per 25 yards (team total passing)
-  - Rushing/Receiving yards: 1 point per 10 yards (team totals)
-  - Extra Points: 1 point
-  - Two-Point Conversions: 2 points
-  - Example: If "Kansas City Chiefs" throw for 300 yards, rush for 120 yards, have 25 receptions, and score 4 TDs, the player who selected them gets all those points
+- **PPR Scoring Rules (Individual Player-Based)**
+  - **IMPORTANT**: Scoring is based on INDIVIDUAL NFL PLAYER performance
+  - Standard PPR (Points Per Reception) scoring (configurable by admin):
+    - **Passing**: 1 point per 25 yards (default, configurable)
+    - **Passing TD**: 4 points (default, configurable)
+    - **Interceptions**: -2 points (default, configurable)
+    - **Rushing**: 1 point per 10 yards (default, configurable)
+    - **Rushing TD**: 6 points (default, configurable)
+    - **Receiving**: 1 point per 10 yards (default, configurable)
+    - **Reception**: 1 point per reception (PPR, configurable to 0.5 for Half-PPR or 0 for Standard)
+    - **Receiving TD**: 6 points (default, configurable)
+    - **Fumbles Lost**: -2 points (default, configurable)
+    - **2-Point Conversions**: 2 points (default, configurable)
+  - Example: Patrick Mahomes throws 300 yards (12 pts) + 3 TDs (12 pts) + 1 INT (-2 pts) = 22 fantasy points
+  - Each NFL player's stats tracked game-by-game throughout the season
+  - League player's total score = sum of all their selected NFL players' scores
 
 - **Field Goal Scoring (Configurable by Distance)**
   - Admin can configure points by distance range
@@ -195,11 +201,12 @@ The system implements a three-tier role hierarchy:
 
   - Each league can customize all defensive scoring rules and tiers
 
-- **Elimination Rules**
-  - If a player's selected team loses, that team is "eliminated"
-  - Eliminated teams score ZERO points for all remaining weeks
-  - Player can still pick other non-eliminated teams in future weeks
-  - Track team win/loss status per week
+- **Weekly Scoring**
+  - Each NFL player's performance tracked game-by-game
+  - Fantasy points calculated per week for each NFL player
+  - League player's weekly total = sum of all roster player scores for that week
+  - Cumulative season scoring across all configured weeks
+  - Real-time score updates during games (configurable refresh interval)
 
 ### 4. League/Game Creation and Configuration
 - **Admin League Setup**
@@ -207,16 +214,31 @@ The system implements a three-tier role hierarchy:
   - Configure league settings:
     - League name and description
     - Start date and end date
-    - Starting NFL week (1-18, default: 1) - which week of NFL season to begin
+    - Starting NFL week (1-22, default: 1) - which week of NFL season to begin
     - Number of weeks (configurable: 1-17 weeks, default: 4)
-    - Validation: startingWeek + numberOfWeeks - 1 ≤ 18 (cannot exceed NFL season)
+    - Validation: startingWeek + numberOfWeeks - 1 ≤ 22 (cannot exceed NFL season including playoffs)
+    - **Roster configuration**:
+      - Define number of each position required:
+        - Quarterbacks (QB): 0-4 (typical: 1)
+        - Running Backs (RB): 0-6 (typical: 2-3)
+        - Wide Receivers (WR): 0-6 (typical: 2-3)
+        - Tight Ends (TE): 0-3 (typical: 1)
+        - Kickers (K): 0-2 (typical: 1)
+        - Defense/Special Teams (DEF): 0-2 (typical: 1)
+        - FLEX (RB/WR/TE): 0-3 (typical: 1)
+        - Superflex (QB/RB/WR/TE): 0-2 (typical: 0-1)
+      - Total roster size calculated from position counts
+      - Validation: At least 1 position slot required
+      - Example roster: 1 QB + 2 RB + 2 WR + 1 TE + 1 FLEX + 1 K + 1 DEF = 9 total
     - **Scoring rules configuration**:
-      - PPR settings (passing/rushing/receiving yards per point)
+      - PPR settings (passing/rushing/receiving yards per point, reception points, TDs, INTs, fumbles)
+      - PPR format: Full PPR (1.0), Half PPR (0.5), or Standard (0.0)
       - Field goal scoring by distance (0-39, 40-49, 50+ yards)
       - Defensive scoring rules (sacks, interceptions, fumbles, TDs)
       - Points allowed scoring tiers
+      - Yards allowed scoring tiers
     - Pick deadline times for each week
-    - Maximum number of players
+    - Maximum number of league players
     - Public or private league
   - **Configuration Immutability**:
     - ALL league configuration becomes **IMMUTABLE** once the first NFL game of the starting week begins
@@ -224,13 +246,13 @@ The system implements a three-tier role hierarchy:
     - After lock, NO changes allowed to ANY setting:
       - League name and description
       - Starting week and number of weeks
+      - Roster configuration (position counts)
       - PPR scoring rules
       - Field goal scoring rules
       - Defensive scoring rules (including points/yards allowed tiers)
       - Pick deadlines
-      - Maximum players
+      - Maximum league players
       - Privacy settings (public/private)
-      - Elimination mode
     - Lock reason: "FIRST_GAME_STARTED"
     - Attempted modifications after lock throw `ConfigurationLockedException`
     - Configuration remains mutable between league activation and first game start

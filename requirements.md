@@ -192,10 +192,26 @@ The system implements a three-tier role hierarchy:
     - Pick deadline times for each week
     - Maximum number of players
     - Public or private league
-  - Admins can modify settings before game starts
-  - Critical settings locked once game becomes active (including numberOfWeeks and startingWeek)
-  - Admins can activate/deactivate leagues
-  - View all league configurations
+  - **Configuration Immutability**:
+    - ALL league configuration becomes **IMMUTABLE** once the first NFL game of the starting week begins
+    - Lock is based on first NFL game start time, NOT league activation time
+    - After lock, NO changes allowed to ANY setting:
+      - League name and description
+      - Starting week and number of weeks
+      - PPR scoring rules
+      - Field goal scoring rules
+      - Defensive scoring rules (including points/yards allowed tiers)
+      - Pick deadlines
+      - Maximum players
+      - Privacy settings (public/private)
+      - Elimination mode
+    - Lock reason: "FIRST_GAME_STARTED"
+    - Attempted modifications after lock throw `ConfigurationLockedException`
+    - Configuration remains mutable between league activation and first game start
+    - Admin UI displays warning before configuration locks with countdown timer
+    - Audit log captures all attempted modifications after lock
+  - Admins can activate/deactivate leagues (before first game starts)
+  - View all league configurations (including lock status and lock timestamp)
   - Clone settings from previous leagues
 
   **Example Configurations:**

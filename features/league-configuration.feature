@@ -223,26 +223,120 @@ Feature: League Configuration
 
   # Configuration Locking
 
-  Scenario: All settings can be modified before activation
-    Given the league status is "DRAFT"
-    When the admin modifies any setting
+  Scenario: All settings can be modified before first game starts
+    Given the league status is "ACTIVE"
+    And the league starts at NFL week 15
+    And the first game of NFL week 15 starts on "2024-12-15 13:00:00 ET"
+    And the current time is "2024-12-15 10:00:00 ET"
+    When the admin modifies any league setting
     Then the modification is allowed
+    And the league configuration is still mutable
 
-  Scenario: Critical settings locked after activation
-    Given the league status is "ACTIVE"
+  Scenario: ALL configuration becomes immutable once first game starts
+    Given the league starts at NFL week 15
+    And the first game of NFL week 15 started at "2024-12-15 13:00:00 ET"
+    And the current time is "2024-12-15 13:01:00 ET"
+    When the admin attempts to change any configuration setting
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+    And the error message is "Configuration cannot be changed after first game starts"
+
+  Scenario: Cannot change scoring rules after first game starts
+    Given the league started 2 hours ago (first NFL game began)
+    When the admin attempts to modify PPR scoring rules
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+    When the admin attempts to modify field goal scoring rules
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+    When the admin attempts to modify defensive scoring rules
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+
+  Scenario: Cannot change league duration after first game starts
+    Given the league started 1 day ago
     When the admin attempts to change startingWeek
-    Then the request is rejected with error "LEAGUE_ALREADY_ACTIVE"
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
     When the admin attempts to change numberOfWeeks
-    Then the request is rejected with error "LEAGUE_ALREADY_ACTIVE"
-    When the admin attempts to change scoring rules
-    Then the request is rejected with error "LEAGUE_ALREADY_ACTIVE"
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
 
-  Scenario: Non-critical settings can be modified after activation
-    Given the league status is "ACTIVE"
-    When the admin updates the league name
-    Then the update is allowed
-    When the admin updates the league description
-    Then the update is allowed
+  Scenario: Cannot change league name or description after first game starts
+    Given the league started 3 hours ago
+    When the admin attempts to update the league name
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+    When the admin attempts to update the league description
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+
+  Scenario: Cannot change privacy settings after first game starts
+    Given the league started yesterday
+    When the admin attempts to change the league from PRIVATE to PUBLIC
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+
+  Scenario: Cannot change max players after first game starts
+    Given the league started 5 days ago
+    When the admin attempts to increase maxPlayers from 20 to 30
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+
+  Scenario: Cannot change pick deadlines after first game starts
+    Given the league started at NFL week 15
+    And the league is now in week 2 (NFL week 16)
+    When the admin attempts to modify the pick deadline for week 3
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+
+  Scenario: League lock is based on NFL game start time, not activation
+    Given the league is activated at "2024-12-14 09:00:00 ET"
+    And the first game of NFL week 15 starts at "2024-12-15 13:00:00 ET"
+    And the current time is "2024-12-14 15:00:00 ET"
+    Then the league is activated but not locked
+    And configuration can still be modified
+    When the current time advances to "2024-12-15 13:00:01 ET"
+    Then the league configuration becomes permanently locked
+    And no further modifications are allowed
+
+  Scenario: View league lock status
+    Given the league starts at NFL week 15
+    When the admin requests league details
+    Then the response includes:
+      | configurationLocked    | true/false          |
+      | lockTimestamp          | <first-game-start>  |
+      | lockReason             | FIRST_GAME_STARTED  |
+
+  Scenario: Warning displayed before configuration locks
+    Given the league is activated
+    And the first game starts in 2 hours
+    When the admin views the league configuration page
+    Then a warning is displayed:
+      """
+      ⚠️ Configuration will become permanently locked when the first game starts at 2024-12-15 13:00:00 ET (in 2 hours).
+      Make any final changes now.
+      """
+
+  Scenario: Audit log captures attempted modifications after lock
+    Given the league configuration is locked
+    When the admin attempts to modify any setting
+    Then the attempt is rejected
+    And an audit log entry is created:
+      | action       | CONFIG_MODIFICATION_REJECTED  |
+      | adminId      | <admin-id>                    |
+      | reason       | LEAGUE_STARTED                |
+      | attemptedAt  | <timestamp>                   |
+
+  Scenario Outline: All settings become immutable after first game
+    Given the league started <time> ago
+    When the admin attempts to change <setting>
+    Then the request is rejected with error "LEAGUE_STARTED_CONFIGURATION_LOCKED"
+
+    Examples:
+      | time      | setting                        |
+      | 1 minute  | startingWeek                   |
+      | 1 hour    | numberOfWeeks                  |
+      | 1 day     | PPR scoring rules              |
+      | 2 days    | field goal scoring rules       |
+      | 1 week    | defensive scoring rules        |
+      | 1 minute  | points allowed tiers           |
+      | 1 hour    | yards allowed tiers            |
+      | 1 day     | league name                    |
+      | 2 days    | league description             |
+      | 1 week    | privacy settings (public/private) |
+      | 1 minute  | max players                    |
+      | 1 hour    | pick deadlines                 |
+      | 1 day     | elimination mode               |
 
   # Configuration Cloning
 

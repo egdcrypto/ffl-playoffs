@@ -621,7 +621,98 @@ public class ScoringRules {
 - **Encapsulation**: Scoring logic lives with scoring data
 - **Testability**: Easy to create test fixtures
 
-### 7. Why Envoy Sidecar Pattern?
+### 7. Why Configuration Immutability After Game Starts?
+
+**Problem**: Allowing configuration changes mid-game creates unfairness and data integrity issues:
+- Players made decisions based on original scoring rules
+- Changing rules retrospectively invalidates past calculations
+- Altering duration affects strategy and team selection
+- Inconsistent scoring if rules change between weeks
+
+**Solution**: Make ALL league configuration immutable once the first NFL game of the starting week begins.
+
+**Implementation**:
+```java
+public class Game {
+    private LocalDateTime firstGameStartTime;
+    private LocalDateTime configurationLockedAt;
+    private String lockReason;
+
+    public boolean isConfigurationLocked(LocalDateTime currentTime) {
+        if (configurationLockedAt != null) {
+            return true;
+        }
+        return firstGameStartTime != null && currentTime.isAfter(firstGameStartTime);
+    }
+
+    public void validateConfigurationMutable(LocalDateTime currentTime) {
+        if (isConfigurationLocked(currentTime)) {
+            throw new ConfigurationLockedException(
+                "Configuration cannot be modified after the first game has started"
+            );
+        }
+    }
+
+    public void setName(String name, LocalDateTime currentTime) {
+        validateConfigurationMutable(currentTime);  // Enforces immutability
+        this.name = name;
+        this.updatedAt = LocalDateTime.now();
+    }
+}
+```
+
+**Design Decisions**:
+
+1. **Lock Trigger**: First NFL game start time (not league activation)
+   - **Rationale**: Admin needs time to finalize configuration after activation
+   - **Window**: Configuration mutable between activation and first game kickoff
+   - **Example**: League activated Monday, first game Sunday 1PM → admin has days to adjust
+
+2. **Lock Scope**: ALL configuration settings
+   - **Rationale**: Partial immutability creates confusion about what can change
+   - **Included**: Name, description, scoring rules, duration, deadlines, privacy, max players
+   - **Excluded**: None - everything is locked
+
+3. **Lock Enforcement**: Domain model layer
+   - **Rationale**: Business rule belongs in domain, not infrastructure
+   - **Pattern**: Each setter accepts `currentTime` parameter and validates
+   - **Exception**: `ConfigurationLockedException` prevents unauthorized changes
+
+4. **Lock Tracking**:
+   - `configurationLockedAt`: Timestamp when lock occurred
+   - `lockReason`: Why lock happened (e.g., "FIRST_GAME_STARTED")
+   - `firstGameStartTime`: When first NFL game of starting week begins
+
+**Benefits**:
+- ✅ **Fairness**: All players compete under same rules throughout game
+- ✅ **Data Integrity**: Scores remain consistent with original configuration
+- ✅ **Predictability**: Players know rules won't change mid-game
+- ✅ **Audit Trail**: Lock timestamp and reason tracked for transparency
+- ✅ **Strategy Preservation**: Player decisions remain valid throughout game
+
+**Trade-offs**:
+- ❌ Cannot fix configuration mistakes after first game starts
+- ❌ Admin must be diligent before activation
+- ✅ Mitigated by: Warning UI, preview mode, configuration clone from previous leagues
+
+**Audit Logging**:
+```java
+@EventListener
+public class ConfigurationModificationAuditListener {
+    public void onConfigurationLockedException(ConfigurationLockedException ex) {
+        auditLog.record(
+            action: "CONFIG_MODIFICATION_REJECTED",
+            adminId: SecurityContext.getAdminId(),
+            leagueId: leagueId,
+            reason: "LEAGUE_STARTED",
+            attemptedChange: ex.getAttemptedChange(),
+            timestamp: LocalDateTime.now()
+        );
+    }
+}
+```
+
+### 8. Why Envoy Sidecar Pattern?
 
 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed explanation.
 

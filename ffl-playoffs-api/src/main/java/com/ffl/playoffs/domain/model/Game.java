@@ -17,8 +17,13 @@ public class Game {
     private GameStatus status;
     private Integer startingWeek;
     private Integer currentWeek;
+    private Integer numberOfWeeks;
+    private String eliminationMode;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime configurationLockedAt;
+    private String lockReason;
+    private LocalDateTime firstGameStartTime;
     private List<Player> players;
     private ScoringRules scoringRules;
 
@@ -75,6 +80,87 @@ public class Game {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Checks if the configuration is locked based on first game start time.
+     * Configuration becomes immutable once the first NFL game of the starting week begins.
+     *
+     * @param currentTime The current time to check against
+     * @return true if configuration is locked, false otherwise
+     */
+    public boolean isConfigurationLocked(LocalDateTime currentTime) {
+        if (this.configurationLockedAt != null) {
+            return true;
+        }
+
+        if (this.firstGameStartTime != null && currentTime.isAfter(firstGameStartTime)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Locks the configuration permanently.
+     * Should be called when the first game of the starting NFL week begins.
+     *
+     * @param lockTime The time when the configuration is being locked
+     * @param reason The reason for locking (e.g., "FIRST_GAME_STARTED")
+     */
+    public void lockConfiguration(LocalDateTime lockTime, String reason) {
+        if (this.configurationLockedAt == null) {
+            this.configurationLockedAt = lockTime;
+            this.lockReason = reason;
+            this.updatedAt = LocalDateTime.now();
+        }
+    }
+
+    /**
+     * Validates that configuration can be modified.
+     * Throws exception if configuration is locked.
+     *
+     * @param currentTime The current time to check against
+     * @throws ConfigurationLockedException if configuration is locked
+     */
+    public void validateConfigurationMutable(LocalDateTime currentTime) {
+        if (isConfigurationLocked(currentTime)) {
+            throw new ConfigurationLockedException(
+                "Configuration cannot be modified after the first game has started. " +
+                "Locked at: " + this.configurationLockedAt + ". Reason: " + this.lockReason
+            );
+        }
+    }
+
+    /**
+     * Sets the first game start time for the starting NFL week.
+     * This is used to determine when configuration becomes immutable.
+     *
+     * @param firstGameStartTime The start time of the first NFL game
+     */
+    public void setFirstGameStartTime(LocalDateTime firstGameStartTime) {
+        this.firstGameStartTime = firstGameStartTime;
+    }
+
+    public LocalDateTime getFirstGameStartTime() {
+        return firstGameStartTime;
+    }
+
+    public LocalDateTime getConfigurationLockedAt() {
+        return configurationLockedAt;
+    }
+
+    public String getLockReason() {
+        return lockReason;
+    }
+
+    /**
+     * Custom exception for configuration lock violations
+     */
+    public static class ConfigurationLockedException extends RuntimeException {
+        public ConfigurationLockedException(String message) {
+            super(message);
+        }
+    }
+
     // Getters and Setters
     public UUID getId() {
         return id;
@@ -88,8 +174,10 @@ public class Game {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(String name, LocalDateTime currentTime) {
+        validateConfigurationMutable(currentTime);
         this.name = name;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getCode() {
@@ -120,8 +208,10 @@ public class Game {
         return startingWeek;
     }
 
-    public void setStartingWeek(Integer startingWeek) {
+    public void setStartingWeek(Integer startingWeek, LocalDateTime currentTime) {
+        validateConfigurationMutable(currentTime);
         this.startingWeek = startingWeek;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Integer getCurrentWeek() {
@@ -160,8 +250,30 @@ public class Game {
         return scoringRules;
     }
 
-    public void setScoringRules(ScoringRules scoringRules) {
+    public void setScoringRules(ScoringRules scoringRules, LocalDateTime currentTime) {
+        validateConfigurationMutable(currentTime);
         this.scoringRules = scoringRules;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public Integer getNumberOfWeeks() {
+        return numberOfWeeks;
+    }
+
+    public void setNumberOfWeeks(Integer numberOfWeeks, LocalDateTime currentTime) {
+        validateConfigurationMutable(currentTime);
+        this.numberOfWeeks = numberOfWeeks;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public String getEliminationMode() {
+        return eliminationMode;
+    }
+
+    public void setEliminationMode(String eliminationMode, LocalDateTime currentTime) {
+        validateConfigurationMutable(currentTime);
+        this.eliminationMode = eliminationMode;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public enum GameStatus {

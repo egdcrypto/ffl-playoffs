@@ -4,11 +4,12 @@
 1. [Overview](#overview)
 2. [API Architecture](#api-architecture)
 3. [Authentication](#authentication)
-4. [Endpoint Structure](#endpoint-structure)
-5. [API Endpoints](#api-endpoints)
-6. [Request/Response Examples](#requestresponse-examples)
-7. [Error Handling](#error-handling)
-8. [Webhooks & Events](#webhooks--events)
+4. [Pagination](#pagination)
+5. [Endpoint Structure](#endpoint-structure)
+6. [API Endpoints](#api-endpoints)
+7. [Request/Response Examples](#requestresponse-examples)
+8. [Error Handling](#error-handling)
+9. [Webhooks & Events](#webhooks--events)
 
 ## Overview
 

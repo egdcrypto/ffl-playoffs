@@ -250,6 +250,7 @@ Feature: Data Integration with External NFL Data Sources
       | division         |
       | logoUrl          |
     And team data is cached for the season
+    And no pagination is needed (only 32 teams)
 
   Scenario: Update team records and standings
     Given the season is in progress
@@ -260,6 +261,107 @@ Feature: Data Integration with External NFL Data Sources
       | ties             |
       | winPercentage    |
     And standings are displayed to players for team selection
+
+  # Pagination for Data Retrieval
+
+  Scenario: Paginate NFL team list with default page size
+    Given there are 32 NFL teams in the system
+    When the client requests the team list without pagination parameters
+    Then the response includes 20 teams (default page size)
+    And the response includes pagination metadata:
+      | page           | 0              |
+      | size           | 20             |
+      | totalElements  | 32             |
+      | totalPages     | 2              |
+      | hasNext        | true           |
+      | hasPrevious    | false          |
+
+  Scenario: Request specific page of NFL teams
+    Given there are 32 NFL teams in the system
+    When the client requests page 1 with size 10
+    Then the response includes teams 11-20
+    And the pagination metadata shows:
+      | page           | 1              |
+      | size           | 10             |
+      | totalElements  | 32             |
+      | totalPages     | 4              |
+      | hasNext        | true           |
+      | hasPrevious    | true           |
+
+  Scenario: Configure custom page size
+    Given the client wants to see more items per page
+    When the client requests page 0 with size 50
+    Then the response includes all 32 teams
+    And the pagination metadata shows:
+      | page           | 0              |
+      | size           | 50             |
+      | totalElements  | 32             |
+      | totalPages     | 1              |
+      | hasNext        | false          |
+      | hasPrevious    | false          |
+
+  Scenario: Paginate game results for a league week
+    Given NFL week 15 has 16 games scheduled
+    When the client requests game results with page size 5
+    Then page 0 contains games 1-5
+    And page 1 contains games 6-10
+    And page 2 contains games 11-15
+    And page 3 contains game 16
+    And each response includes total count of 16
+
+  Scenario: Paginate leaderboard with many players
+    Given a league has 100 players
+    When the client requests the leaderboard with page size 25
+    Then page 0 shows ranks 1-25
+    And page 1 shows ranks 26-50
+    And page 2 shows ranks 51-75
+    And page 3 shows ranks 76-100
+    And pagination links are provided for next/previous pages
+
+  Scenario: Request page beyond available data
+    Given there are 32 NFL teams
+    When the client requests page 10 with size 20
+    Then the response returns an empty list
+    And the pagination metadata shows:
+      | page           | 10             |
+      | size           | 20             |
+      | totalElements  | 32             |
+      | totalPages     | 2              |
+      | hasNext        | false          |
+      | hasPrevious    | true           |
+
+  Scenario: Pagination with filtering
+    Given there are 32 NFL teams
+    And the client filters by conference "AFC"
+    When the client requests page 0 with size 10
+    Then the response includes 10 AFC teams
+    And the pagination metadata reflects filtered total:
+      | totalElements  | 16 (AFC teams) |
+      | totalPages     | 2              |
+
+  Scenario: Pagination includes navigation links
+    Given a paginated API response for teams
+    When the client is on page 1 of 4
+    Then the response includes navigation links:
+      | first    | /api/v1/teams?page=0&size=10       |
+      | previous | /api/v1/teams?page=0&size=10       |
+      | self     | /api/v1/teams?page=1&size=10       |
+      | next     | /api/v1/teams?page=2&size=10       |
+      | last     | /api/v1/teams?page=3&size=10       |
+
+  Scenario: Validate page size limits
+    Given the system has a maximum page size of 100
+    When the client requests a page size of 200
+    Then the request is rejected with error "MAX_PAGE_SIZE_EXCEEDED"
+    And the error message suggests "Maximum page size is 100"
+
+  Scenario: Paginate with sorting
+    Given a list of NFL teams
+    When the client requests teams sorted by "winPercentage" descending with page size 10
+    Then page 0 shows the top 10 teams by win percentage
+    And page 1 shows teams ranked 11-20
+    And pagination metadata includes sort information:
+      | sort | winPercentage,desc |
 
   # Data Monitoring and Health
 

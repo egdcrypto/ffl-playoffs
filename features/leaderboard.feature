@@ -27,6 +27,43 @@ Feature: Leaderboard and Standings
       | 3    | player2  | 38.2  |
       | 4    | player4  | 28.7  |
 
+  # Pagination
+
+  Scenario: Paginate leaderboard with many players
+    Given the league has 100 players
+    When I request the leaderboard with page size 20
+    Then I should receive 20 player records
+    And the response includes pagination metadata:
+      | totalItems    | 100 |
+      | totalPages    | 5   |
+      | currentPage   | 1   |
+      | pageSize      | 20  |
+      | hasNextPage   | true  |
+      | hasPreviousPage | false |
+
+  Scenario: Navigate to specific leaderboard page
+    Given the league has 100 players
+    When I request leaderboard page 3 with page size 20
+    Then I should receive players ranked 41-60
+    And the pagination metadata shows:
+      | currentPage   | 3   |
+      | totalPages    | 5   |
+      | hasNextPage   | true  |
+      | hasPreviousPage | true |
+
+  Scenario: Change leaderboard page size
+    Given the league has 100 players
+    When I request the leaderboard with page size 50
+    Then I should receive 50 player records
+    And the response shows totalPages as 2
+
+  Scenario: Last page of leaderboard
+    Given the league has 100 players
+    When I request leaderboard page 5 with page size 20
+    Then I should receive players ranked 81-100
+    And hasNextPage is false
+    And hasPreviousPage is true
+
   Scenario: View overall cumulative leaderboard
     Given it is week 3 of the game
     And the following players have cumulative scores:

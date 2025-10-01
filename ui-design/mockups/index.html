@@ -5,29 +5,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FFL Playoffs - UI Mockups</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+        }
+        .mockup-card {
+            transition: transform 0.2s;
+            border-left: 4px solid #667eea;
+        }
+        .mockup-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .badge-position {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>FFL Playoffs - UI Mockups</h1>
-        <p class="lead">Click below to view the HTML mockups:</p>
-        <div class="list-group">
-            <a href="login.html" class="list-group-item list-group-item-action">
-                <h5>Login Screen</h5>
-                <p class="mb-0">Google OAuth authentication flow</p>
-            </a>
-            <a href="player-dashboard.html" class="list-group-item list-group-item-action">
-                <h5>Player Dashboard</h5>
-                <p class="mb-0">Main player view with leagues, stats, and actions</p>
-            </a>
-            <a href="team-selection.html" class="list-group-item list-group-item-action">
-                <h5>Team Selection</h5>
-                <p class="mb-0">Weekly team picker with all 32 NFL teams</p>
-            </a>
-            <a href="leaderboard.html" class="list-group-item list-group-item-action">
-                <h5>Leaderboard</h5>
-                <p class="mb-0">Rankings, scores, and elimination status</p>
-            </a>
+    <div class="container mt-4">
+        <div class="hero text-center">
+            <h1 class="display-4"><i class="bi bi-trophy-fill"></i> FFL Playoffs</h1>
+            <p class="lead">Fantasy Football League - Interactive UI Mockups</p>
+            <p class="mb-0">Traditional roster-based fantasy football with individual NFL player drafting</p>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i> <strong>About These Mockups:</strong>
+                    These are responsive HTML mockups demonstrating the user interface for a traditional fantasy football application.
+                    Players draft individual NFL players across multiple positions (QB, RB, WR, TE, K, DEF, FLEX, Superflex) to build their rosters.
+                </div>
+            </div>
+        </div>
+
+        <h2 class="mb-3">Available Mockups</h2>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <a href="login.html" class="text-decoration-none">
+                    <div class="card mockup-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-box-arrow-in-right text-primary"></i> Login Screen
+                            </h5>
+                            <p class="card-text text-muted">Google OAuth authentication flow for secure user login</p>
+                            <span class="badge bg-secondary">Authentication</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="player-dashboard.html" class="text-decoration-none">
+                    <div class="card mockup-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-speedometer2 text-primary"></i> Player Dashboard
+                            </h5>
+                            <p class="card-text text-muted">Main league player view with leagues, stats, weekly deadlines, and quick actions</p>
+                            <span class="badge bg-primary">Core</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="player-selection.html" class="text-decoration-none">
+                    <div class="card mockup-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-person-plus-fill text-success"></i> Player Selection (Draft)
+                            </h5>
+                            <p class="card-text text-muted">Draft individual NFL players with position filters (QB, RB, WR, TE, K, DEF), search, stats display, and pagination</p>
+                            <span class="badge badge-position">Draft</span>
+                            <span class="badge bg-warning text-dark">Positions</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="my-roster.html" class="text-decoration-none">
+                    <div class="card mockup-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-clipboard-check text-info"></i> My Roster
+                            </h5>
+                            <p class="card-text text-muted">View your drafted NFL players organized by position slots with weekly scoring and game-by-game stats</p>
+                            <span class="badge bg-info">Roster</span>
+                            <span class="badge bg-success">Scoring</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="league-standings.html" class="text-decoration-none">
+                    <div class="card mockup-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-trophy text-warning"></i> League Standings
+                            </h5>
+                            <p class="card-text text-muted">League player rankings with expandable roster details, total scores, and weekly performance</p>
+                            <span class="badge bg-warning text-dark">Rankings</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-6">
+                <a href="leaderboard.html" class="text-decoration-none">
+                    <div class="card mockup-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-bar-chart-fill text-danger"></i> Leaderboard (Legacy)
+                            </h5>
+                            <p class="card-text text-muted">Original team-based leaderboard view - retained for reference</p>
+                            <span class="badge bg-secondary">Legacy</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="row mt-5 mb-4">
+            <div class="col-md-12">
+                <h3>Roster Positions</h3>
+                <p>The FFL Playoffs application supports the following roster positions:</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-danger" style="font-size: 1rem; padding: 0.5rem 1rem;">QB - Quarterback</span>
+                    <span class="badge bg-success" style="font-size: 1rem; padding: 0.5rem 1rem;">RB - Running Back</span>
+                    <span class="badge bg-primary" style="font-size: 1rem; padding: 0.5rem 1rem;">WR - Wide Receiver</span>
+                    <span class="badge bg-warning text-dark" style="font-size: 1rem; padding: 0.5rem 1rem;">TE - Tight End</span>
+                    <span class="badge bg-secondary" style="font-size: 1rem; padding: 0.5rem 1rem;">K - Kicker</span>
+                    <span class="badge" style="background-color: #6f42c1; font-size: 1rem; padding: 0.5rem 1rem;">DEF - Defense/Special Teams</span>
+                    <span class="badge" style="background-color: #fd7e14; font-size: 1rem; padding: 0.5rem 1rem;">FLEX - RB/WR/TE</span>
+                    <span class="badge" style="background-color: #20c997; font-size: 1rem; padding: 0.5rem 1rem;">SUPERFLEX - QB/RB/WR/TE</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4 mb-5">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-github"></i> Repository</h5>
+                        <p class="card-text">View the full source code and documentation:</p>
+                        <a href="https://github.com/egdcrypto/ffl-playoffs" class="btn btn-dark" target="_blank">
+                            <i class="bi bi-github"></i> GitHub Repository
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

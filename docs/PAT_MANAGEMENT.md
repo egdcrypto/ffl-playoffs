@@ -71,11 +71,19 @@ Purpose: Create the first super admin account
 
 #### Bootstrap Script Execution
 
-Run the bootstrap setup script (implementation TBD):
+Run the bootstrap setup script:
 
 ```bash
-# Example command (actual implementation may vary)
+# From ffl-playoffs-api directory
+cd ffl-playoffs-api
 ./scripts/bootstrap-pat.sh
+```
+
+Or run directly with Gradle:
+
+```bash
+cd ffl-playoffs-api
+./gradlew bootRun --main-class=com.ffl.playoffs.scripts.BootstrapPATScript
 ```
 
 **Script Behavior**:
@@ -580,8 +588,15 @@ ADMIN (highest)
 Run the bootstrap setup script:
 
 ```bash
-# Example command (actual implementation TBD)
+cd ffl-playoffs-api
 ./scripts/bootstrap-pat.sh
+```
+
+Or with Gradle:
+
+```bash
+cd ffl-playoffs-api
+./gradlew bootRun --main-class=com.ffl.playoffs.scripts.BootstrapPATScript
 ```
 
 **Save the displayed token immediately!** It will look like:

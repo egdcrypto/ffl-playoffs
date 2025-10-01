@@ -17,12 +17,12 @@
         .position-K { background-color: #6c757d; color: white; }
         .position-DEF { background-color: #6f42c1; color: white; }
         .position-FLEX { background-color: #fd7e14; color: white; }
-        .player-card { border-left: 4px solid #6c757d; }
-        .locked-banner { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; border-left: 4px solid #343a40; }
+        .player-card { border-left: 4px solid #0d6efd; }
+        .locked-banner { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; border-left: 4px solid #0d6efd; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -60,8 +60,8 @@
         <!-- Page Header -->
         <div class="row mb-4">
             <div class="col-lg-8">
-                <h2><i class="bi bi-lock-fill text-secondary"></i> My Roster <span class="badge bg-secondary">LOCKED</span></h2>
-                <p class="text-muted">Your final roster - read-only view</p>
+                <h2><i class="bi bi-lock-fill text-success"></i> My Roster <span class="badge bg-success">LOCKED</span></h2>
+                <p class="text-muted">Your complete roster competing for the season</p>
             </div>
             <div class="col-lg-4">
                 <select class="form-select form-select-lg" disabled>
@@ -91,11 +91,11 @@
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="card border-secondary">
+                <div class="card border-success">
                     <div class="card-body">
                         <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
-                        <h2 class="card-title mb-0 text-secondary"><i class="bi bi-lock-fill"></i> 9/9</h2>
-                        <small class="text-muted">Locked</small>
+                        <h2 class="card-title mb-0 text-success"><i class="bi bi-lock-fill"></i> 9/9</h2>
+                        <small class="text-muted">Complete & Locked</small>
                     </div>
                 </div>
             </div>
@@ -110,7 +110,7 @@
             </div>
         </div>
 
-        <h4 class="mb-3"><i class="bi bi-lock-fill text-secondary"></i> Final Locked Roster (9 Players)</h4>
+        <h4 class="mb-3"><i class="bi bi-lock-fill text-success"></i> Complete Locked Roster (9 Players)</h4>
 
         <!-- QB (LOCKED) -->
         <div class="row mb-3">
@@ -122,7 +122,7 @@
                                 <div class="position-badge position-QB">QB</div>
                             </div>
                             <div class="col">
-                                <h5 class="mb-1">Patrick Mahomes <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <h5 class="mb-1">Patrick Mahomes <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
                                 <small class="text-muted">#15 • Kansas City Chiefs • QB</small>
                             </div>
                             <div class="col-auto text-center">
@@ -164,7 +164,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-RB me-3">RB</div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-1">Saquon Barkley <span class="badge bg-secondary badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
+                                <h6 class="mb-1">Saquon Barkley <span class="badge bg-success badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
                                 <small class="text-muted">PHI Eagles • RB2</small>
                             </div>
                             <div class="text-center">
@@ -185,7 +185,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-WR me-3">WR</div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-1">Tyreek Hill <span class="badge bg-secondary badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
+                                <h6 class="mb-1">Tyreek Hill <span class="badge bg-success badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
                                 <small class="text-muted">MIA Dolphins • WR1</small>
                             </div>
                             <div class="text-center">
@@ -202,7 +202,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-WR me-3">WR</div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-1">CeeDee Lamb <span class="badge bg-secondary badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
+                                <h6 class="mb-1">CeeDee Lamb <span class="badge bg-success badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
                                 <small class="text-muted">DAL Cowboys • WR2</small>
                             </div>
                             <div class="text-center">
@@ -223,7 +223,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-TE me-3">TE</div>
                             <div class="flex-grow-1">
-                                <h5 class="mb-1">Travis Kelce <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <h5 class="mb-1">Travis Kelce <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
                                 <small class="text-muted">#87 • Kansas City Chiefs • TE</small>
                             </div>
                             <div class="text-center me-3">
@@ -245,7 +245,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-FLEX me-3">FX</div>
                             <div class="flex-grow-1">
-                                <h5 class="mb-1">Stefon Diggs (WR) <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <h5 class="mb-1">Stefon Diggs (WR) <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
                                 <small class="text-muted">#14 • Buffalo Bills • FLEX</small>
                             </div>
                             <div class="text-center me-3">
@@ -267,7 +267,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-K me-3">K</div>
                             <div class="flex-grow-1">
-                                <h5 class="mb-1">Justin Tucker <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <h5 class="mb-1">Justin Tucker <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
                                 <small class="text-muted">#9 • Baltimore Ravens • K</small>
                             </div>
                             <div class="text-center me-3">
@@ -289,7 +289,7 @@
                         <div class="d-flex align-items-center">
                             <div class="position-badge position-DEF me-3">DEF</div>
                             <div class="flex-grow-1">
-                                <h5 class="mb-1">San Francisco 49ers <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <h5 class="mb-1">San Francisco 49ers <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
                                 <small class="text-muted">Defense/Special Teams</small>
                             </div>
                             <div class="text-center me-3">

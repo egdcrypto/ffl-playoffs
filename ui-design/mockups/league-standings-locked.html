@@ -15,11 +15,11 @@
         .rank-3 { background-color: #cd7f32; color: #fff; }
         .rank-other { background-color: #6c757d; color: #fff; }
         .current-user-row { background-color: #d1e7dd; border-left: 4px solid #198754; }
-        .locked-banner { background: linear-gradient(135deg, #6c757d 0%, #495057 100%); color: white; border-left: 4px solid #343a40; }
+        .locked-banner { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; border-left: 4px solid #0d6efd; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-secondary">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container-fluid">
             <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
             <div class="collapse navbar-collapse">
@@ -49,14 +49,14 @@
 
         <div class="row mb-4">
             <div class="col-lg-8">
-                <h2><i class="bi bi-lock-fill text-secondary"></i> League Standings <span class="badge bg-secondary">SEASON ACTIVE</span></h2>
-                <p class="text-muted">Final rosters locked - tracking weekly scores</p>
+                <h2><i class="bi bi-lock-fill text-success"></i> League Standings <span class="badge bg-success">SEASON ACTIVE</span></h2>
+                <p class="text-muted">Complete rosters competing for the season</p>
             </div>
         </div>
 
         <!-- Standings Table -->
         <div class="card">
-            <div class="card-header bg-secondary text-white">
+            <div class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Final Standings (12 Players) - Week 4 of 4</h5>
             </div>
             <div class="table-responsive">
@@ -238,41 +238,38 @@
                             <td><button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
                         </tr>
 
-                        <tr class="table-danger">
+                        <tr>
                             <td><div class="rank-badge rank-other">12</div></td>
                             <td><strong>Lisa Anderson</strong><br><small class="text-muted">lisa.a@email.com</small></td>
                             <td class="text-center">
-                                <h4 class="mb-0 text-danger">482.5</h4>
-                                <small class="text-danger">Incomplete roster (6/9)</small>
+                                <h4 class="mb-0">625.0</h4>
+                                <small class="text-muted">Avg: 156.3/wk</small>
                             </td>
-                            <td class="text-center">120.0</td>
-                            <td class="text-center">125.5</td>
-                            <td class="text-center">118.0</td>
-                            <td class="text-center">119.0</td>
-                            <td><span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Incomplete</span></td>
+                            <td class="text-center">155.0</td>
+                            <td class="text-center">160.0</td>
+                            <td class="text-center">152.0</td>
+                            <td class="text-center">158.0</td>
+                            <td><button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             <div class="card-footer bg-light">
                 <div class="row">
-                    <div class="col-md-4">
-                        <small class="text-success"><strong>11 players</strong> with complete rosters</small>
+                    <div class="col-md-6">
+                        <small class="text-success"><strong>12 players</strong> competing with complete rosters</small>
                     </div>
-                    <div class="col-md-4">
-                        <small class="text-danger"><strong>1 player</strong> with incomplete roster (locked as-is)</small>
-                    </div>
-                    <div class="col-md-4 text-end">
-                        <small class="text-muted"><i class="bi bi-lock-fill"></i> Locked Jan 12, 1:00 PM ET</small>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted"><i class="bi bi-lock-fill"></i> Rosters locked Jan 12, 1:00 PM ET</small>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Info -->
-        <div class="alert alert-secondary mt-4">
+        <div class="alert alert-success mt-4">
             <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> One-Time Draft Model - Season in Progress</h5>
-            <p class="mb-0">All rosters are permanently locked and cannot be changed. Scores update weekly as playoff games are played. Players with incomplete rosters (like Lisa Anderson) cannot fill empty positions and score fewer points.</p>
+            <p class="mb-0">All 12 rosters are complete and permanently locked for the season. Scores update weekly as playoff games are played. Players compete with their locked rosters through all remaining weeks.</p>
         </div>
     </div>
 

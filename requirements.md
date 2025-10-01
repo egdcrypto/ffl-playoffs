@@ -1,7 +1,7 @@
 # FFL Playoffs Game - Requirements
 
 ## Overview
-A Fantasy Football League playoff game where players pick teams for 4 weeks. If a player's chosen team loses, that team no longer earns points for the remainder of the game. Uses standard PPR (Points Per Reception) scoring rules.
+A Fantasy Football League playoff game where players pick teams for a configurable duration (1-17 weeks, default 4 weeks) starting at any week of the NFL season (weeks 1-18). If a player's chosen team loses, that team no longer earns points for the remainder of the game. Uses standard PPR (Points Per Reception) scoring rules.
 
 ## System Architecture
 - **API**: Headless Java-based REST API
@@ -84,11 +84,12 @@ The system implements a three-tier role hierarchy:
 
 ### 2. Team Selection
 - **Weekly Team Picks**
-  - Players select one NFL team per week for 4 weeks
-  - Cannot select the same team twice across all 4 weeks
+  - Players select one NFL team per week for the configured game duration
+  - Cannot select the same team twice across all weeks in the game
   - Selection deadline before games start each week
   - View available teams for selection
   - Edit picks before deadline
+  - Number of weeks determined by league configuration (1-17 weeks)
 
 ### 3. Scoring System
 - **PPR Scoring Rules**
@@ -114,30 +115,47 @@ The system implements a three-tier role hierarchy:
   - Configure league settings:
     - League name and description
     - Start date and end date
-    - Number of weeks (default: 4)
+    - Starting NFL week (1-18, default: 1) - which week of NFL season to begin
+    - Number of weeks (configurable: 1-17 weeks, default: 4)
+    - Validation: startingWeek + numberOfWeeks - 1 ≤ 18 (cannot exceed NFL season)
     - Scoring rules (PPR settings)
     - Pick deadline times for each week
     - Maximum number of players
     - Public or private league
   - Admins can modify settings before game starts
-  - Critical settings locked once game becomes active
+  - Critical settings locked once game becomes active (including numberOfWeeks and startingWeek)
   - Admins can activate/deactivate leagues
   - View all league configurations
   - Clone settings from previous leagues
 
+  **Example Configurations:**
+  - Playoff-focused: startingWeek=15, numberOfWeeks=4 (NFL weeks 15-18)
+  - Mid-season challenge: startingWeek=8, numberOfWeeks=6 (NFL weeks 8-13)
+  - Full season: startingWeek=1, numberOfWeeks=17 (NFL weeks 1-17)
+
 - **Game Lifecycle**
   - Create new game/season
-  - Set game duration (4 weeks)
+  - Set starting NFL week (1-18)
+  - Set game duration (configurable 1-17 weeks)
   - Configure pick deadlines
   - Start/End game
   - Archive completed games
 
 - **Week Management**
-  - Track current week (1-4)
-  - Lock picks after deadline
-  - Process game results
-  - Calculate weekly scores
+  - Track current NFL week (startingWeek to startingWeek + numberOfWeeks - 1)
+  - Each league week maps to specific NFL week
+  - Lock picks after deadline for each NFL week
+  - Process game results from NFL data for specific weeks
+  - Calculate weekly scores based on NFL week games
   - Update standings
+  - Weeks dynamically created based on league.startingWeek and league.numberOfWeeks
+
+  **Week Mapping Example:**
+  - League: startingWeek=10, numberOfWeeks=4
+  - League Week 1 → NFL Week 10
+  - League Week 2 → NFL Week 11
+  - League Week 3 → NFL Week 12
+  - League Week 4 → NFL Week 13
 
 ### 5. Leaderboard & Standings
 - **Real-time Standings**
@@ -153,12 +171,13 @@ The system implements a three-tier role hierarchy:
 
 ### 6. Data Integration
 - **External Data Sources**
-  - NFL game schedules
-  - Live game scores
-  - Player statistics
+  - NFL game schedules for specific weeks
+  - Live game scores for configured NFL weeks
+  - Player statistics per NFL week
   - Team standings
   - Near real-time data synchronization
   - Data refresh intervals (configurable)
+  - Fetch data only for NFL weeks within league range (startingWeek to startingWeek + numberOfWeeks - 1)
 
 ### 7. Admin Tools
 
@@ -307,16 +326,16 @@ The system implements a three-tier role hierarchy:
 ### Data Model
 - **Entities**
   - User (with role: SUPER_ADMIN, ADMIN, PLAYER; includes googleId, email, name)
-  - League/Game (owned by an admin)
+  - League/Game (owned by an admin; includes startingWeek, numberOfWeeks)
   - LeaguePlayer (junction table: league membership, league-scoped player role)
   - Team (NFL teams)
-  - Week
-  - TeamSelection (player's team pick for a week in a league)
-  - Score (calculated per player per week per league)
-  - GameResult (NFL game outcomes)
+  - Week (league week with nflWeekNumber mapping)
+  - TeamSelection (player's team pick for a specific NFL week in a league)
+  - Score (calculated per player per NFL week per league)
+  - GameResult (NFL game outcomes for specific NFL weeks)
   - AdminInvitation (super admin → admin)
   - PlayerInvitation (admin → player for specific league, includes leagueId)
-  - LeagueConfiguration
+  - LeagueConfiguration (includes startingWeek and numberOfWeeks)
   - PersonalAccessToken (stored in database: id, name, tokenHash, scope, expiresAt, createdBy, createdAt, lastUsedAt, revoked, revokedAt)
   - PATScope (READ_ONLY, WRITE, ADMIN)
   - AuditLog (for admin and PAT activity tracking)
@@ -325,11 +344,16 @@ The system implements a three-tier role hierarchy:
   - User has role (SUPER_ADMIN, ADMIN, PLAYER)
   - User authenticated via Google OAuth (googleId)
   - Admin owns multiple Leagues
+  - League has configurable startingWeek (1-18, default 1) and numberOfWeeks (1-17, default 4)
+  - League validation: startingWeek + numberOfWeeks - 1 ≤ 18
   - League has multiple LeaguePlayers (junction table)
   - LeaguePlayer links User to League with league-specific data
   - Players can belong to multiple leagues
   - PlayerInvitation is league-scoped (includes leagueId)
-  - TeamSelections are league-scoped (player picks team for league)
+  - TeamSelections are league-scoped (player picks team for specific NFL week in league)
+  - Week entity maps league week to NFL week (nflWeekNumber)
+  - Week count is dynamic based on league.numberOfWeeks
+  - NFL data fetched for weeks in range [startingWeek, startingWeek + numberOfWeeks - 1]
 
 ### Non-Functional Requirements
 - **Performance**

@@ -334,6 +334,351 @@ engineers:
 
       Start creating the ui-design directory and TASKS.md immediately.
 
+  engineer6:
+    name: "Project Structure Engineer 2"
+    window: 6
+    role: "Create Java Spring Boot hexagonal architecture project structure"
+    responsibilities:
+      - "Set up Gradle/Maven build configuration"
+      - "Create package structure for hexagonal architecture"
+      - "Configure Spring Boot application"
+      - "Set up testing framework"
+      - "Create base classes and interfaces"
+    constraints:
+      - "Follow hexagonal architecture strictly"
+      - "Separate domain, application, and infrastructure layers"
+      - "No business logic in infrastructure layer"
+    briefing: |
+      You are a Project Structure Engineer for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
+
+      Your mission:
+      1. CREATE the project structure:
+
+      ```
+      ffl-playoffs-api/
+      ├── build.gradle (or pom.xml)
+      ├── src/
+      │   ├── main/
+      │   │   ├── java/
+      │   │   │   └── com/ffl/playoffs/
+      │   │   │       ├── domain/
+      │   │   │       │   ├── model/
+      │   │   │       │   │   ├── Game.java
+      │   │   │       │   │   ├── Player.java
+      │   │   │       │   │   ├── TeamSelection.java
+      │   │   │       │   │   ├── Week.java
+      │   │   │       │   │   └── Score.java
+      │   │   │       │   ├── event/
+      │   │   │       │   │   ├── TeamEliminatedEvent.java
+      │   │   │       │   │   └── GameCreatedEvent.java
+      │   │   │       │   ├── service/
+      │   │   │       │   │   └── ScoringService.java
+      │   │   │       │   └── port/
+      │   │   │       │       ├── GameRepository.java
+      │   │   │       │       ├── PlayerRepository.java
+      │   │   │       │       └── NflDataProvider.java
+      │   │   │       ├── application/
+      │   │   │       │   ├── usecase/
+      │   │   │       │   │   ├── CreateGameUseCase.java
+      │   │   │       │   │   ├── InvitePlayerUseCase.java
+      │   │   │       │   │   ├── SelectTeamUseCase.java
+      │   │   │       │   │   └── CalculateScoresUseCase.java
+      │   │   │       │   ├── dto/
+      │   │   │       │   │   ├── GameDTO.java
+      │   │   │       │   │   ├── PlayerDTO.java
+      │   │   │       │   │   └── TeamSelectionDTO.java
+      │   │   │       │   └── service/
+      │   │   │       │       └── ApplicationService.java
+      │   │   │       └── infrastructure/
+      │   │   │           ├── adapter/
+      │   │   │           │   ├── rest/
+      │   │   │           │   │   ├── GameController.java
+      │   │   │           │   │   ├── PlayerController.java
+      │   │   │           │   │   └── AdminController.java
+      │   │   │           │   ├── persistence/
+      │   │   │           │   │   ├── GameRepositoryImpl.java
+      │   │   │           │   │   └── PlayerRepositoryImpl.java
+      │   │   │           │   └── integration/
+      │   │   │           │       └── NflDataAdapter.java
+      │   │   │           └── config/
+      │   │   │               ├── SpringConfig.java
+      │   │   │               └── SecurityConfig.java
+      │   │   └── resources/
+      │   │       ├── application.yml
+      │   │       └── application-dev.yml
+      │   └── test/
+      │       ├── java/
+      │       │   └── com/ffl/playoffs/
+      │       │       ├── domain/
+      │       │       ├── application/
+      │       │       └── infrastructure/
+      │       └── resources/
+      │           └── features/  # Gherkin files go here for testing
+      ```
+
+      2. CREATE build.gradle with:
+         - Spring Boot 3.x
+         - Spring Data JPA
+         - Spring Web
+         - PostgreSQL driver
+         - Lombok
+         - JUnit 5
+         - Mockito
+         - Cucumber (for Gherkin tests)
+         - OpenAPI/Swagger
+
+      3. CREATE base configuration:
+         - Application.java (main class)
+         - application.yml (configuration)
+         - Base entity classes
+         - Common response wrappers
+
+      4. CREATE README.md with:
+         - Project overview
+         - Build instructions
+         - Architecture documentation
+         - API endpoints overview
+
+      **Key Principles**:
+      - Domain layer has NO framework dependencies
+      - Application layer orchestrates use cases
+      - Infrastructure layer implements ports
+      - All dependencies point inward (toward domain)
+
+      Start creating the project structure immediately.
+
+  engineer7:
+    name: "Project Structure Engineer 3"
+    window: 7
+    role: "Create Java Spring Boot hexagonal architecture project structure"
+    responsibilities:
+      - "Set up Gradle/Maven build configuration"
+      - "Create package structure for hexagonal architecture"
+      - "Configure Spring Boot application"
+      - "Set up testing framework"
+      - "Create base classes and interfaces"
+    constraints:
+      - "Follow hexagonal architecture strictly"
+      - "Separate domain, application, and infrastructure layers"
+      - "No business logic in infrastructure layer"
+    briefing: |
+      You are a Project Structure Engineer for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
+
+      Your mission:
+      1. CREATE the project structure:
+
+      ```
+      ffl-playoffs-api/
+      ├── build.gradle (or pom.xml)
+      ├── src/
+      │   ├── main/
+      │   │   ├── java/
+      │   │   │   └── com/ffl/playoffs/
+      │   │   │       ├── domain/
+      │   │   │       │   ├── model/
+      │   │   │       │   │   ├── Game.java
+      │   │   │       │   │   ├── Player.java
+      │   │   │       │   │   ├── TeamSelection.java
+      │   │   │       │   │   ├── Week.java
+      │   │   │       │   │   └── Score.java
+      │   │   │       │   ├── event/
+      │   │   │       │   │   ├── TeamEliminatedEvent.java
+      │   │   │       │   │   └── GameCreatedEvent.java
+      │   │   │       │   ├── service/
+      │   │   │       │   │   └── ScoringService.java
+      │   │   │       │   └── port/
+      │   │   │       │       ├── GameRepository.java
+      │   │   │       │       ├── PlayerRepository.java
+      │   │   │       │       └── NflDataProvider.java
+      │   │   │       ├── application/
+      │   │   │       │   ├── usecase/
+      │   │   │       │   │   ├── CreateGameUseCase.java
+      │   │   │       │   │   ├── InvitePlayerUseCase.java
+      │   │   │       │   │   ├── SelectTeamUseCase.java
+      │   │   │       │   │   └── CalculateScoresUseCase.java
+      │   │   │       │   ├── dto/
+      │   │   │       │   │   ├── GameDTO.java
+      │   │   │       │   │   ├── PlayerDTO.java
+      │   │   │       │   │   └── TeamSelectionDTO.java
+      │   │   │       │   └── service/
+      │   │   │       │       └── ApplicationService.java
+      │   │   │       └── infrastructure/
+      │   │   │           ├── adapter/
+      │   │   │           │   ├── rest/
+      │   │   │           │   │   ├── GameController.java
+      │   │   │           │   │   ├── PlayerController.java
+      │   │   │           │   │   └── AdminController.java
+      │   │   │           │   ├── persistence/
+      │   │   │           │   │   ├── GameRepositoryImpl.java
+      │   │   │           │   │   └── PlayerRepositoryImpl.java
+      │   │   │           │   └── integration/
+      │   │   │           │       └── NflDataAdapter.java
+      │   │   │           └── config/
+      │   │   │               ├── SpringConfig.java
+      │   │   │               └── SecurityConfig.java
+      │   │   └── resources/
+      │   │       ├── application.yml
+      │   │       └── application-dev.yml
+      │   └── test/
+      │       ├── java/
+      │       │   └── com/ffl/playoffs/
+      │       │       ├── domain/
+      │       │       ├── application/
+      │       │       └── infrastructure/
+      │       └── resources/
+      │           └── features/  # Gherkin files go here for testing
+      ```
+
+      2. CREATE build.gradle with:
+         - Spring Boot 3.x
+         - Spring Data JPA
+         - Spring Web
+         - PostgreSQL driver
+         - Lombok
+         - JUnit 5
+         - Mockito
+         - Cucumber (for Gherkin tests)
+         - OpenAPI/Swagger
+
+      3. CREATE base configuration:
+         - Application.java (main class)
+         - application.yml (configuration)
+         - Base entity classes
+         - Common response wrappers
+
+      4. CREATE README.md with:
+         - Project overview
+         - Build instructions
+         - Architecture documentation
+         - API endpoints overview
+
+      **Key Principles**:
+      - Domain layer has NO framework dependencies
+      - Application layer orchestrates use cases
+      - Infrastructure layer implements ports
+      - All dependencies point inward (toward domain)
+
+      Start creating the project structure immediately.
+
+  engineer8:
+    name: "Project Structure Engineer 4"
+    window: 8
+    role: "Create Java Spring Boot hexagonal architecture project structure"
+    responsibilities:
+      - "Set up Gradle/Maven build configuration"
+      - "Create package structure for hexagonal architecture"
+      - "Configure Spring Boot application"
+      - "Set up testing framework"
+      - "Create base classes and interfaces"
+    constraints:
+      - "Follow hexagonal architecture strictly"
+      - "Separate domain, application, and infrastructure layers"
+      - "No business logic in infrastructure layer"
+    briefing: |
+      You are a Project Structure Engineer for the FFL Playoffs project.
+
+      **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
+
+      Your mission:
+      1. CREATE the project structure:
+
+      ```
+      ffl-playoffs-api/
+      ├── build.gradle (or pom.xml)
+      ├── src/
+      │   ├── main/
+      │   │   ├── java/
+      │   │   │   └── com/ffl/playoffs/
+      │   │   │       ├── domain/
+      │   │   │       │   ├── model/
+      │   │   │       │   │   ├── Game.java
+      │   │   │       │   │   ├── Player.java
+      │   │   │       │   │   ├── TeamSelection.java
+      │   │   │       │   │   ├── Week.java
+      │   │   │       │   │   └── Score.java
+      │   │   │       │   ├── event/
+      │   │   │       │   │   ├── TeamEliminatedEvent.java
+      │   │   │       │   │   └── GameCreatedEvent.java
+      │   │   │       │   ├── service/
+      │   │   │       │   │   └── ScoringService.java
+      │   │   │       │   └── port/
+      │   │   │       │       ├── GameRepository.java
+      │   │   │       │       ├── PlayerRepository.java
+      │   │   │       │       └── NflDataProvider.java
+      │   │   │       ├── application/
+      │   │   │       │   ├── usecase/
+      │   │   │       │   │   ├── CreateGameUseCase.java
+      │   │   │       │   │   ├── InvitePlayerUseCase.java
+      │   │   │       │   │   ├── SelectTeamUseCase.java
+      │   │   │       │   │   └── CalculateScoresUseCase.java
+      │   │   │       │   ├── dto/
+      │   │   │       │   │   ├── GameDTO.java
+      │   │   │       │   │   ├── PlayerDTO.java
+      │   │   │       │   │   └── TeamSelectionDTO.java
+      │   │   │       │   └── service/
+      │   │   │       │       └── ApplicationService.java
+      │   │   │       └── infrastructure/
+      │   │   │           ├── adapter/
+      │   │   │           │   ├── rest/
+      │   │   │           │   │   ├── GameController.java
+      │   │   │           │   │   ├── PlayerController.java
+      │   │   │           │   │   └── AdminController.java
+      │   │   │           │   ├── persistence/
+      │   │   │           │   │   ├── GameRepositoryImpl.java
+      │   │   │           │   │   └── PlayerRepositoryImpl.java
+      │   │   │           │   └── integration/
+      │   │   │           │       └── NflDataAdapter.java
+      │   │   │           └── config/
+      │   │   │               ├── SpringConfig.java
+      │   │   │               └── SecurityConfig.java
+      │   │   └── resources/
+      │   │       ├── application.yml
+      │   │       └── application-dev.yml
+      │   └── test/
+      │       ├── java/
+      │       │   └── com/ffl/playoffs/
+      │       │       ├── domain/
+      │       │       ├── application/
+      │       │       └── infrastructure/
+      │       └── resources/
+      │           └── features/  # Gherkin files go here for testing
+      ```
+
+      2. CREATE build.gradle with:
+         - Spring Boot 3.x
+         - Spring Data JPA
+         - Spring Web
+         - PostgreSQL driver
+         - Lombok
+         - JUnit 5
+         - Mockito
+         - Cucumber (for Gherkin tests)
+         - OpenAPI/Swagger
+
+      3. CREATE base configuration:
+         - Application.java (main class)
+         - application.yml (configuration)
+         - Base entity classes
+         - Common response wrappers
+
+      4. CREATE README.md with:
+         - Project overview
+         - Build instructions
+         - Architecture documentation
+         - API endpoints overview
+
+      **Key Principles**:
+      - Domain layer has NO framework dependencies
+      - Application layer orchestrates use cases
+      - Infrastructure layer implements ports
+      - All dependencies point inward (toward domain)
+
+      Start creating the project structure immediately.
+
   engineer5:
     name: "Product Manager"
     window: 5

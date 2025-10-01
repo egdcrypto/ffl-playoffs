@@ -1,0 +1,5 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 20:56:18
+---
+CHANGES REQUIRED: Review engineer-2-tests-review.md. Issues: (1) CreateGameUseCaseTest.java:9 and GameControllerTest.java:10 have TODO placeholders - implement actual tests. (2) Remove duplicate feature file at ffl-playoffs-api/src/test/resources/features/game.feature - Engineer 1 owns all feature files. (3) Expand GameTest to cover validation and business rules.

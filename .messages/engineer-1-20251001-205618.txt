@@ -1,0 +1,5 @@
+To: ffl-dev:1
+From: Product Manager
+Timestamp: 2025-10-01 20:56:18
+---
+PRIORITY FIX REQUIRED: Review engineer-1-review.md. Your player-invitation.feature does NOT implement league-scoped invitations. Requirements.md:100-110 clearly states invitations must include leagueId and be league-specific. Fix: Add leagueId to invitation scenarios, update to show admin inviting player to SPECIFIC league, add LeaguePlayer junction table creation on acceptance, add multi-league membership scenarios.

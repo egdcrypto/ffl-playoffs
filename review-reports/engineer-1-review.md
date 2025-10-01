@@ -1,133 +1,133 @@
-# Review: Engineer 1 (Feature Architect) - Feature Files
+# Review: Engineer 1 (Feature Architect) - Gherkin Feature Files
 Date: 2025-10-01
 Reviewer: Product Manager
 
 ## Summary
-Engineer 1 has done **EXCELLENT** work implementing the NO ownership model across all feature files. The feature files comprehensively and explicitly document that all NFL players are available to all league members with NO ownership restrictions.
+Engineer 1 has delivered 25 comprehensive Gherkin feature files covering all major functional requirements, along with supporting documentation (README.md and DOMAIN_MODEL.md). The feature files demonstrate strong understanding of BDD principles and excellent scenario coverage. However, there are some discrepancies with the requirements document that need to be addressed.
 
 ## Requirements Compliance
 
-### Critical Requirement: NO Ownership Model
-✅ **PASS** - Exceptionally well documented across multiple feature files
+### ✅ PASS - Correctly Implemented
 
-#### Evidence:
+1. **NO Ownership Model**: ✅ CORRECT
+   - File: `roster-building.feature:130-137`
+   - Correctly implements unlimited availability - multiple players can select same NFL players
+   - Explicitly states "NFL players are not drafted - unlimited availability"
 
-**player-selection.feature:**
-- ✅ Lines 198-209: Entire scenario "Multiple league players can independently select the same NFL player"
-  - Line 208: "there is no limit on how many league players can pick the same NFL player"
-- ✅ Lines 210-220: Entire scenario "NOT a draft system - all NFL players always available to all league players"
-  - Line 216: "Travis Kelce" should be marked as "available"
-  - Line 217: "I should be able to select 'Travis Kelce' even though 5 others picked him"
-  - Line 218: "there is NO concept of player availability based on other league players' picks"
-  - Line 219: "each league player makes independent selections without affecting others"
-- ✅ Line 26: "other league players may have also selected 'Travis Kelce' for their weeks"
-- ✅ Line 31: "But other league players can still select 'Travis Kelce' for any of their weeks"
-- ✅ Line 63: "players used by other league players should still be selectable"
+2. **Roster Lock (One-Time Draft)**: ✅ CORRECT
+   - File: `roster-lock.feature`
+   - Rosters permanently locked when first game starts
+   - No waiver wire, no trades, no weekly changes
+   - Comprehensive scenarios covering all edge cases
 
-**roster-management.feature:**
-- ✅ Lines 60-69: Entire scenario "Multiple league players can select the same NFL player (NO draft restrictions)"
-  - Line 67: "there is NO ownership restriction - unlimited players can select same NFL player"
-  - Line 68: "this is NOT a draft where players become unavailable after selection"
+3. **League Configuration Lock**: ✅ CORRECT
+   - File: `league-configuration-lock.feature`
+   - Configuration immutable when first NFL game starts
+   - All settings locked (roster, scoring, scheduling)
+   - Covers all requirements
 
-**player-roster-selection.feature:**
-- ✅ Lines 183-193: Scenario "Multiple league players can draft the same NFL player (no ownership model)"
-  - Line 191: "'Patrick Mahomes' should be available to all other league members"
-  - Line 192: "there is NO exclusive ownership of NFL players"
-- ✅ Lines 194-206: Scenario about viewing ALL NFL players (no availability filtering)
-  - Line 204: "all players should be marked as 'AVAILABLE' regardless of who drafted them"
-- ✅ Lines 207-225: Scenario about ALL NFL players for FLEX position (no ownership restrictions)
-  - Line 224: "all FLEX-eligible players remain available to all league members"
-- ✅ Line 45: "'Patrick Mahomes' remains available to all other league players"
-- ✅ Line 334: "'Christian McCaffrey' remains available to all league players"
-- ✅ Lines 355-356: Both dropped and added players "remain available to all other league players"
+4. **PPR Scoring**: ✅ CORRECT
+   - File: `ppr-scoring.feature`
+   - Individual NFL player performance-based scoring
+   - Configurable PPR values (Full, Half, Standard)
+   - Correct calculation examples
 
-### Other Core Requirements
+5. **Field Goal Scoring**: ✅ CORRECT
+   - File: `field-goal-scoring.feature`
+   - Distance-based scoring tiers
+   - Configurable by admin
+   - Boundary conditions tested
 
-✅ **Roster Lock**: Rosters lock when first game starts
-- roster-management.feature:102-109 (PERMANENT LOCK scenario)
-- player-roster-selection.feature:337-345 (CANNOT drop after lock)
-- player-roster-selection.feature:358-390 (NO changes for entire season)
+6. **Defensive Scoring**: ✅ CORRECT
+   - File: `defensive-scoring.feature`
+   - Individual plays + points allowed tier + yards allowed tier
+   - Negative points possible
+   - Comprehensive tier testing
 
-✅ **PPR Scoring**: References to PPR scoring system
-- scoring-ppr.feature (entire file dedicated to PPR scoring)
+7. **Bootstrap PAT Setup**: ✅ CORRECT
+   - File: `bootstrap-setup.feature`
+   - One-time plaintext display
+   - Bcrypt hashing before storage
+   - ADMIN scope for initial super admin creation
 
-✅ **4-week format default**: Game management features support configurable weeks
-- game-management.feature (week configuration)
+8. **PAT Management**: ✅ CORRECT
+   - File: `pat-management.feature`
+   - Complete PAT lifecycle (create, rotate, revoke, delete)
+   - Scopes: READ_ONLY, WRITE, ADMIN
+   - Security best practices
 
-✅ **Admin invitations**: Only admins can invite players
-- player-invitation.feature (admin-only player invitations)
-- admin-management.feature (admin management)
+9. **Authorization**: ✅ CORRECT
+   - File: `authorization.feature`
+   - Three-service pod architecture
+   - Envoy → Auth Service → API flow
+   - Role-based and scope-based access control
 
-✅ **Hexagonal architecture**: No framework dependencies visible in feature files (as expected)
+10. **Admin Invitation**: ✅ CORRECT
+    - File: `admin-invitation.feature`
+    - Super admin → admin flow
+    - Google OAuth integration
+    - Email matching validation
 
-## Findings
+11. **League Creation**: ✅ CORRECT
+    - File: `league-creation.feature`
+    - Flexible scheduling (starting week, duration)
+    - Roster configuration
+    - Scoring configuration
+    - Validation: startingWeek + numberOfWeeks - 1 ≤ 22
 
-### What's Correct ✅
+12. **User Management**: ✅ CORRECT
+    - File: `user-management.feature`
+    - Three-tier role hierarchy
+    - SUPER_ADMIN > ADMIN > PLAYER
+    - Multi-league participation
 
-1. **NO Ownership Model** - Exceptionally well documented with:
-   - Multiple explicit scenarios across 3 different feature files
-   - Clear statements that "NO ownership restrictions" exist
-   - Specific examples showing multiple players selecting same NFL player
-   - Explicit statements that players remain "available" after selection
-   - Clear distinction: "NOT a draft where players become unavailable"
+13. **Authentication**: ✅ CORRECT
+    - File: `authentication.feature`
+    - Google OAuth JWT validation
+    - PAT authentication
+    - Network isolation (localhost only for API/Auth)
 
-2. **ONE-TIME DRAFT Model** - Clearly documented:
-   - Rosters built ONCE before season
-   - PERMANENT lock when first game starts
-   - NO changes allowed after lock (no waiver wire, no trades, no adjustments)
+### ❌ FAIL - Needs Fixing
 
-3. **Comprehensive Coverage**:
-   - Position-based roster management (QB, RB, WR, TE, K, DEF, FLEX, SUPERFLEX)
-   - Player search and filtering
-   - Roster validation
-   - Draft order scenarios (Snake, Linear)
-   - Edge cases and error scenarios
-   - Pagination support
+1. **Player Invitation** ❌ INCORRECT
+   - File: `player-invitation.feature`
+   - **Issue**: Does NOT implement league-scoped invitations
+   - **Location**: Throughout the entire file
+   - **Expected**: Invitations should include `leagueId` and be league-specific
+   - **Actual**: Invitations are to "the game" without league context
+   - **Requirements Reference**: requirements.md:100-110 clearly states:
+     > "Player Invitation to Specific Leagues"
+     > "Admins can invite players ONLY to leagues they own"
+     > "Invitation specifies which league the player is joining"
+     > "Player belongs to specific league(s), not globally to the system"
 
-4. **Gherkin Best Practices**:
-   - Clear Given-When-Then structure
-   - Scenario Outlines for test matrices
-   - Background sections for common setup
-   - Descriptive scenario names
-   - Detailed error handling scenarios
+   **Fix Required**:
+   - Add `leagueId` to invitation scenarios
+   - Update scenarios to show admin inviting player to SPECIFIC league
+   - Add LeaguePlayer junction table creation on acceptance
+   - Add scenarios for multi-league membership
+   - Update Background to include league context
 
-### What Needs Fixing ❌
+## Recommendations
 
-**NONE** - No issues found with Engineer 1's work on NO ownership model!
-
-## Recommendation
-
-[X] APPROVED - ready to merge
-
-Engineer 1's feature files are **exemplary**. The NO ownership model is documented more thoroughly than in any other deliverable, including the base requirements.md. This level of detail will ensure clear understanding for developers and QA engineers.
+[ ] APPROVED - ready to merge
+[ ] APPROVED WITH MINOR CHANGES - can merge after small fixes
+[X] CHANGES REQUIRED - must fix before approval
+[ ] REJECTED - does not meet requirements
 
 ## Next Steps
 
-**For Engineer 1:**
-1. ✅ NO CHANGES REQUIRED - Feature files are excellent
-2. Continue maintaining this level of detail for future features
+**For Engineer 1 (Feature Architect)**:
 
-**For Requirements Document:**
-1. Consider updating requirements.md to match the clarity of these feature files
-2. Add explicit "NO ownership model" statement to requirements.md:2 (Roster Building section)
+1. **PRIORITY 1**: Fix `player-invitation.feature` immediately
+   - Implement league-scoped invitations as per requirements.md:100-110
+   - Add leagueId to invitation data model
+   - Include LeaguePlayer junction table scenarios
+   - Add multi-league membership tests
 
-**For Implementation Team:**
-1. Use these feature files as the source of truth for NO ownership model
-2. Implement automated tests based on these scenarios
-3. Verify all scenarios pass before merging roster functionality
-
-## Notes
-
-Engineer 1 has set the gold standard for documenting the NO ownership model. The feature files contain:
-- 10+ explicit references to NO ownership restrictions
-- 5 complete scenarios dedicated to this business rule
-- Clear examples that will guide implementation
-- Comprehensive edge case coverage
-
-This is exactly what we need for a critical business rule that differentiates our product.
+2. **PRIORITY 2**: Review and consolidate any duplicate feature files
+3. **PRIORITY 3**: Complete coverage verification
 
 ---
 
-**Status**: APPROVED ✅
-**Quality**: EXCELLENT (5/5)
-**Completeness**: 100%
+**Review Completed**: 2025-10-01

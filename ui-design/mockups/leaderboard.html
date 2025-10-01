@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .leaderboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        .leaderboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .podium-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        .podium-card.first {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            transform: scale(1.05);
+            z-index: 3;
+        }
+        .podium-card.second {
+            background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
+            z-index: 2;
+        }
+        .podium-card.third {
+            background: linear-gradient(135deg, #cd7f32 0%, #e8a16d 100%);
+            z-index: 1;
+        }
+        .podium-rank {
+            font-size: 3rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+        .podium-name {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+        .podium-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .rank-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .rank-gold { background: #ffd700; color: #333; }
+        .rank-silver { background: #c0c0c0; color: #333; }
+        .rank-bronze { background: #cd7f32; color: white; }
+        .rank-normal { background: #e9ecef; color: #495057; }
+        .rank-you { background: #667eea; color: white; }
+        .standings-table {
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+        .standings-row {
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .standings-row:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+        .standings-row.you {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+        }
+        .standings-row.eliminated {
+            opacity: 0.6;
+        }
+        .standings-row td:first-child {
+            border-top-left-radius: 8px;
+            border-bottom-left-radius: 8px;
+        }
+        .standings-row td:last-child {
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+        }
+        .team-chip {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin: 2px;
+        }
+        .team-active {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+        .team-eliminated {
+            background: #f8d7da;
+            color: #842029;
+        }
+        .score-breakdown-btn {
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            border-radius: 6px;
+        }
+        .week-tabs {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 20px;
+        }
+        .week-tab {
+            padding: 10px 20px;
+            border: none;
+            background: none;
+            color: #6c757d;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .week-tab:hover {
+            color: #667eea;
+        }
+        .week-tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        @media (max-width: 768px) {
+            .podium-rank {
+                font-size: 2rem;
+            }
+            .podium-score {
+                font-size: 1.5rem;
+            }
+            .standings-table {
+                font-size: 0.85rem;
+            }
+            .rank-badge {
+                width: 30px;
+                height: 30px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="player-dashboard.html">
+                <i class="bi bi-trophy-fill"></i> FFL Playoffs
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-dashboard.html">
+                            <i class="bi bi-house-fill"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="team-selection.html">
+                            <i class="bi bi-clipboard-check"></i> Team Selection
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="bi bi-bar-chart"></i> Leaderboard
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="leaderboard-container">
+        <!-- Page Header -->
+        <div class="leaderboard-card">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h1 class="mb-2"><i class="bi bi-trophy-fill text-warning"></i> Leaderboard</h1>
+                    <p class="text-muted mb-0">2025 NFL Playoffs Pool</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary fs-6 mb-2">Week 3 (NFL Week 17)</span>
+                    <div class="text-muted small">12 Players | 3 Weeks Remaining</div>
+                </div>
+            </div>
+
+            <!-- League Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h6 class="text-muted mb-1">Average Score</h6>
+                        <h4 class="mb-0 text-primary">285.5</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h6 class="text-muted mb-1">High Score</h6>
+                        <h4 class="mb-0 text-success">387.0</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h6 class="text-muted mb-1">Low Score</h6>
+                        <h4 class="mb-0 text-danger">142.5</h4>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="p-3 bg-light rounded text-center">
+                        <h6 class="text-muted mb-1">Teams Eliminated</h6>
+                        <h4 class="mb-0 text-warning">18</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 3 Podium -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3 class="text-white mb-3"><i class="bi bi-award-fill"></i> Top 3</h3>
+            </div>
+        </div>
+        <div class="row g-4 mb-4">
+            <!-- 2nd Place -->
+            <div class="col-lg-4 order-lg-1 order-2">
+                <div class="podium-card second">
+                    <div class="podium-rank">🥈</div>
+                    <div class="podium-rank">#2</div>
+                    <div class="podium-name">Mike Smith</div>
+                    <div class="podium-score">365.5</div>
+                    <div class="text-muted mt-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> 2 Active |
+                        <i class="bi bi-x-circle-fill text-danger"></i> 1 Eliminated
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1st Place -->
+            <div class="col-lg-4 order-lg-2 order-1">
+                <div class="podium-card first">
+                    <div class="podium-rank">👑</div>
+                    <div class="podium-rank">#1</div>
+                    <div class="podium-name">Jane Doe</div>
+                    <div class="podium-score">387.0</div>
+                    <div class="text-muted mt-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> 3 Active |
+                        <i class="bi bi-x-circle-fill text-danger"></i> 0 Eliminated
+                    </div>
+                    <div class="badge bg-success mt-2">League Leader</div>
+                </div>
+            </div>
+
+            <!-- 3rd Place -->
+            <div class="col-lg-4 order-lg-3 order-3">
+                <div class="podium-card third">
+                    <div class="podium-rank">🥉</div>
+                    <div class="podium-rank">#3</div>
+                    <div class="podium-name">You (John Player)</div>
+                    <div class="podium-score">342.5</div>
+                    <div class="text-muted mt-2">
+                        <i class="bi bi-check-circle-fill text-success"></i> 2 Active |
+                        <i class="bi bi-x-circle-fill text-danger"></i> 1 Eliminated
+                    </div>
+                    <div class="badge bg-info mt-2">Your Position</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Standings Table -->
+        <div class="leaderboard-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0"><i class="bi bi-list-ol"></i> Full Standings</h4>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-download"></i> Export
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
+                </div>
+            </div>
+
+            <!-- Week Tabs -->
+            <div class="week-tabs d-flex">
+                <button class="week-tab active">Overall</button>
+                <button class="week-tab">Week 1</button>
+                <button class="week-tab">Week 2</button>
+                <button class="week-tab">Week 3</button>
+                <button class="week-tab">Week 4</button>
+            </div>
+
+            <!-- Responsive Table Wrapper -->
+            <div class="table-responsive">
+                <table class="table standings-table">
+                    <thead>
+                        <tr class="text-muted">
+                            <th style="width: 60px;">Rank</th>
+                            <th>Player</th>
+                            <th class="text-center">Total Score</th>
+                            <th class="text-center">Weekly Scores</th>
+                            <th class="text-center">Team Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rank 1 -->
+                        <tr class="standings-row">
+                            <td>
+                                <div class="rank-badge rank-gold">1</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Jane Doe</div>
+                                <small class="text-muted">The Champion</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold fs-5 text-success">387.0</div>
+                                <small class="text-muted">+44.5 ahead</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success me-1">W1: 95.5</span>
+                                <span class="badge bg-success me-1">W2: 142.0</span>
+                                <span class="badge bg-success">W3: 149.5</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-active">KC Chiefs</span>
+                                    <span class="team-chip team-active">SF 49ers</span>
+                                    <span class="team-chip team-active">BAL Ravens</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary score-breakdown-btn">
+                                    <i class="bi bi-graph-up"></i> Details
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Rank 2 -->
+                        <tr class="standings-row">
+                            <td>
+                                <div class="rank-badge rank-silver">2</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">Mike Smith</div>
+                                <small class="text-muted">The Contender</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold fs-5 text-primary">365.5</div>
+                                <small class="text-muted">+23.0 ahead</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success me-1">W1: 128.5</span>
+                                <span class="badge bg-danger me-1">W2: 0.0</span>
+                                <span class="badge bg-success">W3: 237.0</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-active">PHI Eagles</span>
+                                    <span class="team-chip team-eliminated">BUF Bills</span>
+                                    <span class="team-chip team-active">DAL Cowboys</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary score-breakdown-btn">
+                                    <i class="bi bi-graph-up"></i> Details
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Rank 3 - You -->
+                        <tr class="standings-row you">
+                            <td>
+                                <div class="rank-badge rank-you">3</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">You (John Player)</div>
+                                <small class="text-primary"><i class="bi bi-star-fill"></i> Your Team</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold fs-5 text-info">342.5</div>
+                                <small class="text-muted">+23.0 behind</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success me-1">W1: 87.5</span>
+                                <span class="badge bg-danger me-1">W2: 0.0</span>
+                                <span class="badge bg-success">W3: 255.0</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-active">KC Chiefs</span>
+                                    <span class="team-chip team-eliminated">BUF Bills</span>
+                                    <span class="team-chip team-active">SF 49ers</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-primary score-breakdown-btn">
+                                    <i class="bi bi-graph-up"></i> Your Details
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Rank 4-12 -->
+                        <tr class="standings-row">
+                            <td><div class="rank-badge rank-normal">4</div></td>
+                            <td>
+                                <div class="fw-bold">Sarah Johnson</div>
+                                <small class="text-muted">The Challenger</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold">320.0</div>
+                                <small class="text-muted">-22.5</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success me-1">W1: 75.0</span>
+                                <span class="badge bg-success me-1">W2: 88.5</span>
+                                <span class="badge bg-success">W3: 156.5</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-active">MIA Dolphins</span>
+                                    <span class="team-chip team-active">DET Lions</span>
+                                    <span class="team-chip team-active">GB Packers</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-secondary score-breakdown-btn">Details</button>
+                            </td>
+                        </tr>
+
+                        <tr class="standings-row">
+                            <td><div class="rank-badge rank-normal">5</div></td>
+                            <td>
+                                <div class="fw-bold">Tom Anderson</div>
+                                <small class="text-muted">The Dark Horse</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold">298.5</div>
+                                <small class="text-muted">-43.5</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success me-1">W1: 92.0</span>
+                                <span class="badge bg-success me-1">W2: 85.0</span>
+                                <span class="badge bg-success">W3: 121.5</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-active">LAC Chargers</span>
+                                    <span class="team-chip team-active">CLE Browns</span>
+                                    <span class="team-chip team-active">TB Bucs</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-secondary score-breakdown-btn">Details</button>
+                            </td>
+                        </tr>
+
+                        <tr class="standings-row">
+                            <td><div class="rank-badge rank-normal">6</div></td>
+                            <td>
+                                <div class="fw-bold">Lisa Martinez</div>
+                                <small class="text-muted">The Strategist</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold">285.0</div>
+                                <small class="text-muted">-57.5</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-success me-1">W1: 68.0</span>
+                                <span class="badge bg-success me-1">W2: 115.0</span>
+                                <span class="badge bg-success">W3: 102.0</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-active">SEA Seahawks</span>
+                                    <span class="team-chip team-active">MIN Vikings</span>
+                                    <span class="team-chip team-active">HOU Texans</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-secondary score-breakdown-btn">Details</button>
+                            </td>
+                        </tr>
+
+                        <!-- Eliminated Player -->
+                        <tr class="standings-row eliminated">
+                            <td><div class="rank-badge rank-normal">12</div></td>
+                            <td>
+                                <div class="fw-bold text-muted">Chris Brown</div>
+                                <small class="text-danger"><i class="bi bi-x-circle-fill"></i> Eliminated</small>
+                            </td>
+                            <td class="text-center">
+                                <div class="fw-bold text-muted">142.5</div>
+                                <small class="text-danger">All teams lost</small>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-danger me-1">W1: 0.0</span>
+                                <span class="badge bg-danger me-1">W2: 0.0</span>
+                                <span class="badge bg-danger">W3: 142.5</span>
+                            </td>
+                            <td class="text-center">
+                                <div>
+                                    <span class="team-chip team-eliminated">LV Raiders</span>
+                                    <span class="team-chip team-eliminated">NYG Giants</span>
+                                    <span class="team-chip team-eliminated">CAR Panthers</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-secondary score-breakdown-btn">Details</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Score Breakdown Modal Placeholder -->
+        <div class="leaderboard-card">
+            <h5 class="mb-3"><i class="bi bi-info-circle"></i> Leaderboard Notes</h5>
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2"><i class="bi bi-check-circle text-success"></i> <strong>Active Teams</strong> score points each week</li>
+                <li class="mb-2"><i class="bi bi-x-circle text-danger"></i> <strong>Eliminated Teams</strong> score 0 points for remaining weeks</li>
+                <li class="mb-2"><i class="bi bi-trophy text-warning"></i> <strong>Leader</strong> is the player with the highest total score</li>
+                <li class="mb-2"><i class="bi bi-clock text-info"></i> Scores update after each week's games are final</li>
+                <li class="mb-0"><i class="bi bi-graph-up text-primary"></i> Click "Details" to view score breakdowns by category</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Week tab switching
+        const weekTabs = document.querySelectorAll('.week-tab');
+        weekTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                weekTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                // In a real app, this would fetch and display data for the selected week
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Selection - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .team-card {
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .team-card:hover:not(.disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
+            border-color: #0d6efd;
+        }
+        .team-card.selected {
+            border-color: #198754;
+            background-color: #d1e7dd;
+        }
+        .team-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #e9ecef;
+        }
+        .team-logo {
+            width: 60px;
+            height: 60px;
+            background-color: #dee2e6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        .countdown-timer {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .deadline-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .schedule-game {
+            border-left: 3px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="team-selection.html">Make Pick</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2>Select Your Team</h2>
+                <p class="text-muted">Choose an NFL team for this week. Remember: you cannot select the same team twice!</p>
+            </div>
+            <div class="col-lg-4">
+                <select class="form-select form-select-lg" id="leagueSelector">
+                    <option selected>Playoff Challenge 2024</option>
+                    <option>Friends League</option>
+                    <option disabled>Office Pool 2024 (Eliminated)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Deadline Countdown -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card deadline-card">
+                    <div class="card-body text-center py-4">
+                        <h5 class="mb-3"><i class="bi bi-alarm"></i> Deadline Countdown</h5>
+                        <div class="countdown-timer">2d 5h 32m 15s</div>
+                        <p class="mb-0 mt-2">Sunday, December 22, 2024 at 1:00 PM ET</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Week Selector -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">NFL Week 16</h5>
+                                <small class="text-muted">League Week 3 of 4</small>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-chevron-left"></i> Prev Week</button>
+                                <button type="button" class="btn btn-outline-secondary" disabled>Next Week <i class="bi bi-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Team Selection -->
+            <div class="col-lg-8 mb-4">
+                <h4 class="mb-3">Available Teams</h4>
+                
+                <!-- Filter Buttons -->
+                <div class="btn-group mb-3" role="group">
+                    <input type="radio" class="btn-check" name="teamFilter" id="filterAll" checked>
+                    <label class="btn btn-outline-primary" for="filterAll">All Teams</label>
+
+                    <input type="radio" class="btn-check" name="teamFilter" id="filterAvailable">
+                    <label class="btn btn-outline-success" for="filterAvailable">Available (10)</label>
+
+                    <input type="radio" class="btn-check" name="teamFilter" id="filterUsed">
+                    <label class="btn btn-outline-warning" for="filterUsed">Already Used (2)</label>
+
+                    <input type="radio" class="btn-check" name="teamFilter" id="filterEliminated">
+                    <label class="btn btn-outline-danger" for="filterEliminated">Eliminated (3)</label>
+                </div>
+
+                <!-- Team Grid -->
+                <div class="row g-3">
+                    <!-- Available Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-primary text-white">BAL</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Baltimore Ravens</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 selected">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-danger text-white">KC</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Kansas City Chiefs</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle-fill"></i> Selected</small>
+                                </div>
+                                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-success text-white">PHI</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Philadelphia Eagles</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Already Used Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 disabled">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">SF</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">San Francisco 49ers</h6>
+                                    <small class="text-warning"><i class="bi bi-dash-circle"></i> Used Week 2</small>
+                                </div>
+                                <i class="bi bi-lock-fill text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eliminated Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 disabled">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">DAL</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Dallas Cowboys</h6>
+                                    <small class="text-danger"><i class="bi bi-x-circle"></i> Eliminated Week 1</small>
+                                </div>
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-info text-white">BUF</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Buffalo Bills</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Eliminated Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 disabled">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">PIT</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Pittsburgh Steelers</h6>
+                                    <small class="text-danger"><i class="bi bi-x-circle"></i> Eliminated Week 2</small>
+                                </div>
+                                <i class="bi bi-x-circle-fill text-danger"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-warning text-white">GB</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Green Bay Packers</h6>
+                                    <small class="text-success"><i class="bi bi-check-circle"></i> Available</small>
+                                </div>
+                                <i class="bi bi-circle text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Already Used Team -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card team-card h-100 disabled">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="team-logo me-3 bg-secondary text-white">DET</div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0">Detroit Lions</h6>
+                                    <small class="text-warning"><i class="bi bi-dash-circle"></i> Used Week 1</small>
+                                </div>
+                                <i class="bi bi-lock-fill text-muted"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="row mt-4">
+                    <div class="col">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirm Selection: Kansas City Chiefs
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Info & Schedule -->
+            <div class="col-lg-4">
+                <!-- Your Picks Summary -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-calendar-check"></i> Your Picks</h5>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Week 1 (NFL 15)</strong>
+                                <br><small class="text-muted">DET Lions</small>
+                            </div>
+                            <span class="badge bg-success">95.5 pts</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Week 2 (NFL 16)</strong>
+                                <br><small class="text-muted">SF 49ers</small>
+                            </div>
+                            <span class="badge bg-success">87.0 pts</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                            <div>
+                                <strong>Week 3 (NFL 17)</strong>
+                                <br><small class="text-primary">KC Chiefs (pending)</small>
+                            </div>
+                            <span class="badge bg-secondary">--</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Week 4 (NFL 18)</strong>
+                                <br><small class="text-muted">Not selected</small>
+                            </div>
+                            <span class="badge bg-secondary">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NFL Week 16 Schedule -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-calendar3"></i> NFL Week 16 Schedule</h5>
+                    </div>
+                    <div class="card-body p-2" style="max-height: 400px; overflow-y: auto;">
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sat 12/21 - 1:00 PM ET</small>
+                                <strong>KC Chiefs</strong> @ PIT Steelers
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sat 12/21 - 4:30 PM ET</small>
+                                <strong>BAL Ravens</strong> @ HOU Texans
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sat 12/21 - 8:15 PM ET</small>
+                                LAC Chargers @ <strong>NE Patriots</strong>
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
+                                <strong>PHI Eagles</strong> @ WAS Commanders
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
+                                <strong>BUF Bills</strong> @ LAR Rams
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
+                                CIN Bengals @ <strong>CLE Browns</strong>
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 1:00 PM ET</small>
+                                <strong>MIN Vikings</strong> @ SEA Seahawks
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 4:05 PM ET</small>
+                                <strong>DEN Broncos</strong> @ LAC Chargers
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 4:25 PM ET</small>
+                                <strong>ATL Falcons</strong> @ NYG Giants
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Sun 12/22 - 8:20 PM ET</small>
+                                <strong>TB Buccaneers</strong> @ DAL Cowboys
+                            </div>
+                            <div class="list-group-item schedule-game px-2 py-2">
+                                <small class="text-muted d-block">Mon 12/23 - 8:15 PM ET</small>
+                                <strong>GB Packers</strong> @ NO Saints
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Card -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h6><i class="bi bi-info-circle"></i> Selection Rules</h6>
+                        <ul class="mb-0 small">
+                            <li>You can only use each team once per league</li>
+                            <li>Eliminated teams score 0 points if selected</li>
+                            <li>You can change your pick until the deadline</li>
+                            <li>Picks lock when the first game of the week starts</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Simple countdown timer simulation
+        function updateCountdown() {
+            // This is just for demo - in real app would calculate from actual deadline
+            const countdownEl = document.querySelector('.countdown-timer');
+            if (countdownEl) {
+                // Placeholder countdown logic would go here
+            }
+        }
+        setInterval(updateCountdown, 1000);
+
+        // Team card click handler
+        document.querySelectorAll('.team-card:not(.disabled)').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

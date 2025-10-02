@@ -11,22 +11,518 @@
 
 This proposal addresses the integration of external NFL data to support the Fantasy Football League application. **CRITICAL FINDING**: The current `NflDataProvider` interface is designed for survivor pool (team selection) rather than traditional fantasy football (individual player stats). This proposal provides a complete redesign with data source recommendations, implementation strategy, and architectural guidelines.
 
-**Recommendation:** Use ESPN API as primary data source with sportsdata.io as paid fallback. Implement hybrid batch + real-time fetching strategy. Redesign NflDataProvider port to support individual player statistics and defensive team stats.
+**UPDATED RECOMMENDATION (2025-10-02 13:18):** Use **sportsdata.io Fantasy Sports API** as primary data source with real-time updates. No league setup required - direct access to NFL player stats and fantasy points. Implement real-time polling strategy with automatic updates every 20-30 seconds during live games. Redesign NflDataProvider port to support individual player statistics and defensive team stats.
+
+**Previous Recommendation:** ESPN API as primary with sportsdata.io as fallback (see Appendix for comparison)
 
 ---
 
 ## Table of Contents
 
-1. [Critical Issue: Current Design Mismatch](#critical-issue-current-design-mismatch)
-2. [Data Source Options Analysis](#data-source-options-analysis)
-3. [Recommended Data Fetching Strategy](#recommended-data-fetching-strategy)
-4. [Domain Model Mapping](#domain-model-mapping)
-5. [NflDataProvider Port Redesign](#nfldataprovider-port-redesign)
-6. [Caching Strategy](#caching-strategy)
-7. [Error Handling & Fallback](#error-handling--fallback)
-8. [Rate Limiting Considerations](#rate-limiting-considerations)
-9. [Implementation Phases](#implementation-phases)
-10. [Risk Assessment](#risk-assessment)
+1. [RECOMMENDED: SportsDataIO Fantasy Sports API](#recommended-sportsdataio-fantasy-sports-api)
+2. [Critical Issue: Current Design Mismatch](#critical-issue-current-design-mismatch)
+3. [Data Source Options Analysis](#data-source-options-analysis)
+4. [Recommended Data Fetching Strategy](#recommended-data-fetching-strategy)
+5. [Domain Model Mapping](#domain-model-mapping)
+6. [NflDataProvider Port Redesign](#nfldataprovider-port-redesign)
+7. [Caching Strategy](#caching-strategy)
+8. [Error Handling & Fallback](#error-handling--fallback)
+9. [Rate Limiting Considerations](#rate-limiting-considerations)
+10. [Implementation Phases](#implementation-phases)
+11. [Risk Assessment](#risk-assessment)
+
+---
+
+## RECOMMENDED: SportsDataIO Fantasy Sports API
+
+**URL:** https://sportsdata.io/fantasy-sports-api
+**Status:** ✅ RECOMMENDED PRIMARY DATA SOURCE
+**Updated:** 2025-10-02 13:18
+
+### Why SportsDataIO Fantasy Sports API?
+
+**Key Advantages:**
+- ✅ **Real-time fantasy points** - Updates every 20-30 seconds during live games
+- ✅ **No league setup required** - Direct API access to NFL player stats
+- ✅ **Fantasy-specific endpoints** - Pre-calculated fantasy points (DraftKings, FanDuel, Yahoo scoring)
+- ✅ **Official NFL data partner** - Guaranteed data accuracy and SLA
+- ✅ **Comprehensive stats** - Individual player performance + defensive team stats
+- ✅ **Free trial available** - Test all endpoints before committing
+- ✅ **Enterprise-grade** - Unlimited API calls on paid plans
+- ✅ **Projections included** - BAKER Engine projections for player performance
+
+---
+
+### SportsDataIO Fantasy API Endpoints
+
+#### 1. Player Game Stats by Week (Real-time)
+
+**Endpoint:**
+```
+GET https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsByWeek/{season}/{week}?key={apiKey}
+```
+
+**Description:** Returns all player game statistics for a specific NFL week with real-time updates during live games.
+
+**Response Fields (Key Fields for Our Application):**
+- `PlayerID` - Unique player identifier
+- `Name` - Player name (e.g., "Patrick Mahomes")
+- `Team` - NFL team abbreviation (e.g., "KC")
+- `Position` - QB, RB, WR, TE, K
+- `PassingYards`, `PassingTouchdowns`, `Interceptions`
+- `RushingYards`, `RushingTouchdowns`, `RushingAttempts`
+- `Receptions`, `ReceivingYards`, `ReceivingTouchdowns`
+- `FumblesLost`
+- `TwoPointConversionPasses`, `TwoPointConversionRuns`, `TwoPointConversionReceptions`
+- `FantasyPoints` - Pre-calculated fantasy points
+- `FantasyPointsDraftKings` - DraftKings scoring
+- `FantasyPointsFanDuel` - FanDuel scoring
+- `FantasyPointsYahoo` - Yahoo scoring
+- `FantasyPointsPPR` - **PPR scoring (what we need!)**
+
+**Real-time Updates:** Updated every 20-30 seconds during live games
+
+**Use Case:** Fetch all player stats for current NFL week, calculate custom PPR scores using our league's scoring rules
+
+**Example Response:**
+```json
+{
+  "PlayerID": 14876,
+  "Name": "Patrick Mahomes",
+  "Team": "KC",
+  "Position": "QB",
+  "PassingYards": 325,
+  "PassingTouchdowns": 3,
+  "Interceptions": 0,
+  "RushingYards": 18,
+  "RushingTouchdowns": 0,
+  "Receptions": 0,
+  "ReceivingYards": 0,
+  "ReceivingTouchdowns": 0,
+  "FumblesLost": 0,
+  "TwoPointConversionPasses": 0,
+  "TwoPointConversionRuns": 0,
+  "FantasyPoints": 24.72,
+  "FantasyPointsPPR": 24.72
+}
+```
+
+---
+
+#### 2. Fantasy Defense Game Stats (Real-time)
+
+**Endpoint:**
+```
+GET https://api.sportsdata.io/v3/nfl/stats/json/FantasyDefenseByGame/{season}/{week}?key={apiKey}
+```
+
+**Description:** Returns defensive team statistics with fantasy scoring for a specific NFL week.
+
+**Response Fields:**
+- `Team` - NFL team abbreviation (e.g., "KC")
+- `Sacks`
+- `Interceptions`
+- `FumbleRecoveries`
+- `Safeties`
+- `DefensiveTouchdowns`
+- `SpecialTeamsTouchdowns`
+- `PointsAllowed`
+- `YardsAllowed`
+- `FantasyPoints` - Pre-calculated defensive fantasy points
+- `FantasyPointsAllowed` - Points scored by opponent
+
+**Real-time Updates:** Updated every 20-30 seconds during live games
+
+**Use Case:** Fetch defensive team stats for DEF roster position
+
+**Example Response:**
+```json
+{
+  "Team": "KC",
+  "Sacks": 3.0,
+  "Interceptions": 1,
+  "FumbleRecoveries": 0,
+  "Safeties": 0,
+  "DefensiveTouchdowns": 1,
+  "SpecialTeamsTouchdowns": 0,
+  "PointsAllowed": 10,
+  "YardsAllowed": 250,
+  "FantasyPoints": 17.0
+}
+```
+
+---
+
+#### 3. Player Game Projections (Pre-game)
+
+**Endpoint:**
+```
+GET https://api.sportsdata.io/v3/nfl/projections/json/PlayerGameProjectionStatsByWeek/{season}/{week}?key={apiKey}
+```
+
+**Description:** Returns projected player statistics and fantasy points for upcoming games (uses BAKER Engine).
+
+**Response Fields:** Same as PlayerGameStats endpoint, but projected values
+
+**Use Case:** Show projected scores to help users with roster decisions (future enhancement)
+
+---
+
+#### 4. Player Profiles - All Active Players
+
+**Endpoint:**
+```
+GET https://api.sportsdata.io/v3/nfl/stats/json/PlayersByAvailable?key={apiKey}
+```
+
+**Description:** Returns all active NFL players with metadata.
+
+**Response Fields:**
+- `PlayerID`
+- `FirstName`, `LastName`
+- `Team`
+- `Position`
+- `Number` - Jersey number
+- `BirthDate`
+- `ByeWeek`
+
+**Use Case:** Populate player search database for roster building UI
+
+---
+
+### Real-time Data Flow
+
+**How Real-time Updates Work:**
+
+```
+Live NFL Game
+    ↓
+SportsDataIO ingests official NFL data (20-30 second delay from broadcast)
+    ↓
+Our API polls: GET /PlayerGameStatsByWeek/{season}/{week}
+    ↓
+Parse response → Calculate custom PPR scores using league's ScoringRules
+    ↓
+Update database (player_stats table)
+    ↓
+Fire StatsUpdatedEvent
+    ↓
+WebSocket push to connected clients
+    ↓
+UI updates live scores
+```
+
+**Polling Frequency During Live Games:**
+- Every 30 seconds (matches SportsDataIO update frequency)
+- Only during live game windows (Thu/Sun/Mon)
+- Automatically detect live games via game status field
+
+**No Polling When:**
+- All games are FINAL (no live games in progress)
+- Games haven't started yet (status = SCHEDULED)
+
+---
+
+### No League Setup Required ✅
+
+**Important:** SportsDataIO Fantasy Sports API provides **raw NFL player statistics** - no need to set up a fantasy league on their platform.
+
+**What You Get:**
+- Direct access to all NFL player game stats
+- Pre-calculated fantasy points (PPR, DraftKings, FanDuel, Yahoo)
+- We calculate our own custom PPR scores using league's configurable `ScoringRules`
+
+**What You Don't Need:**
+- ❌ No league configuration on SportsDataIO platform
+- ❌ No roster management on their side
+- ❌ No third-party league ID
+- ❌ No sync with external fantasy leagues
+
+**We Control:**
+- Our own league configuration (roster structure, scoring rules)
+- Our own roster management (player selections)
+- Our own scoring calculations (using their raw stats)
+
+---
+
+### Pricing
+
+**Free Trial:**
+- ✅ Never expires
+- ✅ Full access to all endpoints
+- ✅ All leagues (NFL, NBA, MLB, etc.)
+- ✅ Suitable for testing and development
+- ⚠️ Limited API calls (likely 500-1000/month)
+
+**Paid Plans:**
+- Contact SportsDataIO sales for custom pricing
+- Industry average: $500-$1000+/month for unlimited calls
+- ✅ Unlimited API calls
+- ✅ Real-time updates
+- ✅ SLA guarantees
+- ✅ Dedicated support
+
+**Recommendation:**
+- Start with **free trial** for MVP development
+- Monitor API usage
+- Upgrade to paid plan when:
+  - User base grows beyond 50 active users
+  - Need guaranteed uptime (SLA)
+  - Hit free tier API limits
+
+---
+
+### Implementation with SportsDataIO
+
+#### Step 1: Create SportsDataAdapter
+
+**File:** `ffl-playoffs-api/src/main/java/com/ffl/playoffs/infrastructure/adapter/integration/SportsDataAdapter.java`
+
+**Implements:** `NflDataProvider` port
+
+**Configuration:**
+```java
+@Configuration
+@ConfigurationProperties(prefix = "nfl-data.sportsdata")
+public class SportsDataConfig {
+    private String apiKey;
+    private String baseUrl = "https://api.sportsdata.io/v3/nfl";
+
+    // getters/setters
+}
+```
+
+**application.yml:**
+```yaml
+nfl-data:
+  sportsdata:
+    api-key: ${SPORTSDATA_API_KEY}
+    base-url: https://api.sportsdata.io/v3/nfl
+```
+
+**Environment Variable:**
+```bash
+export SPORTSDATA_API_KEY="your-api-key-here"
+```
+
+---
+
+#### Step 2: Fetch Player Stats
+
+**Example Implementation:**
+```java
+@Override
+public List<PlayerStats> getPlayerStatsByWeek(Integer nflWeek) {
+    String url = String.format("%s/stats/json/PlayerGameStatsByWeek/%d/%d?key=%s",
+        config.getBaseUrl(),
+        getCurrentSeason(),
+        nflWeek,
+        config.getApiKey()
+    );
+
+    // Rate limiting
+    rateLimiter.acquire();
+
+    // Fetch from SportsDataIO
+    SportsDataPlayerResponse[] response = restTemplate.getForObject(
+        url,
+        SportsDataPlayerResponse[].class
+    );
+
+    // Map to domain model
+    return Arrays.stream(response)
+        .map(this::mapToPlayerStats)
+        .collect(Collectors.toList());
+}
+
+private PlayerStats mapToPlayerStats(SportsDataPlayerResponse response) {
+    return PlayerStats.builder()
+        .nflPlayerId(String.valueOf(response.getPlayerID()))
+        .nflPlayerName(response.getName())
+        .nflTeam(response.getTeam())
+        .position(Position.valueOf(response.getPosition()))
+        .nflWeek(response.getWeek())
+        .passingYards(response.getPassingYards())
+        .passingTouchdowns(response.getPassingTouchdowns())
+        .interceptions(response.getInterceptions())
+        .rushingYards(response.getRushingYards())
+        .rushingTouchdowns(response.getRushingTouchdowns())
+        .receptions(response.getReceptions())
+        .receivingYards(response.getReceivingYards())
+        .receivingTouchdowns(response.getReceivingTouchdowns())
+        .fumblesLost(response.getFumblesLost())
+        .twoPointConversionPasses(response.getTwoPointConversionPasses())
+        .twoPointConversionRuns(response.getTwoPointConversionRuns())
+        .twoPointConversionReceptions(response.getTwoPointConversionReceptions())
+        .build();
+}
+```
+
+---
+
+#### Step 3: Real-time Polling Scheduler
+
+**Scheduled Job:**
+```java
+@Component
+public class LiveStatsPollingService {
+
+    @Scheduled(fixedDelay = 30000) // Every 30 seconds
+    public void pollLiveGameStats() {
+        Integer currentWeek = getCurrentNflWeek();
+
+        // Check if any games are live
+        if (!hasLiveGames(currentWeek)) {
+            return; // Skip polling if no live games
+        }
+
+        logger.info("Polling live stats for week {}", currentWeek);
+
+        // Fetch latest stats
+        List<PlayerStats> stats = nflDataProvider.getPlayerStatsByWeek(currentWeek);
+
+        // Update database
+        stats.forEach(playerStatsRepository::save);
+
+        // Fire event for WebSocket updates
+        eventPublisher.publishEvent(new StatsUpdatedEvent(currentWeek));
+    }
+
+    private boolean hasLiveGames(Integer week) {
+        List<NflGame> games = nflDataProvider.getGamesByWeek(week);
+        return games.stream()
+            .anyMatch(game -> game.getStatus() == GameStatus.LIVE);
+    }
+}
+```
+
+**Polling Schedule:**
+- Runs every 30 seconds (matches SportsDataIO update frequency)
+- Only polls when games are live (checks game status first)
+- Automatically stops when all games complete
+
+---
+
+#### Step 4: Custom PPR Scoring Calculation
+
+**Why Calculate Our Own Scores:**
+- SportsDataIO provides pre-calculated fantasy points (PPR, DraftKings, etc.)
+- But our leagues have **configurable scoring rules**
+- Each league can customize: yards per point, TD points, reception points, etc.
+
+**Implementation:**
+```java
+@Service
+public class ScoringService {
+
+    public Score calculatePlayerScore(PlayerStats stats, ScoringRules rules) {
+        double points = 0.0;
+
+        // Passing stats
+        points += stats.getPassingYards() / rules.getPpr().getPassingYardsPerPoint();
+        points += stats.getPassingTouchdowns() * rules.getPpr().getPassingTDPoints();
+        points += stats.getInterceptions() * rules.getPpr().getInterceptionPoints();
+
+        // Rushing stats
+        points += stats.getRushingYards() / rules.getPpr().getRushingYardsPerPoint();
+        points += stats.getRushingTouchdowns() * rules.getPpr().getRushingTDPoints();
+
+        // Receiving stats
+        points += stats.getReceivingYards() / rules.getPpr().getReceivingYardsPerPoint();
+        points += stats.getReceptions() * rules.getPpr().getReceptionPoints(); // PPR!
+        points += stats.getReceivingTouchdowns() * rules.getPpr().getReceivingTDPoints();
+
+        // Other
+        points += stats.getFumblesLost() * rules.getPpr().getFumbleLostPoints();
+        points += (stats.getTwoPointConversionPasses() +
+                   stats.getTwoPointConversionRuns() +
+                   stats.getTwoPointConversionReceptions()) *
+                   rules.getPpr().getTwoPointConversionPoints();
+
+        return Score.builder()
+            .playerId(stats.getNflPlayerId())
+            .week(stats.getNflWeek())
+            .points(points)
+            .breakdown(generateBreakdown(stats, rules))
+            .build();
+    }
+}
+```
+
+**Flow:**
+1. Fetch raw stats from SportsDataIO (passing yards, TDs, etc.)
+2. Apply league's custom `ScoringRules` to calculate points
+3. Store calculated score in `scores` table
+4. Display to user with breakdown
+
+---
+
+### Comparison: SportsDataIO vs ESPN API
+
+| Feature | SportsDataIO Fantasy API | ESPN API (Free) |
+|---------|-------------------------|-----------------|
+| **Cost** | Free trial → $500+/mo | Free (always) |
+| **Real-time** | 20-30 sec updates ✅ | Undocumented (likely similar) |
+| **Official** | Official NFL partner ✅ | Unofficial (ESPN-owned) |
+| **SLA** | Guaranteed uptime ✅ | No guarantees ❌ |
+| **Fantasy Points** | Pre-calculated (PPR, DK, FD) ✅ | Must calculate manually |
+| **Documentation** | Official docs ✅ | Undocumented (reverse-engineered) ❌ |
+| **Rate Limits** | Unlimited (paid), limited (free) | ~30 req/min (community estimate) |
+| **Support** | Dedicated support ✅ | No support ❌ |
+| **Risk** | Low (SLA guarantees) | Medium (API could change) |
+| **League Setup** | Not required ✅ | Not required ✅ |
+
+**Decision Matrix:**
+
+**Choose SportsDataIO if:**
+- ✅ Real-time updates are critical
+- ✅ Need guaranteed uptime (production app)
+- ✅ Budget allows $500+/month
+- ✅ Want official support
+- ✅ Planning to scale beyond 100 users
+
+**Choose ESPN API if:**
+- ✅ Budget is very limited
+- ✅ MVP/prototype only
+- ✅ Can tolerate occasional API changes
+- ✅ Daily batch updates are sufficient
+
+**Hybrid Approach:**
+- Start with free SportsDataIO trial for development
+- Monitor API usage and user growth
+- Upgrade to paid plan when needed
+- Keep ESPN API as backup fallback
+
+---
+
+### Summary: SportsDataIO Fantasy Sports API
+
+**Recommended Approach:**
+
+1. **Primary Data Source:** SportsDataIO Fantasy Sports API
+2. **Setup:** No league configuration needed - direct stats access
+3. **Real-time:** Poll every 30 seconds during live games
+4. **Scoring:** Fetch raw stats, apply custom PPR rules per league
+5. **Endpoints:**
+   - `/PlayerGameStatsByWeek/{season}/{week}` - Player stats
+   - `/FantasyDefenseByGame/{season}/{week}` - Defensive stats
+   - `/PlayersByAvailable` - Player search
+6. **Pricing:** Free trial for development → Paid plan for production
+7. **Fallback:** ESPN API as backup if SportsDataIO unavailable
+
+**Implementation Phases:**
+
+**Phase 1 (MVP):**
+- SportsDataIO free trial
+- Real-time polling every 30 seconds
+- Custom PPR scoring calculation
+- WebSocket updates to UI
+
+**Phase 2 (Production):**
+- Upgrade to paid SportsDataIO plan
+- Add circuit breaker and fallback to ESPN API
+- Advanced caching and optimization
+- Monitoring and alerts
 
 ---
 

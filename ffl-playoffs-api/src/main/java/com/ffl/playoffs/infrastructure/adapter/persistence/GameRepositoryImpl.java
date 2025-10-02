@@ -2,60 +2,50 @@ package com.ffl.playoffs.infrastructure.adapter.persistence;
 
 import com.ffl.playoffs.domain.model.Game;
 import com.ffl.playoffs.domain.port.GameRepository;
-import com.ffl.playoffs.infrastructure.adapter.persistence.document.GameDocument;
-import com.ffl.playoffs.infrastructure.adapter.persistence.mapper.GameMapper;
-import com.ffl.playoffs.infrastructure.adapter.persistence.repository.GameMongoRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * MongoDB implementation of GameRepository
- * Infrastructure layer - implements domain port
+ * In-memory implementation of GameRepository.
+ * Replace with JPA implementation when persistence is needed.
  */
 @Repository
-@RequiredArgsConstructor
 public class GameRepositoryImpl implements GameRepository {
 
-    private final GameMongoRepository mongoRepository;
-    private final GameMapper gameMapper;
+    private final Map<UUID, Game> storage = new ConcurrentHashMap<>();
 
     @Override
     public Game save(Game game) {
-        game.setUpdatedAt(LocalDateTime.now());
-        GameDocument document = gameMapper.toDocument(game);
-        GameDocument saved = mongoRepository.save(document);
-        return gameMapper.toDomain(saved);
+        storage.put(game.getId(), game);
+        return game;
     }
 
     @Override
-    public Optional<Game> findById(String id) {
-        UUID uuid = UUID.fromString(id);
-        return mongoRepository.findById(uuid)
-                .map(gameMapper::toDomain);
+    public Optional<Game> findById(UUID id) {
+        return Optional.ofNullable(storage.get(id));
+    }
+
+    @Override
+    public List<Game> findByCreatorId(UUID creatorId) {
+        return storage.values().stream()
+                .filter(game -> game.getCreatorId().equals(creatorId))
+                .toList();
     }
 
     @Override
     public List<Game> findAll() {
-        return mongoRepository.findAll().stream()
-                .map(gameMapper::toDomain)
-                .collect(Collectors.toList());
+        return new ArrayList<>(storage.values());
     }
 
     @Override
-    public void delete(String id) {
-        UUID uuid = UUID.fromString(id);
-        mongoRepository.deleteById(uuid);
+    public void delete(UUID id) {
+        storage.remove(id);
     }
 
     @Override
-    public Optional<Game> findByInviteCode(String inviteCode) {
-        return mongoRepository.findByCode(inviteCode)
-                .map(gameMapper::toDomain);
+    public boolean existsById(UUID id) {
+        return storage.containsKey(id);
     }
 }

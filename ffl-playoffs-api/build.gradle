@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.2.1'
+    id 'org.springframework.boot' version '3.2.0'
     id 'io.spring.dependency-management' version '1.1.4'
 }
 
@@ -24,10 +24,13 @@ repositories {
 dependencies {
     // Spring Boot starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    // Database
+    runtimeOnly 'org.postgresql:postgresql'
 
     // Google OAuth
     implementation 'com.google.api-client:google-api-client:2.2.0'
@@ -38,35 +41,25 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     // OpenAPI/Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
-
-    // JSON processing
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
 
-    // JUnit 5 (included in spring-boot-starter-test)
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    // Cucumber for BDD/Gherkin tests
+    testImplementation 'io.cucumber:cucumber-java:7.14.0'
+    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.14.0'
+    testImplementation 'io.cucumber:cucumber-spring:7.14.0'
 
-    // Mockito (included in spring-boot-starter-test)
+    // JUnit 5 Platform
+    testImplementation 'org.junit.platform:junit-platform-suite'
+
+    // Mockito (included in spring-boot-starter-test, but explicit for clarity)
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.mockito:mockito-junit-jupiter'
-
-    // Cucumber for BDD testing
-    testImplementation 'io.cucumber:cucumber-java:7.15.0'
-    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.15.0'
-    testImplementation 'io.cucumber:cucumber-spring:7.15.0'
-
-    // Embedded MongoDB for testing
-    testImplementation 'de.flapdoodle.embed:de.flapdoodle.embed.mongo:4.11.0'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed"
-        exceptionFormat "full"
-    }
 }

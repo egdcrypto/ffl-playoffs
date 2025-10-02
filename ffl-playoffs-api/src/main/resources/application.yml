@@ -2,48 +2,24 @@ spring:
   application:
     name: ffl-playoffs-api
 
+  # MongoDB configuration (NOT PostgreSQL)
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/ffl_playoffs}
       database: ${MONGODB_DATABASE:ffl_playoffs}
       auto-index-creation: true
 
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-    default-property-inclusion: non_null
-
-# CRITICAL SECURITY: API binds to localhost ONLY
-# External access ONLY through Envoy sidecar (port 443)
-# This prevents direct API access bypassing authentication
+# CRITICAL SECURITY: API listens ONLY on localhost:8080
+# Envoy sidecar is the ONLY external entry point
 server:
-  address: 127.0.0.1  # LOCALHOST ONLY - NO external access
-  port: 8080
+  address: 127.0.0.1
+  port: ${PORT:8080}
   error:
     include-message: always
-    include-binding-errors: always
+    include-stacktrace: never
   shutdown: graceful
 
-# Management/Actuator endpoints on separate port (localhost only)
-management:
-  server:
-    address: 127.0.0.1  # LOCALHOST ONLY
-    port: 8081
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: when-authorized
-      probes:
-        enabled: true
-  health:
-    livenessState:
-      enabled: true
-    readinessState:
-      enabled: true
-
+# Swagger API documentation
 springdoc:
   api-docs:
     path: /api-docs
@@ -56,3 +32,77 @@ logging:
     com.ffl.playoffs: INFO
     org.springframework: WARN
     org.mongodb: WARN
+
+# CRITICAL SECURITY: Management endpoints listen ONLY on localhost
+# Prevents external access to actuator endpoints
+management:
+  server:
+    address: 127.0.0.1
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+
+# Kubernetes health probes
+# Liveness: GET http://localhost:8081/actuator/health/liveness
+# Readiness: GET http://localhost:8081/actuator/health/readiness
+
+---
+# Development profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ffl_playoffs_dev
+
+logging:
+  level:
+    com.ffl.playoffs: DEBUG
+    org.springframework: INFO
+
+---
+# Test profile
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/ffl_playoffs_test
+
+logging:
+  level:
+    com.ffl.playoffs: DEBUG
+
+---
+# Production profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE:ffl_playoffs}
+
+logging:
+  level:
+    com.ffl.playoffs: INFO
+    org.springframework: WARN

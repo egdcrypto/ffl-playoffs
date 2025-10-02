@@ -1,42 +1,56 @@
 package com.ffl.playoffs.infrastructure.adapter.integration;
 
+import com.ffl.playoffs.domain.model.Score;
 import com.ffl.playoffs.domain.port.NflDataProvider;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
+/**
+ * Adapter for NFL data integration.
+ * This is a stub implementation that should be replaced with actual NFL API integration.
+ */
 @Component
-@RequiredArgsConstructor
 public class NflDataAdapter implements NflDataProvider {
 
-    // TODO: Inject HTTP client or external API client
-    // private final RestTemplate restTemplate;
-    // private final WebClient webClient;
-
     @Override
-    public List<String> getPlayoffTeams(int season, int week) {
-        // TODO: Call external NFL API to get playoff teams for a given season and week
-        throw new UnsupportedOperationException("Not yet implemented");
+    public Score getTeamScore(String nflTeam, Integer weekNumber) {
+        // Stub implementation - replace with actual NFL API call
+        return Score.builder()
+                .id(UUID.randomUUID())
+                .nflTeam(nflTeam)
+                .weekNumber(weekNumber)
+                .points(0)
+                .breakdown(Score.ScoreBreakdown.builder()
+                        .touchdowns(0)
+                        .fieldGoals(0)
+                        .safeties(0)
+                        .extraPoints(0)
+                        .twoPointConversions(0)
+                        .build())
+                .build();
     }
 
     @Override
-    public Map<String, Integer> getTeamScore(String teamCode, int season, int week) {
-        // TODO: Call external NFL API to get team score details
-        // Returns map with scoring breakdown (touchdowns, fieldGoals, etc.)
-        throw new UnsupportedOperationException("Not yet implemented");
+    public List<String> getPlayoffTeams(Integer year) {
+        // Stub implementation - replace with actual NFL API call
+        return Arrays.asList(
+                "KC", "BUF", "BAL", "HOU", "DET", "TB", "PHI",
+                "LAR", "GB", "MIN", "PIT", "DAL", "LAC", "MIA"
+        );
     }
 
     @Override
-    public boolean isTeamEliminated(String teamCode, int season, int week) {
-        // TODO: Determine if a team has been eliminated from playoffs
-        throw new UnsupportedOperationException("Not yet implemented");
+    public List<String> getAvailableTeamsForWeek(Integer weekNumber) {
+        // Stub implementation - replace with actual logic
+        return getPlayoffTeams(2024);
     }
 
     @Override
-    public List<Map<String, Object>> getWeekSchedule(int season, int week) {
-        // TODO: Get schedule for a specific week
-        throw new UnsupportedOperationException("Not yet implemented");
+    public boolean isTeamInPlayoffs(String nflTeam, Integer year) {
+        // Stub implementation - replace with actual NFL API call
+        return getPlayoffTeams(year).contains(nflTeam);
     }
 }

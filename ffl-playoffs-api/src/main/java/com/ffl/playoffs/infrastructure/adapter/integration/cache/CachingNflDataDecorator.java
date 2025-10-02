@@ -6,10 +6,8 @@ import com.ffl.playoffs.domain.model.Score;
 import com.ffl.playoffs.domain.port.NflDataProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 
@@ -78,20 +76,11 @@ public class CachingNflDataDecorator implements NflDataProvider {
      * @param nflPlayerId Player ID
      * @return Optional NFLPlayer
      */
+    @Override
     @Cacheable(value = "nfl-players", key = "#nflPlayerId")
     public Optional<NFLPlayer> getPlayerById(Long nflPlayerId) {
         log.debug("Cache miss for player: {}", nflPlayerId);
-
-        // Call delegate (reflection to handle extended methods not in port interface)
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerById", Long.class);
-            @SuppressWarnings("unchecked")
-            Optional<NFLPlayer> result = (Optional<NFLPlayer>) method.invoke(delegate, nflPlayerId);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerById on delegate: {}", e.getMessage());
-            return Optional.empty();
-        }
+        return delegate.getPlayerById(nflPlayerId);
     }
 
     /**
@@ -106,19 +95,11 @@ public class CachingNflDataDecorator implements NflDataProvider {
      * @param season Season year
      * @return Optional PlayerStats
      */
+    @Override
     @Cacheable(value = "player-stats", key = "#nflPlayerId + '-' + #week + '-' + #season")
     public Optional<PlayerStats> getPlayerWeeklyStats(Long nflPlayerId, Integer week, Integer season) {
         log.debug("Cache miss for player stats: {} season {} week {}", nflPlayerId, season, week);
-
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerWeeklyStats", Long.class, Integer.class, Integer.class);
-            @SuppressWarnings("unchecked")
-            Optional<PlayerStats> result = (Optional<PlayerStats>) method.invoke(delegate, nflPlayerId, week, season);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerWeeklyStats on delegate: {}", e.getMessage());
-            return Optional.empty();
-        }
+        return delegate.getPlayerWeeklyStats(nflPlayerId, week, season);
     }
 
     /**
@@ -129,19 +110,11 @@ public class CachingNflDataDecorator implements NflDataProvider {
      * @param season Season year
      * @return List of PlayerStats
      */
+    @Override
     @Cacheable(value = "weekly-stats", key = "#week + '-' + #season")
     public List<PlayerStats> getWeeklyStats(Integer week, Integer season) {
         log.debug("Cache miss for weekly stats: season {} week {}", season, week);
-
-        try {
-            Method method = delegate.getClass().getMethod("getWeeklyStats", Integer.class, Integer.class);
-            @SuppressWarnings("unchecked")
-            List<PlayerStats> result = (List<PlayerStats>) method.invoke(delegate, week, season);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getWeeklyStats on delegate: {}", e.getMessage());
-            return List.of();
-        }
+        return delegate.getWeeklyStats(week, season);
     }
 
     /**
@@ -151,19 +124,11 @@ public class CachingNflDataDecorator implements NflDataProvider {
      * @param nflPlayerId Player ID
      * @return List of news headlines
      */
+    @Override
     @Cacheable(value = "player-news", key = "#nflPlayerId")
     public List<String> getPlayerNews(Long nflPlayerId) {
         log.debug("Cache miss for player news: {}", nflPlayerId);
-
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerNews", Long.class);
-            @SuppressWarnings("unchecked")
-            List<String> result = (List<String>) method.invoke(delegate, nflPlayerId);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerNews on delegate: {}", e.getMessage());
-            return List.of();
-        }
+        return delegate.getPlayerNews(nflPlayerId);
     }
 
     /**
@@ -173,17 +138,10 @@ public class CachingNflDataDecorator implements NflDataProvider {
      * @param nflPlayerId Player ID
      * @return Injury status string
      */
+    @Override
     @Cacheable(value = "player-injury-status", key = "#nflPlayerId")
     public String getPlayerInjuryStatus(Long nflPlayerId) {
         log.debug("Cache miss for player injury status: {}", nflPlayerId);
-
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerInjuryStatus", Long.class);
-            String result = (String) method.invoke(delegate, nflPlayerId);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerInjuryStatus on delegate: {}", e.getMessage());
-            return "UNKNOWN";
-        }
+        return delegate.getPlayerInjuryStatus(nflPlayerId);
     }
 }

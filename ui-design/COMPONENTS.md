@@ -11,7 +11,7 @@ Primary Colors:
 
 Secondary Colors:
 - Secondary: #34a853 (Green - Success, wins, positive)
-- Accent: #ea4335 (Red - Danger, eliminations, errors)
+- Accent: #ea4335 (Red - Danger, errors, alerts)
 - Warning: #fbbc04 (Yellow - Warnings, deadlines)
 
 Neutral Colors:
@@ -192,7 +192,7 @@ League Card:
 │  Week 5 • Deadline: 2 days          │
 │  Your Rank: #3                      │
 ├─────────────────────────────────────┤
-│  [View League]  [Make Picks]       │
+│  [View League]  [Build Roster]     │
 └─────────────────────────────────────┘
 ```
 
@@ -226,7 +226,7 @@ When menu open:
 │ ✕  Menu                            │
 ├────────────────────────────────────┤
 │  🏈 My Leagues                     │
-│  🎯 Make Picks                     │
+│  🎯 Build Roster                   │
 │  📊 Leaderboards                   │
 │  ⚙️  Settings                      │
 │  🚪 Logout                         │
@@ -235,7 +235,7 @@ When menu open:
 
 **Breadcrumbs:**
 ```
-Home > My Leagues > League Name > Make Picks
+Home > My Leagues > League Name > Build Roster
 ```
 
 **Standard Navigation Order:**
@@ -399,37 +399,39 @@ The FFL Playoffs application uses **tab-based navigation** for primary screen na
 
 ---
 
-### 8. Team Selection Component
+### 8. Player Card Component
 
-**Team Picker:**
+**NFL Player Card:**
 ```
 ┌─────────────────────────────────────────┐
-│  Select Your Team for Week 5            │
+│  Add Players to Your Roster             │
 ├─────────────────────────────────────────┤
-│  ┌──────┐  ┌──────┐  ┌──────┐          │
-│  │ [🏈] │  │ [🏈] │  │ [🏈] │          │
-│  │  SF  │  │  KC  │  │  BUF │          │
-│  │ 49ers│  │Chiefs│  │Bills │          │
-│  └──────┘  └──────┘  └──────┘          │
+│  ┌──────────────┐  ┌──────────────┐    │
+│  │ QB           │  │ RB           │    │
+│  │ P. Mahomes   │  │ C. McCaffrey │    │
+│  │ KC • Bye 12  │  │ SF • Bye 9   │    │
+│  │  [+ Add]     │  │  [+ Add]     │    │
+│  └──────────────┘  └──────────────┘    │
 │                                         │
-│  ┌──────┐  ┌──────┐  ┌──────┐          │
-│  │  ⚫  │  │  ⚫  │  │ [🏈] │          │
-│  │  NE  │  │  DAL │  │  GB  │          │
-│  │ Elim │  │ Elim │  │Packers│         │
-│  └──────┘  └──────┘  └──────┘          │
+│  ┌──────────────┐  ┌──────────────┐    │
+│  │ WR           │  │ TE           │    │
+│  │ T. Hill      │  │ T. Kelce     │    │
+│  │ MIA • Bye 6  │  │ KC • Bye 12  │    │
+│  │  [+ Add]     │  │  [✓ Added]   │    │
+│  └──────────────┘  └──────────────┘    │
 └─────────────────────────────────────────┘
 
-Selected: None
-Deadline: Thu Sep 14, 8:00 PM ET (23:45:12)
+Roster Status: 6 of 9 positions filled
+🔒 Roster locks: Sun Jan 12, 1:00 PM ET
 
-[Confirm Selection]
+[Save Roster]
 ```
 
 **States:**
-- Available (normal, clickable)
-- Selected (highlighted border, checkmark)
-- Eliminated (grayed out, locked icon)
-- Locked (deadline passed, can't change)
+- Available (normal, clickable, "+ Add" button)
+- In Roster (checkmark, "✓ Added" badge, disabled)
+- Roster Locked (🔒 icon, view-only, no edits allowed)
+- Position Full (grayed out if position slots filled)
 
 ---
 
@@ -516,11 +518,11 @@ Expired:
 ┌─────────────────────────────────────┐
 │           🎯                        │
 │                                     │
-│     No picks for this week          │
-│     Make your selection before      │
-│     the deadline!                   │
+│     Roster incomplete               │
+│     Complete your roster before     │
+│     it locks!                       │
 │                                     │
-│     [Make Picks]                    │
+│     [Build Roster]                  │
 └─────────────────────────────────────┘
 ```
 
@@ -529,13 +531,16 @@ Expired:
 ### 12. Badge Component
 
 ```
-Active    Eliminated    Pending    Admin
-┌─────┐   ┌─────────┐  ┌───────┐  ┌─────┐
-│  ✓  │   │    ⚫   │  │   ⏱   │  │  👑 │
-└─────┘   └─────────┘  └───────┘  └─────┘
+Active    Locked     Pending    Admin
+┌─────┐   ┌──────┐  ┌───────┐  ┌─────┐
+│  ✓  │   │  🔒  │  │   ⏱   │  │  👑 │
+└─────┘   └──────┘  └───────┘  └─────┘
+
+Position Badges:
+QB    RB    WR    TE    K    DEF
 
 Numerical Badges:
-Notifications (3)    Rank #1    Week 5
+Notifications (3)    Rank #1    Week 6
 ```
 
 **Props:**
@@ -707,7 +712,7 @@ Detailed Stats Card:
 - ⚡ Bolt (active, live)
 - 🔒 Lock (deadline passed, secured)
 - ✓ Check (success, confirmed)
-- ✕ X (error, eliminated)
+- ✕ X (error, remove)
 - ⚠ Warning (alerts, deadline soon)
 - ℹ Info (help, information)
 - 🔍 Search

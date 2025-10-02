@@ -1,7 +1,7 @@
 # UI/UX Design Tasks - FFL Playoffs
 
-## Status: Complete
-Last Updated: 2025-10-01 22:30
+## Status: Complete (Updated for Architecture Alignment)
+Last Updated: 2025-10-02 12:30
 
 ---
 
@@ -17,8 +17,8 @@ Last Updated: 2025-10-01 22:30
 ## Phase 2: Core Screen Wireframes ✅
 ### High Priority (Core Functionality)
 - [x] Player Dashboard - Most used screen, shows leagues and quick actions
-- [x] Team Selection Screen - Weekly picks with eliminated teams and deadline
-- [x] Leaderboard Screen - Rankings, eliminations, points breakdown
+- [x] Build Roster Screen - Roster building with individual NFL players and position slots
+- [x] Leaderboard Screen - Rankings with PPR scoring and roster performance
 - [x] League Configuration Screen - Admin power to configure all rules
 
 ### Medium Priority (Essential Flows)
@@ -59,8 +59,8 @@ Last Updated: 2025-10-01 22:30
 - [x] Define Tabs Component (screen navigation)
 - [x] Define Pagination Component (data tables)
 - [x] Define Stats Display Component (metrics, scores)
-- [x] Define Team Selection Component (team picker grid)
-- [x] Define Countdown Timer Component (deadline tracking)
+- [x] Define Player Card Component (NFL player selection for roster)
+- [x] Define Countdown Timer Component (roster lock tracking)
 
 ---
 
@@ -88,7 +88,7 @@ Last Updated: 2025-10-01 22:30
 - [x] Authentication flow (login, logout, token refresh)
 - [x] League creation flow (admin)
 - [x] Player invitation flow (admin → player)
-- [x] Weekly picks flow (player)
+- [x] Roster building flow (player)
 - [x] League configuration flow (admin)
 - [x] Admin management flow (super admin)
 - [x] Navigation flows between screens
@@ -137,15 +137,70 @@ Last Updated: 2025-10-01 22:30
 ---
 
 ## Key User Personas
-1. **Player**: Casual user, checks in weekly to make picks
+1. **Player**: Casual user, builds roster once, tracks weekly PPR scores
 2. **Admin**: League creator, configures rules, invites players
 3. **Super Admin**: Platform manager, creates admins, monitors system
 
 ---
 
+## Phase 9: Architecture Alignment (2025-10-02) ✅
+### Critical Update: Roster-Based PPR Fantasy Football Model
+
+**Issue Identified**: Original UI/UX documentation described a team elimination survivor pool model (select NFL teams weekly, elimination logic). The actual architecture specifies a roster-based PPR fantasy football system with ONE-TIME DRAFT.
+
+**Corrections Made**:
+- [x] Updated Build Roster Screen (formerly Team Selection Screen)
+  - Changed from selecting NFL teams to selecting individual NFL players
+  - Added position slots: QB, RB, WR, TE, K, DEF, FLEX, Superflex
+  - Added ONE-TIME DRAFT / Roster Lock concept
+  - Removed "teams used" tracking, replaced with roster completion status
+
+- [x] Updated Leaderboard Screen
+  - Removed "Team: Chiefs" references, replaced with roster-based display
+  - Removed "Eliminated W4" status - NO elimination logic
+  - Updated to show PPR scoring (individual player fantasy points)
+  - Added "Top Performer" column showing best roster player
+  - Changed stats from "Active: 7 | Eliminated: 2" to "Total Players: 9"
+
+- [x] Updated Player Dashboard
+  - Changed "Make Picks" buttons to "Build Roster"
+  - Updated navigation terminology throughout
+
+- [x] Updated League Configuration Screen
+  - Removed "Set elimination rules"
+  - Added roster configuration (position slots and counts)
+  - Added PPR scoring rules configuration
+  - Added field goal and defensive scoring rules
+
+- [x] Updated COMPONENTS.md
+  - Renamed "Team Selection Component" to "Player Card Component"
+  - Removed "Eliminated" badge states
+  - Added position badges (QB, RB, WR, TE, K, DEF)
+  - Updated color palette to remove "eliminations" reference
+
+- [x] Updated API-INTEGRATION.md
+  - Replaced team selection endpoints with roster management endpoints
+  - Updated from `/api/v1/player/leagues/{id}/selections` to `/api/v1/player/leagues/{id}/roster`
+  - Added individual player search endpoint: `/api/v1/nfl/players?position={pos}&search={query}`
+  - Updated error states (removed team-based errors, added roster-specific errors)
+
+- [x] Updated User Flow Diagrams
+  - Changed "Player Making Picks Flow" to "Player Building Roster Flow"
+  - Updated steps from "Select Team → Confirm" to "Search Players → Add to Position → Roster Locks"
+
+**Game Model Summary**:
+- **Type**: Roster-based PPR fantasy football (NOT team elimination survivor pool)
+- **Draft**: ONE-TIME DRAFT - rosters built once and PERMANENTLY LOCKED when first NFL game starts
+- **Scoring**: PPR scoring from individual NFL player stats (passing, rushing, receiving, kicking, defense)
+- **Elimination**: NONE - all league players compete for all configured weeks
+- **Roster Positions**: QB, RB, WR, TE, K, DEF, FLEX (RB/WR/TE), Superflex (QB/RB/WR/TE)
+- **Ownership**: Unlimited - multiple league players can select same NFL player
+
+---
+
 ## Notes
-- Focus on Player Dashboard, Team Selection, and Leaderboard first (80% of usage)
+- Focus on Player Dashboard, Build Roster, and Leaderboard first (80% of usage)
 - Admin screens can be more complex (power users)
 - Super Admin can be desktop-only if needed
-- Consider offline mode for viewing picks/standings
-- Consider push notifications for deadlines
+- Consider offline mode for viewing roster/standings
+- Consider push notifications for roster lock deadline

@@ -119,53 +119,101 @@ Navigate to: League Details page (shows league info, admin, rules)
 
 ---
 
-## 3. Team Selection Screen
+## 3. Build Roster Screen
 
 ### Purpose
-Weekly team picks interface showing available teams, eliminated teams, and deadline.
+One-time roster building interface for selecting individual NFL players to fill position slots before roster locks.
 
 ### API Endpoints
 
 #### On Page Load
 ```http
-GET /api/v1/player/leagues/{leagueId}/selections
+GET /api/v1/player/leagues/{leagueId}/roster
 Authorization: Bearer <jwt>
 ```
 
-**Response**: Player's selections and available teams
+**Response**: Player's current roster and lock status
 ```json
 {
-  "currentWeek": 2,
-  "deadline": "2025-10-05T13:00:00Z",
-  "locked": false,
-  "selections": [
+  "rosterLocked": false,
+  "lockTimestamp": "2025-01-12T18:00:00Z",
+  "rosterSlots": [
     {
-      "week": 1,
-      "nflWeek": 15,
-      "teamName": "Kansas City Chiefs",
-      "eliminated": false,
-      "score": 87.5,
-      "gameStatus": "FINAL"
+      "position": "QB",
+      "count": 1,
+      "players": [
+        {
+          "id": 501,
+          "name": "Patrick Mahomes",
+          "team": "KC",
+          "byeWeek": 12
+        }
+      ]
+    },
+    {
+      "position": "RB",
+      "count": 2,
+      "players": [
+        {
+          "id": 622,
+          "name": "Christian McCaffrey",
+          "team": "SF",
+          "byeWeek": 9
+        }
+      ]
     }
   ],
-  "eliminatedTeams": ["Kansas City Chiefs"],
-  "availableTeams": [
-    "Buffalo Bills",
-    "San Francisco 49ers",
-    "Philadelphia Eagles"
-  ]
+  "completionStatus": {
+    "filled": 6,
+    "total": 9,
+    "isComplete": false
+  }
 }
 ```
 
-#### Make Team Selection
+#### Search NFL Players
 ```http
-POST /api/v1/player/leagues/{leagueId}/selections
+GET /api/v1/nfl/players?position=QB&search=mahomes&limit=20
+Authorization: Bearer <jwt>
+```
+
+**Response**: Available NFL players
+```json
+{
+  "players": [
+    {
+      "id": 501,
+      "firstName": "Patrick",
+      "lastName": "Mahomes",
+      "position": "QB",
+      "team": "KC",
+      "byeWeek": 12,
+      "inMyRoster": true
+    },
+    {
+      "id": 502,
+      "firstName": "Josh",
+      "lastName": "Allen",
+      "position": "QB",
+      "team": "BUF",
+      "byeWeek": 12,
+      "inMyRoster": false
+    }
+  ],
+  "total": 45,
+  "hasMore": true
+}
+```
+
+#### Add Player to Roster
+```http
+POST /api/v1/player/leagues/{leagueId}/roster/players
 Authorization: Bearer <jwt>
 Content-Type: application/json
 
 {
-  "week": 2,
-  "teamName": "Buffalo Bills"
+  "playerId": 502,
+  "position": "QB"
 }
 ```
 
@@ -173,70 +221,95 @@ Content-Type: application/json
 ```json
 {
   "id": 124,
-  "playerId": 10,
-  "leagueId": 1,
-  "week": 2,
-  "nflWeek": 16,
-  "teamName": "Buffalo Bills",
-  "eliminated": false,
-  "locked": false,
-  "createdAt": "2025-10-01T12:00:00Z"
+  "playerId": 502,
+  "playerName": "Josh Allen",
+  "position": "QB",
+  "team": "BUF",
+  "byeWeek": 12,
+  "addedAt": "2025-01-01T12:00:00Z"
+}
+```
+
+#### Remove Player from Roster (Before Lock)
+```http
+DELETE /api/v1/player/leagues/{leagueId}/roster/players/{playerId}
+Authorization: Bearer <jwt>
+```
+
+**Response**: Success
+```json
+{
+  "success": true,
+  "message": "Player removed from roster"
 }
 ```
 
 ### Data Display
-- **Deadline Timer**: Countdown from `deadline`, color-coded (green > 24h, yellow < 24h, red < 1h)
-- **Past Selections**: Show previous weeks with scores (read-only)
-- **Available Teams Grid**: Show NFL team logos, grayed out if eliminated
-- **Selected Team Highlight**: Visual indicator for current week selection
+- **Roster Lock Timer**: Countdown to `lockTimestamp` (first game), color-coded (green > 2 days, yellow < 2 days, red < 6h)
+- **Current Roster**: Show filled positions with player names, empty positions highlighted
+- **Available Players**: Search/filter interface with player cards (position, team, bye week)
+- **Roster Completion**: Progress indicator (6/9 positions filled)
 
 ### User Actions
 
-#### Select Team (Click Team Logo)
-1. Highlight selected team
-2. Enable "Confirm Selection" button
-3. Show confirmation modal
+#### Search Players
+1. Type in search box → debounced GET `/api/v1/nfl/players?search={query}`
+2. Filter by position → GET `/api/v1/nfl/players?position={pos}`
+3. Show results in scrollable grid
 
-#### Confirm Selection
-1. POST to `/api/v1/player/leagues/{leagueId}/selections`
-2. Show loading spinner on button
-3. On success: Show success toast, update UI
-4. On error: Show error message (see error states)
+#### Add Player to Roster
+1. Click "+ Add" on player card
+2. POST to `/api/v1/player/leagues/{leagueId}/roster/players`
+3. Show loading spinner on button
+4. On success: Update roster display, mark player as "✓ Added", show success toast
+5. On error: Show error message (see error states)
+
+#### Remove Player from Roster (Before Lock)
+1. Click "Remove" on roster slot
+2. Show confirmation modal
+3. DELETE `/api/v1/player/leagues/{leagueId}/roster/players/{playerId}`
+4. On success: Clear slot, return to available players
 
 ### Error States
 
-#### Team Already Selected
+#### Player Already in Roster
 ```json
 {
-  "error": "TEAM_ALREADY_SELECTED",
-  "message": "You selected Kansas City Chiefs in week 1"
+  "error": "PLAYER_ALREADY_IN_ROSTER",
+  "message": "Patrick Mahomes is already in your roster"
 }
 ```
-**UI**: Show error modal with details, prevent selection
+**UI**: Show error toast, disable "+ Add" button for that player
 
-#### Deadline Passed
+#### Position Full
 ```json
 {
-  "error": "SELECTION_DEADLINE_PASSED",
-  "message": "Selection deadline for week 2 has passed"
+  "error": "POSITION_FULL",
+  "message": "QB position is full (1/1 filled)"
 }
 ```
-**UI**: Lock entire UI, show "Picks are locked" message
+**UI**: Show error toast, suggest removing existing player first
 
-#### Already Made Selection
-**UI**: Show current selection, allow change with "Update Pick" button (DELETE + POST)
+#### Roster Locked
+```json
+{
+  "error": "ROSTER_LOCKED",
+  "message": "Roster is permanently locked. First game has started."
+}
+```
+**UI**: Lock entire UI, show "🔒 ROSTER LOCKED" banner, disable all add/remove actions
 
 ### Responsive Behavior
-- **Mobile**: Vertical scrolling grid, 2 columns
-- **Tablet**: 3-4 column grid
-- **Desktop**: 6-8 column grid with larger logos
+- **Mobile**: Vertical stacked roster, 1 player card per row
+- **Tablet**: 2 player cards per row, condensed roster table
+- **Desktop**: Full roster table, 3-4 player cards per row
 
 ---
 
 ## 4. Leaderboard Screen
 
 ### Purpose
-Rankings, scores, and elimination tracking for league.
+Rankings, weekly/season scores, and roster performance tracking for league.
 
 ### API Endpoints
 
@@ -284,7 +357,7 @@ Authorization: Bearer <jwt>
 ### Data Display
 - **Ranking Table**: Rank, Name, Total Score, Weekly Scores
 - **Highlight Current User**: Different background color for "me"
-- **Eliminated Badge**: Red badge showing elimination count
+- **Top Performer Badge**: Show each player's top scoring player for the week
 - **Weekly Breakdown**: Expandable row to show week-by-week scores
 - **Filters**: Toggle between "All Weeks" and specific week
 

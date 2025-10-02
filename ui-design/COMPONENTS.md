@@ -238,11 +238,21 @@ When menu open:
 Home > My Leagues > League Name > Make Picks
 ```
 
+**Standard Navigation Order:**
+
+All player-facing pages MUST use this exact navigation order and terminology:
+1. **Dashboard** - Links to player-dashboard.html (or state-specific variant)
+2. **Build Roster** - Links to player-selection.html (or state-specific variant)
+3. **My Roster** - Links to my-roster.html (or state-specific variant)
+4. **Standings** - Links to league-standings.html (or state-specific variant)
+
+This order is consistent across all mockups and ensures a logical user flow from viewing the dashboard, to building/selecting players, to viewing the final roster, to checking standings.
+
 **Navigation Pattern Decision:**
 
 The FFL Playoffs application uses **tab-based navigation** for primary screen navigation instead of traditional breadcrumbs. This design decision was made for the following reasons:
 
-1. **Flat Information Architecture**: Player-facing screens (Dashboard, Browse Players, My Roster, Standings) are peers at the same level, not a hierarchical structure. Tab navigation better represents this relationship.
+1. **Flat Information Architecture**: Player-facing screens (Dashboard, Build Roster, My Roster, Standings) are peers at the same level, not a hierarchical structure. Tab navigation better represents this relationship.
 
 2. **Quick Context Switching**: Users frequently switch between viewing their roster, browsing players, and checking standings. Tabs provide faster navigation than breadcrumbs.
 
@@ -263,10 +273,10 @@ The FFL Playoffs application uses **tab-based navigation** for primary screen na
     <a class="nav-link active" href="player-dashboard.html">Dashboard</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="my-roster.html">My Roster</a>
+    <a class="nav-link" href="player-selection.html">Build Roster</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link" href="player-selection.html">Build Roster</a>
+    <a class="nav-link" href="my-roster.html">My Roster</a>
   </li>
   <li class="nav-item">
     <a class="nav-link" href="league-standings.html">Standings</a>

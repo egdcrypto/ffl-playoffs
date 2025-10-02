@@ -97,14 +97,18 @@ Based on `NFLPlayer`, `PlayerStats`, `NFLGame`, and `NFLTeam` domain models, we 
 
 ---
 
-### Option 3: SportsData.io (Commercial)
+### Option 3: SportsData.io Fantasy Sports API (Commercial)
+
+**URL:** https://sportsdata.io/fantasy-sports-api
 
 **Pros:**
-- Official, documented REST API
+- Official, documented Fantasy Sports REST API
 - Guaranteed SLA (99.9% uptime)
-- Comprehensive NFL coverage
-- Real-time and historical data
-- Fantasy-specific endpoints
+- **Real-time fantasy scoring and player stats**
+- Fantasy-optimized data structure (no league setup required)
+- Pre-calculated fantasy points (PPR, Standard, Half-PPR)
+- Real-time injury updates and player news
+- Live game data with play-by-play
 - Excellent documentation
 - Rate limiting clearly defined
 - Multiple pricing tiers
@@ -121,6 +125,12 @@ Based on `NFLPlayer`, `PlayerStats`, `NFLGame`, and `NFLTeam` domain models, we 
 - **Starter**: $69/month (10,000 calls/month)
 - **Pro**: $199/month (50,000 calls/month)
 - **Enterprise**: Custom pricing
+
+**Real-time Capabilities:**
+- Live fantasy scoring updates (every 30 seconds during games)
+- Real-time injury status changes
+- Instant player news and analysis
+- Live game status and play-by-play
 
 **Rating:** ✅ **RECOMMENDED** for Production
 
@@ -178,7 +188,15 @@ Based on `NFLPlayer`, `PlayerStats`, `NFLGame`, and `NFLTeam` domain models, we 
 
 ## Recommended Architecture
 
-### Primary Recommendation: SportsData.io with Redis Caching
+### Primary Recommendation: SportsData.io Fantasy Sports API with Redis Caching
+
+**API URL:** https://sportsdata.io/fantasy-sports-api
+
+**Key Benefits:**
+- **No League Setup Required:** Works standalone with direct player/game queries
+- **Real-time Fantasy Scoring:** Live updates during games (30-second intervals)
+- **Pre-calculated Points:** PPR/Standard/Half-PPR scoring built-in
+- **Fantasy-optimized Data:** Player projections, injury impact, DFS salaries
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -197,7 +215,7 @@ Based on `NFLPlayer`, `PlayerStats`, `NFLGame`, and `NFLTeam` domain models, we 
 │  │  NflDataAdapter (Primary Implementation)                   │ │
 │  │    ├─→ CachingNflDataDecorator (Redis/Caffeine)           │ │
 │  │    ├─→ RateLimitingNflDataDecorator (Bucket4j)            │ │
-│  │    └─→ SportsDataIoClient (HTTP Client)                   │ │
+│  │    └─→ SportsDataIoFantasyClient (HTTP Client)            │ │
 │  └────────────────────────────────────────────────────────────┘ │
 │                                                                  │
 │  ┌────────────────────────────────────────────────────────────┐ │
@@ -215,10 +233,11 @@ Based on `NFLPlayer`, `PlayerStats`, `NFLGame`, and `NFLTeam` domain models, we 
 - Team standings: Daily @ 4 AM ET
 - Player season stats: Daily @ 5 AM ET
 
-**Near Real-time (Polling During Game Days):**
-- Game scores: Every 2 minutes during active games
-- Player stats: Every 5 minutes during active games
-- Injury reports: Every 30 minutes
+**Real-time (Live During Games):**
+- Fantasy scoring: Every 30 seconds during active games (SportsData.io Fantasy API)
+- Player stats: Every 30 seconds during active games
+- Game status updates: Real-time via webhooks (optional)
+- Injury reports: Instant updates via Fantasy API
 
 **On-Demand (User-Triggered):**
 - Manual refresh triggers (with rate limiting)
@@ -368,7 +387,9 @@ public interface NflDataProvider {
 }
 ```
 
-#### 1.2 Create SportsDataIoClient
+#### 1.2 Create SportsDataIoFantasyClient
+
+**Note:** Uses Fantasy Sports API (no league setup required, works standalone)
 
 ```java
 package com.ffl.playoffs.infrastructure.adapter.integration.sportsdataio;
@@ -377,30 +398,40 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class SportsDataIoClient {
+public class SportsDataIoFantasyClient {
     private final RestTemplate restTemplate;
     private final SportsDataIoConfig config;
 
-    private static final String BASE_URL = "https://api.sportsdata.io/v3/nfl";
+    // Fantasy Sports API Base URL
+    private static final String BASE_URL = "https://api.sportsdata.io/v3/nfl/fantasy";
 
-    public SportsDataIoClient(RestTemplate restTemplate, SportsDataIoConfig config) {
+    public SportsDataIoFantasyClient(RestTemplate restTemplate, SportsDataIoConfig config) {
         this.restTemplate = restTemplate;
         this.config = config;
     }
 
-    public SportsDataIoPlayerResponse getPlayer(Long playerId) {
-        String url = String.format("%s/scores/json/Player/%d?key=%s",
+    // Get player with pre-calculated fantasy points (PPR)
+    public SportsDataIoFantasyPlayerResponse getFantasyPlayer(Long playerId) {
+        String url = String.format("%s/json/Player/%d?key=%s",
             BASE_URL, playerId, config.getApiKey());
-        return restTemplate.getForObject(url, SportsDataIoPlayerResponse.class);
+        return restTemplate.getForObject(url, SportsDataIoFantasyPlayerResponse.class);
     }
 
-    public List<SportsDataIoPlayerGameResponse> getPlayerGameStats(Integer season, Integer week) {
-        String url = String.format("%s/stats/json/PlayerGameStatsBySeason/%d/%d?key=%s",
+    // Get real-time fantasy stats for current week (updates every 30 seconds during games)
+    public List<SportsDataIoFantasyStatsResponse> getLiveFantasyStats(Integer season, Integer week) {
+        String url = String.format("%s/json/FantasyPlayerGameStatsByWeek/%d/%d?key=%s",
             BASE_URL, season, week, config.getApiKey());
-        return Arrays.asList(restTemplate.getForObject(url, SportsDataIoPlayerGameResponse[].class));
+        return Arrays.asList(restTemplate.getForObject(url, SportsDataIoFantasyStatsResponse[].class));
     }
 
-    // Additional methods...
+    // Get real-time player news and injury updates
+    public List<SportsDataIoPlayerNewsResponse> getPlayerNews() {
+        String url = String.format("%s/json/PlayerNews?key=%s",
+            BASE_URL, config.getApiKey());
+        return Arrays.asList(restTemplate.getForObject(url, SportsDataIoPlayerNewsResponse[].class));
+    }
+
+    // Additional fantasy-specific methods...
 }
 ```
 
@@ -485,12 +516,12 @@ import com.ffl.playoffs.infrastructure.adapter.integration.sportsdataio.*;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SportsDataIoAdapter implements NflDataProvider {
+public class SportsDataIoFantasyAdapter implements NflDataProvider {
 
-    private final SportsDataIoClient client;
+    private final SportsDataIoFantasyClient client;
     private final SportsDataIoMapper mapper;
 
-    public SportsDataIoAdapter(SportsDataIoClient client, SportsDataIoMapper mapper) {
+    public SportsDataIoFantasyAdapter(SportsDataIoFantasyClient client, SportsDataIoMapper mapper) {
         this.client = client;
         this.mapper = mapper;
     }
@@ -925,51 +956,60 @@ private String sanitize(String input) {
 
 ## Comparison Matrix
 
-| Feature | SportsData.io | ESPN (Unofficial) | Hybrid |
-|---------|---------------|-------------------|--------|
+| Feature | SportsData.io Fantasy API | ESPN (Unofficial) | Hybrid |
+|---------|---------------------------|-------------------|--------|
 | **Reliability** | ✅ 99.9% SLA | ⚠️ No guarantee | ✅ High (fallback) |
-| **Documentation** | ✅ Excellent | ❌ None | ✅ Good |
+| **Documentation** | ✅ Excellent (Fantasy-specific) | ❌ None | ✅ Good |
 | **Cost** | ⚠️ $69-199/month | ✅ Free | ⚠️ $69+/month |
-| **Real-time Data** | ✅ Yes | ✅ Yes | ✅ Yes |
+| **Real-time Data** | ✅ Yes (30-sec updates) | ✅ Yes | ✅ Yes |
+| **League Setup** | ✅ Not required | ⚠️ N/A | ⚠️ Varies |
+| **Pre-calc Fantasy Points** | ✅ Yes (PPR/Standard/Half) | ❌ No | ⚠️ Partial |
 | **Support** | ✅ Dedicated | ❌ None | ⚠️ Partial |
 | **Legal Risk** | ✅ None | ⚠️ Medium | ⚠️ Low |
 | **Breaking Changes** | ✅ Rare (versioned) | ⚠️ Common | ✅ Mitigated |
-| **Fantasy Data** | ✅ Native | ⚠️ Requires calc | ✅ Native |
+| **Fantasy Data** | ✅ Native & optimized | ⚠️ Requires calc | ✅ Native |
 | **Implementation Time** | 🟢 1-2 weeks | 🟡 2-3 weeks | 🔴 3-4 weeks |
 
 ---
 
 ## Final Recommendation
 
-### ✅ Recommended Solution: SportsData.io with Redis Caching
+### ✅ Recommended Solution: SportsData.io Fantasy Sports API with Redis Caching
+
+**API URL:** https://sportsdata.io/fantasy-sports-api
 
 **Why:**
-1. **Production-ready**: Official API with SLA guarantees
-2. **Cost-effective**: $69/month is reasonable for reliability
-3. **Fantasy-focused**: Built for fantasy football use cases
-4. **Scalable**: Easy to upgrade tiers as we grow
-5. **Low risk**: No legal concerns, versioned API
+1. **Production-ready**: Official Fantasy Sports API with SLA guarantees
+2. **Real-time Fantasy Data**: 30-second updates during games, no polling needed
+3. **No League Setup**: Works standalone, direct player/game queries
+4. **Pre-calculated Points**: PPR/Standard/Half-PPR built-in
+5. **Cost-effective**: $69/month is reasonable for reliability
+6. **Fantasy-optimized**: Built specifically for fantasy football use cases
+7. **Scalable**: Easy to upgrade tiers as we grow
+8. **Low risk**: No legal concerns, versioned API
 
 **Implementation Timeline:**
-- **Week 1**: Core integration with SportsData.io
-- **Week 2**: Caching + resilience patterns
+- **Week 1**: Core integration with Fantasy Sports API
+- **Week 2**: Real-time caching + resilience patterns
 - **Week 3**: Rate limiting + monitoring
 - **Week 4**: Production deployment
 
 **Next Steps:**
-1. Approve budget for SportsData.io Starter tier ($69/month)
-2. Create SportsData.io account and obtain API key
-3. Begin Phase 1 implementation
-4. Set up Redis for caching
-5. Configure monitoring and alerting
+1. Approve budget for SportsData.io Fantasy Sports API Starter tier ($69/month)
+2. Create account at https://sportsdata.io/fantasy-sports-api and obtain API key
+3. Begin Phase 1 implementation with real-time endpoints
+4. Set up Redis for caching (with 30-second TTL for live data)
+5. Configure monitoring and alerting for real-time feeds
 
 ---
 
-## Appendix: Sample API Calls
+## Appendix: Sample Fantasy Sports API Calls
 
-### Get Player by ID
+**Base URL:** `https://api.sportsdata.io/v3/nfl/fantasy`
+
+### Get Fantasy Player by ID (with pre-calculated points)
 ```http
-GET https://api.sportsdata.io/v3/nfl/scores/json/Player/12345?key=YOUR_API_KEY
+GET https://api.sportsdata.io/v3/nfl/fantasy/json/Player/12345?key=YOUR_API_KEY
 
 Response:
 {
@@ -979,13 +1019,18 @@ Response:
   "Position": "QB",
   "Team": "KC",
   "Number": 15,
-  "Status": "Active"
+  "Status": "Active",
+  "FantasyPointsPPR": 324.5,
+  "FantasyPointsStandard": 298.2,
+  "FantasyPointsHalfPPR": 311.3,
+  "InjuryStatus": "Healthy",
+  "InjuryNotes": null
 }
 ```
 
-### Get Weekly Stats
+### Get Real-time Fantasy Stats (updates every 30 seconds during games)
 ```http
-GET https://api.sportsdata.io/v3/nfl/stats/json/PlayerGameStatsBySeason/2025/18?key=YOUR_API_KEY
+GET https://api.sportsdata.io/v3/nfl/fantasy/json/FantasyPlayerGameStatsByWeek/2025/18?key=YOUR_API_KEY
 
 Response: [
   {
@@ -995,15 +1040,37 @@ Response: [
     "PassingYards": 320,
     "PassingTouchdowns": 3,
     "Interceptions": 1,
-    "FantasyPoints": 28.3
+    "FantasyPointsPPR": 28.3,
+    "FantasyPointsStandard": 26.8,
+    "FantasyPointsHalfPPR": 27.6,
+    "IsGameOver": false,
+    "GameStatus": "InProgress"
   },
   ...
 ]
 ```
 
-### Get Schedule
+### Get Real-time Player News and Injuries
 ```http
-GET https://api.sportsdata.io/v3/nfl/scores/json/ScoresByWeek/2025/18?key=YOUR_API_KEY
+GET https://api.sportsdata.io/v3/nfl/fantasy/json/PlayerNews?key=YOUR_API_KEY
+
+Response: [
+  {
+    "PlayerID": 12345,
+    "Name": "Patrick Mahomes",
+    "Team": "KC",
+    "Title": "Mahomes Active for Week 18",
+    "Updated": "2025-01-12T10:30:00Z",
+    "Content": "QB Patrick Mahomes is active and will start...",
+    "InjuryStatus": "Active"
+  },
+  ...
+]
+```
+
+### Get Live Game Scores (real-time)
+```http
+GET https://api.sportsdata.io/v3/nfl/fantasy/json/ScoresByWeek/2025/18?key=YOUR_API_KEY
 
 Response: [
   {
@@ -1015,11 +1082,16 @@ Response: [
     "AwayTeam": "BUF",
     "HomeScore": 27,
     "AwayScore": 24,
-    "Status": "Final"
+    "Status": "InProgress",
+    "Quarter": "Q4",
+    "TimeRemaining": "2:35",
+    "IsGameOver": false
   },
   ...
 ]
 ```
+
+**Note:** All Fantasy Sports API endpoints work standalone without league configuration. Pre-calculated fantasy points are available in real-time (30-second updates during games).
 
 ---
 

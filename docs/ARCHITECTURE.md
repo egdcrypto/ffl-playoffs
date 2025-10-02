@@ -29,6 +29,28 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
 4. **Technology Agnostic**: Framework and library choices don't impact core domain
 5. **Clear Dependencies**: Dependencies always point inward toward the domain
 
+### Game Model: Roster-Based Fantasy Football with ONE-TIME DRAFT
+
+The FFL Playoffs application is a **roster-based fantasy football system** where league players build rosters by selecting individual NFL players across multiple positions.
+
+**Core Game Mechanics**:
+1. **Individual NFL Player Selection**: League players select specific NFL players by name (e.g., "Patrick Mahomes", "Christian McCaffrey") to fill roster positions
+2. **Position-Based Roster Slots**: QB, RB, WR, TE, K, DEF, FLEX (RB/WR/TE eligible), Superflex (QB/RB/WR/TE eligible)
+3. **ONE-TIME DRAFT Model**: Rosters are built ONCE before the season and PERMANENTLY LOCKED when the first NFL game starts
+4. **No Ownership Model**: Multiple league players can select the same NFL player (unlimited availability)
+5. **PPR Scoring**: League player's score = sum of all their selected NFL players' fantasy points
+
+**Critical Business Rule - Roster Lock**:
+- **Pre-Lock Phase (Draft Phase)**: League players can modify their rosters (add/drop NFL players) until first game starts
+- **Post-Lock Phase (Season Active)**: Once first NFL game starts, rosters are PERMANENTLY LOCKED for entire season
+  - NO waiver wire pickups allowed
+  - NO trades between league players
+  - NO lineup changes week-to-week
+  - NO player replacements (even for injuries)
+  - League players must compete with their locked rosters for the full duration
+
+This is fundamentally different from a team elimination survivor pool. There is no elimination logic - all league players compete for all configured weeks, regardless of their NFL players' performance.
+
 ---
 
 ## Technology Stack
@@ -61,8 +83,8 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
            │  │  ┌────────────────────────────────────────────┐  │
            │  │  │  Use Cases / Application Services          │  │
            │  │  │  - CreateLeagueUseCase                     │  │
-           │  │  │  - MakeTeamSelectionUseCase                │  │
-           │  │  │  - CalculateScoreUseCase                   │  │
+           │  │  │  - AddNFLPlayerToRosterUseCase             │  │
+           │  │  │  - CalculateWeeklyScoresUseCase            │  │
            │  │  │  - InvitePlayerUseCase                     │  │
            │  │  └────────────────────────────────────────────┘  │
            │  │                                                   │
@@ -79,32 +101,38 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
               │  ┌─────────────────────────────────────────────┐  │
               │  │  Domain Model (Aggregates & Entities)       │  │
               │  │  - League                                   │  │
-              │  │  - Player                                   │  │
-              │  │  - TeamSelection                            │  │
-              │  │  - Score                                    │  │
+              │  │  - Roster                                   │  │
+              │  │  - NFLPlayer                                │  │
+              │  │  - NFLTeam                                  │  │
+              │  │  - LeaguePlayer                             │  │
               │  │  - User                                     │  │
               │  └─────────────────────────────────────────────┘  │
               │                                                   │
               │  ┌─────────────────────────────────────────────┐  │
               │  │  Value Objects                              │  │
               │  │  - ScoringRules                             │  │
+              │  │  - PPRScoringRules                          │  │
               │  │  - FieldGoalScoringRules                    │  │
               │  │  - DefensiveScoringRules                    │  │
-              │  │  - Week                                     │  │
+              │  │  - RosterConfiguration                      │  │
+              │  │  - RosterSlot                               │  │
+              │  │  - Position                                 │  │
               │  └─────────────────────────────────────────────┘  │
               │                                                   │
               │  ┌─────────────────────────────────────────────┐  │
               │  │  Domain Services                            │  │
-              │  │  - EliminationService                       │  │
               │  │  - ScoringService                           │  │
-              │  │  - TeamSelectionValidator                   │  │
+              │  │  - RosterValidator                          │  │
+              │  │  - DefensiveScoringService                  │  │
               │  └─────────────────────────────────────────────┘  │
               │                                                   │
               │  ┌─────────────────────────────────────────────┐  │
               │  │  Domain Events                              │  │
-              │  │  - TeamEliminatedEvent                      │  │
-              │  │  - TeamSelectedEvent                        │  │
-              │  │  - ScoreCalculatedEvent                     │  │
+              │  │  - NFLPlayerSelectedEvent                   │  │
+              │  │  - RosterCompletedEvent                     │  │
+              │  │  - RosterLockedEvent                        │  │
+              │  │  - PlayerStatsUpdatedEvent                  │  │
+              │  │  - WeekScoresCalculatedEvent                │  │
               │  └─────────────────────────────────────────────┘  │
               └───────────────────────────────────────────────────┘
 ```
@@ -117,11 +145,11 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
 The innermost layer containing pure business logic with **zero external dependencies**.
 
 **Components**:
-- **Entities**: League, Player, User, TeamSelection, Score
-- **Value Objects**: ScoringRules, Week, NFLTeam
-- **Domain Services**: EliminationService, ScoringService
-- **Domain Events**: TeamEliminatedEvent, ScoreCalculatedEvent
-- **Repository Interfaces (Ports)**: LeagueRepository, PlayerRepository, ScoreRepository
+- **Entities**: League, Roster, NFLPlayer, NFLTeam, LeaguePlayer, User, RosterSelection
+- **Value Objects**: ScoringRules, PPRScoringRules, FieldGoalScoringRules, DefensiveScoringRules, RosterConfiguration, RosterSlot, Position
+- **Domain Services**: ScoringService, RosterValidator, DefensiveScoringService
+- **Domain Events**: NFLPlayerSelectedEvent, RosterCompletedEvent, RosterLockedEvent, PlayerStatsUpdatedEvent
+- **Repository Interfaces (Ports)**: LeagueRepository, RosterRepository, NFLPlayerRepository, NFLTeamRepository
 
 **Rules**:
 - No framework dependencies (Spring, MongoDB annotations, etc.)
@@ -131,24 +159,34 @@ The innermost layer containing pure business logic with **zero external dependen
 
 **Example**:
 ```java
-// domain/model/TeamSelection.java
-public class TeamSelection {
-    private Long playerId;
-    private NFLTeam team;
-    private Week week;
-    private boolean eliminated;
-    private Week eliminatedInWeek;
+// domain/model/Roster.java
+public class Roster {
+    private String id;
+    private String leaguePlayerId;
+    private RosterStatus status;
+    private Instant lockTimestamp;
+    private List<RosterSelection> rosterSelections;
 
-    public void eliminate(Week week) {
-        if (this.eliminated) {
-            throw new TeamAlreadyEliminatedException();
+    public void addNFLPlayer(RosterSlot slot, NFLPlayer player) {
+        if (isLocked()) {
+            throw new RosterLockedException("Roster is permanently locked");
         }
-        this.eliminated = true;
-        this.eliminatedInWeek = week;
+        if (hasNFLPlayer(player.getId())) {
+            throw new DuplicatePlayerException("NFL player already in roster");
+        }
+        if (!slot.isEligible(player.getPosition())) {
+            throw new InvalidPositionException("Player position not eligible for slot");
+        }
+        rosterSelections.add(new RosterSelection(slot, player));
     }
 
-    public boolean canScorePoints() {
-        return !this.eliminated;
+    public void lockRoster(Instant lockTime) {
+        this.status = RosterStatus.LOCKED;
+        this.lockTimestamp = lockTime;
+    }
+
+    public boolean isLocked() {
+        return this.status == RosterStatus.LOCKED;
     }
 }
 ```
@@ -159,8 +197,8 @@ public class TeamSelection {
 Orchestrates domain objects to fulfill use cases. Acts as the **boundary between domain and infrastructure**.
 
 **Components**:
-- **Use Cases**: CreateLeagueUseCase, MakeTeamSelectionUseCase, CalculateScoreUseCase
-- **Application Services**: LeagueApplicationService, PlayerApplicationService
+- **Use Cases**: CreateLeagueUseCase, AddNFLPlayerToRosterUseCase, CalculateWeeklyScoresUseCase, LockRostersUseCase
+- **Application Services**: LeagueApplicationService, RosterApplicationService
 - **DTOs**: Data Transfer Objects for API boundaries
 - **Port Interfaces**: Define contracts for adapters
 
@@ -172,26 +210,28 @@ Orchestrates domain objects to fulfill use cases. Acts as the **boundary between
 
 **Example**:
 ```java
-// application/usecase/MakeTeamSelectionUseCase.java
-public class MakeTeamSelectionUseCase {
-    private final LeagueRepository leagueRepository;
-    private final TeamSelectionValidator validator;
+// application/usecase/AddNFLPlayerToRosterUseCase.java
+public class AddNFLPlayerToRosterUseCase {
+    private final RosterRepository rosterRepository;
+    private final NFLPlayerRepository nflPlayerRepository;
+    private final RosterValidator validator;
 
-    public TeamSelectionDTO execute(Long playerId, Long leagueId,
-                                     String teamName, int weekNumber) {
-        League league = leagueRepository.findById(leagueId);
-        Player player = league.getPlayer(playerId);
+    public RosterSelectionDTO execute(String leaguePlayerId, String rosterSlotId,
+                                       String nflPlayerId) {
+        Roster roster = rosterRepository.findByLeaguePlayerId(leaguePlayerId);
+        NFLPlayer nflPlayer = nflPlayerRepository.findById(nflPlayerId);
+        RosterSlot slot = roster.getRosterConfiguration().getSlot(rosterSlotId);
 
-        // Domain validation
-        validator.validateSelection(player, teamName, weekNumber);
+        // Domain validation via validator
+        validator.validatePlayerSelection(roster, slot, nflPlayer);
 
-        // Domain logic
-        TeamSelection selection = player.selectTeam(teamName, weekNumber);
+        // Domain logic - roster enforces business rules
+        roster.addNFLPlayer(slot, nflPlayer);
 
         // Save via port
-        leagueRepository.save(league);
+        rosterRepository.save(roster);
 
-        return TeamSelectionDTO.from(selection);
+        return RosterSelectionDTO.from(roster.getLatestSelection());
     }
 }
 ```
@@ -238,22 +278,22 @@ infrastructure/
 
 **Example**:
 ```java
-// infrastructure/adapter/persistence/LeagueRepositoryAdapter.java
+// infrastructure/adapter/persistence/RosterRepositoryAdapter.java
 @Component
-public class LeagueRepositoryAdapter implements LeagueRepository {
-    private final LeagueMongoRepository mongoRepository;
-    private final LeagueMapper mapper;
+public class RosterRepositoryAdapter implements RosterRepository {
+    private final RosterMongoRepository mongoRepository;
+    private final RosterMapper mapper;
 
     @Override
-    public League findById(String id) {
-        LeagueDocument document = mongoRepository.findById(id)
-            .orElseThrow(() -> new LeagueNotFoundException(id));
+    public Roster findByLeaguePlayerId(String leaguePlayerId) {
+        RosterDocument document = mongoRepository.findByLeaguePlayerId(leaguePlayerId)
+            .orElseThrow(() -> new RosterNotFoundException(leaguePlayerId));
         return mapper.toDomain(document);
     }
 
     @Override
-    public void save(League league) {
-        LeagueDocument document = mapper.toDocument(league);
+    public void save(Roster roster) {
+        RosterDocument document = mapper.toDocument(roster);
         mongoRepository.save(document);
     }
 }
@@ -478,25 +518,53 @@ public class NFLApiClient implements NFLDataProvider {
 
 #### 1. League Aggregate
 **Root Entity**: League
-**Child Entities**: Week, LeagueConfiguration, LeaguePlayer
+**Child Entities**: Week, LeaguePlayer
+**Value Objects**: RosterConfiguration, ScoringRules
 
 **Responsibilities**:
 - Enforce league lifecycle rules
 - Manage week progression
 - Validate league configuration (startingWeek + numberOfWeeks - 1 ≤ 22)
-- Control player membership
+- Control roster lock timing
+- Define roster structure (positions and counts)
+- Define scoring rules (PPR, field goals, defense)
 
-#### 2. Player Aggregate
-**Root Entity**: Player
-**Child Entities**: TeamSelection, Score
+#### 2. Roster Aggregate
+**Root Entity**: Roster
+**Child Entities**: RosterSelection
+**Value Objects**: RosterStatus (INCOMPLETE, COMPLETE, LOCKED)
 
 **Responsibilities**:
-- Manage team selections
-- Enforce selection constraints (no duplicate teams)
-- Track eliminated teams
-- Calculate player scores
+- Manage NFL player selections
+- Enforce ONE-TIME DRAFT model (roster lock after first game)
+- Validate position eligibility (QB slot only accepts QB, FLEX accepts RB/WR/TE)
+- Prevent duplicate NFL players in same roster
+- Track roster completion status
+- Calculate weekly scores from individual player stats
 
-#### 3. User Aggregate
+#### 3. NFLPlayer Aggregate
+**Root Entity**: NFLPlayer
+**Child Entities**: PlayerStats (game-by-game stats)
+**Value Objects**: Position (QB, RB, WR, TE, K, DEF)
+
+**Responsibilities**:
+- Store individual NFL player information
+- Track player position and team
+- Maintain game-by-game statistics
+- Support PPR scoring calculations
+
+#### 4. NFLTeam Aggregate
+**Root Entity**: NFLTeam
+**Child Entities**: DefensiveStats (game-by-game defense stats), NFLGame
+**Value Objects**: Conference, Division
+
+**Responsibilities**:
+- Store NFL team information (32 teams)
+- Track defensive performance statistics
+- Support defensive scoring calculations
+- Manage game schedules
+
+#### 5. User Aggregate
 **Root Entity**: User
 **Value Objects**: Role (SUPER_ADMIN, ADMIN, PLAYER), GoogleProfile
 
@@ -507,25 +575,49 @@ public class NFLApiClient implements NFLDataProvider {
 
 ### Value Objects
 
+**RosterConfiguration**: Defines league roster structure
+- Immutable
+- Contains list of RosterSlot objects
+- Validates total roster size
+- Examples: {QB: 1, RB: 2, WR: 2, TE: 1, FLEX: 1, K: 1, DEF: 1}
+
+**RosterSlot**: Defines position requirements
+- position: QB, RB, WR, TE, K, DEF, FLEX, Superflex
+- count: How many of this position
+- eligiblePositions: List of allowed positions (for FLEX/Superflex)
+
 **ScoringRules**: Encapsulates all scoring configuration
 - Immutable
-- Contains nested value objects: FieldGoalScoringRules, DefensiveScoringRules
+- Contains nested value objects: PPRScoringRules, FieldGoalScoringRules, DefensiveScoringRules
 
-**Week**: Represents both league week and NFL week mapping
-- Maps league week to NFL week based on startingWeek
+**PPRScoringRules**: PPR (Points Per Reception) scoring
+- Passing, rushing, receiving yards per point
+- Touchdown points, interception points
+- Reception points (1.0 Full PPR, 0.5 Half PPR, 0.0 Standard)
+
+**Position**: Enum for NFL player positions
+- QB, RB, WR, TE, K, DEF
 
 ### Domain Services
 
-**EliminationService**:
-- Determines when teams are eliminated
-- Applies elimination logic across player selections
-- Emits TeamEliminatedEvent
-
 **ScoringService**:
-- Calculates PPR scores based on ScoringRules
-- Applies field goal distance scoring
+- Calculates PPR scores from individual NFL player stats
+- Applies field goal distance scoring for kickers
 - Calculates defensive/special teams points
-- Handles elimination override (eliminated teams = 0 points)
+- Sums all roster player scores for weekly totals
+
+**DefensiveScoringService**:
+- Calculates defensive scoring with configurable tiers
+- Points allowed tiers (0 pts = 10 fantasy pts, 35+ pts = -4 fantasy pts)
+- Yards allowed tiers
+- Sacks, interceptions, fumble recoveries, safeties, defensive TDs
+
+**RosterValidator**:
+- Validates position eligibility (QB slot only accepts QB)
+- Validates FLEX eligibility (RB/WR/TE)
+- Validates Superflex eligibility (QB/RB/WR/TE)
+- Prevents duplicate NFL players in roster
+- Enforces roster lock rules (no changes after lock)
 
 ---
 
@@ -637,78 +729,91 @@ HTTP POST /api/v1/admin/leagues
 [MongoDB Database]
 ```
 
-### 2. Team Selection Flow
+### 2. Roster Building Flow (Add NFL Player to Roster)
 ```
-HTTP POST /api/v1/player/selections
+HTTP POST /api/v1/player/leagues/{leagueId}/roster/players
       ↓
-[TeamSelectionController] (Infrastructure)
+[RosterController] (Infrastructure)
+      ↓ (maps to command)
+[AddNFLPlayerToRosterUseCase] (Application)
+      ↓ (load roster and player)
+[RosterRepository.findByLeaguePlayerId()] (Port)
+[NFLPlayerRepository.findById()] (Port)
       ↓
-[MakeTeamSelectionUseCase] (Application)
+[Roster.addNFLPlayer(slot, nflPlayer)] (Domain)
       ↓
-[League.addPlayerSelection()] (Domain)
-      ↓
-[TeamSelectionValidator] (Domain Service)
+[RosterValidator] (Domain Service)
       ↓ validates:
-      - Player belongs to league
-      - Team not already selected
-      - Week not locked
-      - Selection deadline not passed
+      - Roster not locked (ONE-TIME DRAFT enforcement)
+      - Position eligibility (QB slot accepts QB, FLEX accepts RB/WR/TE)
+      - No duplicate NFL players in roster
+      - NFL player exists and is active
       ↓
-[TeamSelection] (Domain Entity) created
+[RosterSelection] (Domain Entity) created
       ↓
-[TeamSelectedEvent] emitted
+[NFLPlayerSelectedEvent] emitted
       ↓
-[LeagueRepository.save()] (Port)
+[RosterRepository.save()] (Port)
       ↓
 [Database]
 ```
 
-### 3. Score Calculation Flow
+### 3. Score Calculation Flow (PPR Scoring from Individual NFL Players)
 ```
 [Scheduled Job] triggers weekly
       ↓
-[CalculateScoresUseCase] (Application)
+[CalculateWeeklyScoresUseCase] (Application)
       ↓
-[NFLDataProvider.getWeekResults()] (Port)
+[NFLDataProvider.getPlayerStats(week)] (Port)
       ↓
-[NFLApiClient] (Infrastructure) - fetches game results
-      ↓
+[NFLApiClient] (Infrastructure) - fetches individual player stats
+      ↓ returns: PlayerStats (passing yards, rushing yards, receptions, TDs, etc.)
 [ScoringService] (Domain Service)
-      ↓ For each player:
-      - Check if team is eliminated
-      - If eliminated → score = 0
-      - If active → calculate PPR score
+      ↓ For each league player's roster:
+      - Get all RosterSelections (QB, RB, WR, TE, K, DEF, FLEX, Superflex)
+      - For each NFL player in roster:
+          * Fetch PlayerStats for the week
+          * Calculate fantasy points using PPR rules
+            - Passing: yards/25 = pts, TDs = 4 pts, INTs = -2 pts
+            - Rushing: yards/10 = pts, TDs = 6 pts
+            - Receiving: yards/10 = pts, receptions = 1 pt (PPR), TDs = 6 pts
+          * For kickers: apply field goal distance scoring
+          * For defense: apply defensive scoring tiers
+      - Sum all player scores → weekly roster total
       ↓
-[Score] (Domain Entity) created
+[WeeklyScore] (Domain Entity) created
       ↓
-[ScoreCalculatedEvent] emitted
+[WeekScoresCalculatedEvent] emitted
       ↓
 [ScoreRepository.save()] (Port)
       ↓
 [Database]
 ```
 
-### 4. Team Elimination Flow
+### 4. Roster Lock Flow (ONE-TIME DRAFT Enforcement)
 ```
-[Game Result Processing]
+[Scheduled Job] checks first game start time
       ↓
-[EliminationService] (Domain Service)
-      ↓ checks game outcome
-      - WIN or TIE → no elimination
-      - LOSS → eliminate team
+[LockRostersUseCase] (Application)
+      ↓ When: firstGameStartTime < NOW()
+[LeagueRepository.findActiveLeagues()] (Port)
       ↓
-[TeamSelection.eliminate(week)] (Domain)
+[For each league with unlocked rosters]
+      ↓
+[RosterRepository.findByLeagueId()] (Port)
+      ↓
+[Roster.lockRoster(lockTime)] (Domain)
       ↓ state change:
-      - eliminated = true
-      - eliminatedInWeek = current week
+      - status = LOCKED
+      - lockTimestamp = firstGameStartTime
       ↓
-[TeamEliminatedEvent] emitted
+[RosterLockedEvent] emitted
       ↓
-[Event Handler] sends notification
+[Event Handler] sends notifications
       ↓
 [NotificationService] (Port)
       ↓
-[EmailService] (Infrastructure)
+[EmailService] (Infrastructure) - notify players rosters are locked
 ```
 
 ---
@@ -895,7 +1000,7 @@ db.weeks.createIndex({ nflWeekNumber: 1 })
 
 ### 4. Why Domain Events?
 
-Domain events (e.g., `TeamEliminatedEvent`) enable:
+Domain events (e.g., `NFLPlayerSelectedEvent`, `RosterLockedEvent`) enable:
 - **Loose coupling**: Domain doesn't know about notifications or analytics
 - **Extensibility**: Add new event handlers without modifying domain
 - **Audit trail**: Track all significant domain changes
@@ -904,19 +1009,21 @@ Domain events (e.g., `TeamEliminatedEvent`) enable:
 Example:
 ```java
 // Domain emits event
-public class TeamSelection {
-    public void eliminate(Week week) {
-        this.eliminated = true;
-        this.events.add(new TeamEliminatedEvent(this.playerId, this.team, week));
+public class Roster {
+    public void addNFLPlayer(RosterSlot slot, NFLPlayer player) {
+        // ... validation logic ...
+        RosterSelection selection = new RosterSelection(slot, player);
+        this.rosterSelections.add(selection);
+        this.events.add(new NFLPlayerSelectedEvent(this.leaguePlayerId, player, slot));
     }
 }
 
 // Infrastructure handles event
 @EventListener
-public class TeamEliminationNotificationHandler {
-    public void handle(TeamEliminatedEvent event) {
-        notificationService.notifyPlayer(event.getPlayerId(),
-            "Your team " + event.getTeam() + " has been eliminated");
+public class RosterNotificationHandler {
+    public void handle(NFLPlayerSelectedEvent event) {
+        notificationService.notifyPlayer(event.getLeaguePlayerId(),
+            "Added " + event.getPlayer().getName() + " to your roster");
     }
 }
 ```
@@ -925,13 +1032,13 @@ public class TeamEliminationNotificationHandler {
 
 **League Aggregate**:
 - Root: League
-- Contains: Weeks, Configuration, LeaguePlayers
-- Enforces: Week progression, configuration validation
+- Contains: Weeks, RosterConfiguration, LeaguePlayers
+- Enforces: Week progression, configuration validation, roster lock timing
 
-**Player Aggregate**:
-- Root: Player
-- Contains: TeamSelections, Scores
-- Enforces: Selection rules, elimination logic
+**Roster Aggregate**:
+- Root: Roster
+- Contains: RosterSelections
+- Enforces: Position eligibility rules, no duplicate players, ONE-TIME DRAFT roster lock
 
 **Rationale**:
 - **Consistency boundary**: All changes go through aggregate root
@@ -971,10 +1078,12 @@ public class ScoringRules {
 
 **Implementation**:
 ```java
-public class Game {
+public class League {
     private LocalDateTime firstGameStartTime;
     private LocalDateTime configurationLockedAt;
     private String lockReason;
+    private String name;
+    private LocalDateTime updatedAt;
 
     public boolean isConfigurationLocked(LocalDateTime currentTime) {
         if (configurationLockedAt != null) {
@@ -1065,14 +1174,27 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed explanation.
 ### Domain Layer Tests
 ```java
 @Test
-void shouldEliminateTeamWhenItLoses() {
+void shouldAddNFLPlayerToRosterWhenPositionEligible() {
     // Pure domain logic test - no Spring, no database
-    TeamSelection selection = new TeamSelection(playerId, nflTeam, week);
+    Roster roster = new Roster(leaguePlayerId, rosterConfiguration);
+    RosterSlot qbSlot = rosterConfiguration.getSlot("QB");
+    NFLPlayer mahomes = new NFLPlayer("Patrick", "Mahomes", Position.QB);
 
-    selection.eliminate(week);
+    roster.addNFLPlayer(qbSlot, mahomes);
 
-    assertThat(selection.isEliminated()).isTrue();
-    assertThat(selection.canScorePoints()).isFalse();
+    assertThat(roster.getRosterSelections()).hasSize(1);
+    assertThat(roster.getRosterSelections().get(0).getNflPlayer()).isEqualTo(mahomes);
+}
+
+@Test
+void shouldThrowExceptionWhenRosterIsLocked() {
+    // Test ONE-TIME DRAFT enforcement
+    Roster roster = new Roster(leaguePlayerId, rosterConfiguration);
+    roster.lockRoster(Instant.now());
+
+    assertThatThrownBy(() -> roster.addNFLPlayer(qbSlot, mahomes))
+        .isInstanceOf(RosterLockedException.class)
+        .hasMessage("Roster is permanently locked");
 }
 ```
 

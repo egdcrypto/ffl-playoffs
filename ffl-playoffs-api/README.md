@@ -1,137 +1,87 @@
 # FFL Playoffs API
 
-A Spring Boot application for managing Fantasy Football League Playoff games, built with hexagonal architecture principles.
+A Spring Boot application for managing fantasy football playoff games, built with hexagonal (ports and adapters) architecture.
 
 ## Overview
 
-The FFL Playoffs API enables users to create and manage playoff elimination games where participants select NFL playoff teams each week. The game continues until only one player remains, with configurable scoring rules and team selection constraints.
+This API allows users to create fantasy football playoff games where players select NFL teams each week and compete based on real game scores. The application follows Domain-Driven Design principles and hexagonal architecture to ensure clean separation of concerns.
 
 ## Architecture
 
-This project follows **Hexagonal Architecture** (Ports and Adapters), ensuring a clean separation of concerns:
+The project follows **Hexagonal Architecture** (Ports and Adapters pattern) with three main layers:
 
+### Domain Layer (`com.ffl.playoffs.domain`)
+- **Pure business logic** with zero framework dependencies
+- **Models**: Core entities (Game, Player, TeamSelection, Week, Score)
+- **Events**: Domain events (GameCreatedEvent, TeamEliminatedEvent)
+- **Services**: Business logic services (ScoringService)
+- **Ports**: Interfaces defining contracts (GameRepository, PlayerRepository, NflDataProvider)
+
+### Application Layer (`com.ffl.playoffs.application`)
+- **Use Cases**: Application-specific business rules
+  - CreateGameUseCase
+  - InvitePlayerUseCase
+  - SelectTeamUseCase
+  - CalculateScoresUseCase
+- **DTOs**: Data transfer objects for API communication
+- **Services**: Application orchestration services
+
+### Infrastructure Layer (`com.ffl.playoffs.infrastructure`)
+- **REST Adapters**: HTTP controllers (GameController, PlayerController, AdminController)
+- **Persistence Adapters**: Repository implementations (currently in-memory, ready for JPA)
+- **Integration Adapters**: External service integrations (NflDataAdapter)
+- **Configuration**: Spring configuration classes
+
+### Dependency Rule
+All dependencies point **inward** toward the domain:
 ```
-├── domain/              # Core business logic (framework-agnostic)
-│   ├── model/          # Domain entities (Game, Player, TeamSelection, etc.)
-│   ├── event/          # Domain events
-│   ├── service/        # Domain services (ScoringService)
-│   └── port/           # Interfaces for external dependencies
-├── application/         # Application use cases and orchestration
-│   ├── usecase/        # Use case implementations
-│   ├── dto/            # Data transfer objects
-│   └── service/        # Application services
-└── infrastructure/      # External adapters and configurations
-    ├── adapter/
-    │   ├── rest/       # REST controllers
-    │   ├── persistence/# Database implementations
-    │   └── integration/# External API clients
-    └── config/         # Spring configuration
+Infrastructure → Application → Domain
 ```
-
-### Key Principles
-
-- **Domain Layer**: Contains no framework dependencies, pure business logic
-- **Application Layer**: Orchestrates use cases, coordinates domain objects
-- **Infrastructure Layer**: Implements ports, handles external concerns
-- **Dependency Rule**: All dependencies point inward toward the domain
 
 ## Technology Stack
 
 - **Java 17**
-- **Spring Boot 3.2.1**
-- **Spring Data MongoDB**
-- **MongoDB**
-- **Lombok**
-- **OpenAPI/Swagger**
-- **Cucumber** (BDD testing)
-- **JUnit 5 & Mockito**
+- **Spring Boot 3.2.0**
+- **Spring Data JPA**
+- **Spring Security**
+- **PostgreSQL** (production database)
+- **Lombok** (boilerplate reduction)
+- **SpringDoc OpenAPI** (API documentation)
+- **JUnit 5 & Mockito** (testing)
+- **Cucumber** (BDD/Gherkin tests)
 
 ## Prerequisites
 
 - Java 17 or higher
-- MongoDB 6.0+ (for production/development)
-- Gradle 8.x (wrapper included)
+- Gradle 7.x or higher
+- PostgreSQL 14+ (for production)
 
-## Getting Started
+## Build Instructions
 
-### 1. Database Setup
-
-Start MongoDB locally or use Docker:
+### Building the Project
 
 ```bash
-docker run -d \
-  --name ffl-mongodb \
-  -p 27017:27017 \
-  -e MONGO_INITDB_DATABASE=ffl_playoffs \
-  mongo:6
-```
-
-Or install MongoDB locally:
-```bash
-# macOS
-brew install mongodb-community@6.0
-
-# Ubuntu
-sudo apt install mongodb-org
-
-# Start MongoDB
-mongod --dbpath /path/to/data
-```
-
-### 2. Environment Configuration
-
-Create a `.env` file or set environment variables:
-
-```bash
-MONGODB_URI=mongodb://localhost:27017/ffl_playoffs
-```
-
-### 3. Build the Project
-
-```bash
+# Build the project
 ./gradlew build
+
+# Run without tests
+./gradlew build -x test
+
+# Clean and build
+./gradlew clean build
 ```
 
-### 4. Run the Application
+### Running the Application
 
 ```bash
+# Run with default configuration
 ./gradlew bootRun
-```
 
-Or use the development profile:
-
-```bash
+# Run with dev profile
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
-The API will be available at `http://localhost:8080`
-
-## API Documentation
-
-Once the application is running, access the interactive API documentation:
-
-- **Swagger UI**: http://localhost:8080/swagger-ui.html
-- **OpenAPI Spec**: http://localhost:8080/api-docs
-
-## API Endpoints Overview
-
-### Game Management
-- `POST /api/v1/games` - Create a new game
-- `GET /api/v1/games/{gameId}` - Get game details
-- `GET /api/v1/games` - List all games
-
-### Player Management
-- `POST /api/v1/players/invite` - Invite a player to a game
-- `POST /api/v1/players/{playerId}/teams` - Select a team for a week
-- `GET /api/v1/players/{playerId}` - Get player details
-- `GET /api/v1/players/{playerId}/teams` - Get player's team selections
-
-### Admin
-- `POST /api/v1/admin/games/{gameId}/calculate-scores` - Calculate scores for a week
-- `POST /api/v1/admin/games/{gameId}/advance-week` - Advance to next week
-- `GET /api/v1/admin/games/{gameId}/status` - Get game status
-
-## Development
+The application will start on `http://localhost:8080`
 
 ### Running Tests
 
@@ -139,96 +89,101 @@ Once the application is running, access the interactive API documentation:
 # Run all tests
 ./gradlew test
 
-# Run specific test class
-./gradlew test --tests "com.ffl.playoffs.domain.service.ScoringServiceTest"
-
-# Run with coverage
+# Run tests with coverage
 ./gradlew test jacocoTestReport
 ```
 
-### Code Style
-
-This project uses standard Java conventions with Lombok to reduce boilerplate.
-
-### Database Migrations
-
-MongoDB is schemaless, but we use Spring Data MongoDB for document mapping. Schema validation and indexes are defined in the domain models using annotations.
-
-## Project Structure Details
-
-### Domain Layer (`com.ffl.playoffs.domain`)
-
-**Models:**
-- `Game` - Represents a playoff game instance
-- `Player` - Represents a game participant
-- `TeamSelection` - A player's team choice for a specific week
-- `Week` - Represents a game week
-- `Score` - Player's score for a week
-- `ScoringRules` - Configurable scoring parameters
-
-**Ports (Interfaces):**
-- `GameRepository` - Game persistence operations
-- `PlayerRepository` - Player persistence operations
-- `NflDataProvider` - External NFL data integration
-
-**Services:**
-- `ScoringService` - Core scoring logic
-
-### Application Layer (`com.ffl.playoffs.application`)
-
-**Use Cases:**
-- `CreateGameUseCase` - Create a new game
-- `InvitePlayerUseCase` - Invite players
-- `SelectTeamUseCase` - Handle team selections
-- `CalculateScoresUseCase` - Calculate weekly scores
-
-**DTOs:**
-- `GameDTO`, `PlayerDTO`, `TeamSelectionDTO` - Data transfer objects for API
-
-### Infrastructure Layer (`com.ffl.playoffs.infrastructure`)
-
-**REST Controllers:**
-- `GameController` - Game management endpoints
-- `PlayerController` - Player and team selection endpoints
-- `AdminController` - Administrative operations
-
-**Persistence:**
-- `GameRepositoryImpl` - MongoDB implementation of GameRepository
-- `PlayerRepositoryImpl` - MongoDB implementation of PlayerRepository
-
-**Integration:**
-- `NflDataAdapter` - NFL data API client implementation
-
 ## Configuration
 
-### Application Profiles
+### Environment Variables
 
-- **default**: Production settings
-- **dev**: Development mode (detailed logging, etc.)
+Configure the following environment variables for production:
 
-### Key Configuration Properties
+- `DATABASE_URL`: PostgreSQL connection URL (default: `jdbc:postgresql://localhost:5432/ffl_playoffs`)
+- `DATABASE_USERNAME`: Database username (default: `ffl_user`)
+- `DATABASE_PASSWORD`: Database password (default: `ffl_password`)
+- `JWT_ISSUER_URI`: JWT issuer URI for authentication
+- `JWT_JWK_SET_URI`: JWT JWK set URI
+- `PORT`: Server port (default: `8080`)
 
-See `src/main/resources/application.yml` and `application-dev.yml`
+### Profiles
 
-## Security
+- **default**: Production configuration
+- **dev**: Development configuration with debug logging and H2 console
 
-The application uses Spring Security with:
-- JWT token-based authentication (to be implemented)
-- Role-based access control (ADMIN, USER)
-- CORS configuration for frontend integration
+## API Endpoints
 
-## Contributing
+### Games
 
-1. Follow hexagonal architecture principles
-2. Keep domain layer free of framework dependencies
-3. Write tests for all use cases
-4. Use Gherkin feature files for BDD tests
-5. Update API documentation when adding endpoints
+- `POST /api/games` - Create a new game
+- `GET /api/games` - List all games
+- `GET /api/games/{id}` - Get game by ID
+
+### Players
+
+- `POST /api/players/invite` - Invite a player to a game
+- `GET /api/players/{id}` - Get player by ID
+- `GET /api/players/game/{gameId}` - List players in a game
+- `POST /api/players/{playerId}/select-team` - Select a team for a week
+
+### Admin
+
+- `POST /api/admin/games/{gameId}/calculate-scores?weekNumber={week}` - Calculate scores for a week
+
+### API Documentation
+
+Swagger UI is available at:
+- **Development**: `http://localhost:8080/swagger-ui.html`
+- **OpenAPI Spec**: `http://localhost:8080/api-docs`
+
+## Development
+
+### Project Structure
+
+```
+ffl-playoffs-api/
+├── src/
+│   ├── main/
+│   │   ├── java/com/ffl/playoffs/
+│   │   │   ├── domain/          # Business logic (framework-agnostic)
+│   │   │   ├── application/     # Use cases and DTOs
+│   │   │   └── infrastructure/  # Framework implementations
+│   │   └── resources/
+│   │       ├── application.yml
+│   │       └── application-dev.yml
+│   └── test/
+│       ├── java/                # Unit and integration tests
+│       └── resources/
+│           └── features/        # Gherkin/Cucumber tests
+├── build.gradle
+└── README.md
+```
+
+### Adding a New Feature
+
+1. **Define domain model** in `domain/model/`
+2. **Create port interface** in `domain/port/` if external integration needed
+3. **Implement use case** in `application/usecase/`
+4. **Create adapter** in `infrastructure/adapter/` (REST controller, repository impl, etc.)
+5. **Write tests** at each layer
+
+### Testing Strategy
+
+- **Domain**: Pure unit tests with no mocks
+- **Application**: Unit tests with mocked ports
+- **Infrastructure**: Integration tests with test containers
+- **End-to-end**: Cucumber/Gherkin scenarios
+
+## Next Steps
+
+1. **Implement JPA entities** and replace in-memory repositories
+2. **Add database migrations** (Flyway or Liquibase)
+3. **Implement NFL data integration** (replace NflDataAdapter stub)
+4. **Add authentication and authorization**
+5. **Implement real-time notifications** (WebSockets)
+6. **Add comprehensive test coverage**
+7. **Set up CI/CD pipeline**
 
 ## License
 
-MIT License
-
-## Contact
-
-For questions or support, contact: support@fflplayoffs.com
+Proprietary - All rights reserved

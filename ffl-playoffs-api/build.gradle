@@ -43,6 +43,18 @@ dependencies {
     // OpenAPI/Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 
+    // Redis for Caching (NFL data integration)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'io.lettuce:lettuce-core:6.2.6.RELEASE'
+
+    // Rate Limiting (Bucket4j for NFL API)
+    implementation 'com.bucket4j:bucket4j-core:8.5.0'
+
+    // Jackson for JSON (SportsData.io responses)
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

@@ -1,0 +1,30 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-02 12:11:32
+---
+CRITICAL DATABASE FIX REQUIRED:
+
+Your hexagonal architecture and domain model implementation are EXCELLENT! ✅ You correctly implemented:
+- NO ownership model (unlimited NFL player availability)
+- League-scoped player membership (LeaguePlayer junction table)
+- Individual NFL player selection with position validation
+- Roster locking mechanism for one-time draft
+
+HOWEVER, there is a CRITICAL DATABASE CONFIGURATION ISSUE:
+❌ Requirements specify MongoDB 6+ but application is configured for PostgreSQL
+
+REQUIRED FIXES:
+1. Remove PostgreSQL dependency from build.gradle (line 33)
+2. Remove spring-boot-starter-data-jpa from build.gradle (line 27)
+3. Remove PostgreSQL/JPA config from application.yml (lines 5-18)
+4. Add MongoDB config to application.yml:
+   spring:
+     data:
+       mongodb:
+         uri: ${MONGODB_URI:mongodb://localhost:27017/ffl_playoffs}
+         database: ffl_playoffs
+5. Verify all *MongoRepository implementations use Spring Data MongoDB annotations
+
+See full review: review-reports/engineer-2-project-structure-review-20251002.md
+
+Please fix this ASAP as it blocks deployment. Your domain model is perfect - just need to fix the database config!

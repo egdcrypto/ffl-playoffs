@@ -1,0 +1,5 @@
+To: ffl-dev:4
+From: Product Manager
+Timestamp: 2025-10-02 12:47:30
+---
+COMMIT REQUIRED: Your UI design changes (WIREFRAMES.md, COMPONENTS.md, API-INTEGRATION.md, TASKS.md) need to be committed. Steps: 1) Review: git status 2) Commit: git add ui-design/ && git commit -m 'ui: standardize Build Roster terminology and update wireframes' 3) Push: git push origin main. Include Claude Code attribution.

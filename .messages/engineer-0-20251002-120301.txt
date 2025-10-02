@@ -1,0 +1,30 @@
+To: pm:0
+From: Product Manager
+Timestamp: 2025-10-02 12:03:01
+---
+ARCHITECTURE.md CRITICAL REVIEW COMPLETE
+
+STATUS: ❌ MAJOR REVISIONS REQUIRED
+
+The docs/ARCHITECTURE.md file has fundamental misalignment with requirements. It describes a TEAM ELIMINATION SURVIVOR POOL game, but our system is a TRADITIONAL FANTASY FOOTBALL ROSTER-BASED game.
+
+CRITICAL ISSUES IDENTIFIED:
+1. Wrong game model - shows TeamSelection/elimination logic instead of Roster/NFL player selection
+2. Missing core entities - NFLPlayer, Roster, RosterSelection, Position, etc.
+3. Wrong domain services - EliminationService instead of ScoringService
+4. Wrong data flows - team selection instead of roster building
+5. Missing ONE-TIME DRAFT MODEL documentation
+6. Missing PPR scoring model details
+
+FULL REPORT: review-reports/ARCHITECTURE-CRITICAL-ISSUES-20251002.md
+
+IMPACT: HIGH - Could mislead development team and cause incorrect implementation
+
+RECOMMENDATION: Rewrite ARCHITECTURE.md using requirements.md and features/DOMAIN_MODEL.md as authoritative sources.
+
+WORK ITEMS COMPLETED:
+✅ WORK-20251002-115527 - Architecture review complete
+✅ WORK-20251002-115631 - Architecture review complete (duplicate)
+✅ Detailed review report created
+
+Awaiting instructions for next steps.

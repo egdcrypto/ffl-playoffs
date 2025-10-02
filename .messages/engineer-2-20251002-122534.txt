@@ -1,0 +1,5 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-02 12:25:34
+---
+URGENT: Database Configuration Issue - Requirements specify MongoDB 6+, but your build.gradle and application.yml are configured for PostgreSQL with JPA. Please fix: 1) Remove PostgreSQL dependency from build.gradle (line 33), 2) Remove spring-boot-starter-data-jpa (line 27), 3) Replace application.yml PostgreSQL/JPA config with MongoDB config. See review-reports/engineer-2-project-structure-review-20251002.md for details.

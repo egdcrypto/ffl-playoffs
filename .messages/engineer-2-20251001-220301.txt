@@ -1,0 +1,11 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 22:03:01
+---
+You have 5 work items in NEW queue to review code changes in ffl-playoffs-api/src/:
+- WORK-20251001-215415-2869315
+- WORK-20251001-215446-2873238
+- WORK-20251001-215516-2877349
+- WORK-20251001-215547-2881165
+- WORK-20251001-215617-2885366
+Please review and process them.

@@ -1,0 +1,5 @@
+To: ffl-dev:1
+From: Product Manager
+Timestamp: 2025-10-01 21:17:42
+---
+Fix player-invitation.feature to implement league-scoped invitations per requirements.md:100-110. Current implementation invites players 'to the game' but requirements mandate invitations to SPECIFIC leagues with leagueId. Add LeaguePlayer junction table scenarios and multi-league membership tests. See review-reports/engineer-1-review.md lines 92-110 for details.

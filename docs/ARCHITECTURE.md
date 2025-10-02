@@ -1,16 +1,16 @@
 # FFL Playoffs Architecture
 
-> **This document is under active development** as we complete the transition to the roster-based fantasy football model. See [DATA_MODEL.md](DATA_MODEL.md) for complete entity documentation.
-
 ## Table of Contents
 1. [Overview](#overview)
-2. [Hexagonal Architecture](#hexagonal-architecture)
-3. [Architecture Layers](#architecture-layers)
-4. [Dependency Rules](#dependency-rules)
-5. [Ports and Adapters](#ports-and-adapters)
+2. [Technology Stack](#technology-stack)
+3. [Hexagonal Architecture](#hexagonal-architecture)
+4. [Architecture Layers](#architecture-layers)
+5. [Security Architecture](#security-architecture)
 6. [Domain Model](#domain-model)
-7. [Data Flow](#data-flow)
-8. [Design Decisions](#design-decisions)
+7. [Configuration Immutability](#configuration-immutability)
+8. [Data Flow](#data-flow)
+9. [Deployment Architecture](#deployment-architecture)
+10. [Design Decisions](#design-decisions)
 
 ## Overview
 
@@ -19,6 +19,7 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
 - **Testability** through dependency inversion
 - **Flexibility** to swap out external dependencies
 - **Maintainability** through clear boundaries
+- **Security first** design with zero-trust architecture
 
 ### Why Hexagonal Architecture?
 
@@ -27,6 +28,20 @@ The FFL Playoffs application follows **Hexagonal Architecture** (also known as P
 3. **Flexibility**: Easy to swap MongoDB for another database, or REST for GraphQL
 4. **Technology Agnostic**: Framework and library choices don't impact core domain
 5. **Clear Dependencies**: Dependencies always point inward toward the domain
+
+---
+
+## Technology Stack
+
+- **Language**: Java 17
+- **Framework**: Spring Boot 3.x, Spring Data MongoDB
+- **Database**: MongoDB 6+
+- **Authentication**: Google OAuth 2.0, Personal Access Tokens (PATs)
+- **Security**: Envoy Sidecar with External Authorization (ext_authz)
+- **Container Orchestration**: Kubernetes
+- **Proxy**: Envoy 1.28+
+
+---
 
 ## Hexagonal Architecture
 
@@ -365,6 +380,98 @@ public class NFLApiClient implements NFLDataProvider {
 }
 ```
 
+---
+
+## Security Architecture
+
+### Three-Service Pod Architecture
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                        KUBERNETES POD                           │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │              Envoy Sidecar (Port 443)                    │ │
+│  │         External Entry Point - Pod IP Exposed            │ │
+│  │                                                           │ │
+│  │  ┌─────────────────────────────────────────────────┐    │ │
+│  │  │       External Authorization (ext_authz)        │    │ │
+│  │  │   Calls Auth Service for ALL requests           │    │ │
+│  │  └─────────────────────────────────────────────────┘    │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                              │                                  │
+│                              │ (if authorized)                  │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │       Auth Service (localhost:9191)                      │ │
+│  │  - Validates Google OAuth JWT tokens                     │ │
+│  │  - Validates Personal Access Tokens (PATs)               │ │
+│  │  - Detects token type (pat_ prefix vs JWT)               │ │
+│  │  - Returns user/service context headers                  │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                              │                                  │
+│                              │ (validated request)              │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │        Main API (localhost:8080)                         │ │
+│  │  - Business Logic                                         │ │
+│  │  - Domain Model                                           │ │
+│  │  - Receives pre-authenticated requests                   │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                                                                 │
+└────────────────────────────────────────────────────────────────┘
+```
+
+**Network Policies**:
+- Main API listens ONLY on `localhost:8080` (not externally accessible)
+- Auth Service listens ONLY on `localhost:9191` (not externally accessible)
+- Envoy listens on pod IP (externally accessible via Kubernetes service)
+- Network policies block direct access to API and Auth Service
+
+### Authentication Flow
+
+#### Google OAuth Flow (Human Users)
+1. User authenticates with Google Sign-In (frontend)
+2. Frontend receives Google JWT token
+3. Client sends request: `Authorization: Bearer <google-jwt>`
+4. **Envoy** extracts token → calls **Auth Service**
+5. **Auth Service** validates JWT (signature, expiration, issuer)
+6. **Auth Service** queries database for user by Google ID
+7. **Auth Service** returns `200 OK` with headers:
+   - `X-User-Id`, `X-User-Email`, `X-User-Role`, `X-Google-Id`
+8. **Envoy** checks role vs. endpoint requirements
+9. **Envoy** forwards request to **Main API** with user context
+10. **Main API** processes pre-authenticated request
+
+#### PAT Flow (Service-to-Service)
+1. Service sends request: `Authorization: Bearer pat_<token>`
+2. **Envoy** extracts token → calls **Auth Service**
+3. **Auth Service** detects `pat_` prefix
+4. **Auth Service** hashes token → queries `PersonalAccessToken` table
+5. **Auth Service** validates not expired, not revoked
+6. **Auth Service** returns `200 OK` with headers:
+   - `X-Service-Id`, `X-PAT-Scope`, `X-PAT-Id`
+7. **Auth Service** updates `lastUsedAt` timestamp
+8. **Envoy** checks PAT scope vs. endpoint requirements
+9. **Envoy** forwards request to **Main API** with service context
+10. **Main API** processes pre-authenticated service request
+
+### Role-Based Access Control (RBAC)
+
+**Endpoint Security Requirements** (enforced by Envoy):
+- `/api/v1/superadmin/*` → Requires `SUPER_ADMIN` role OR PAT with `ADMIN` scope
+- `/api/v1/admin/*` → Requires `ADMIN`/`SUPER_ADMIN` role OR PAT with `WRITE`/`ADMIN` scope
+- `/api/v1/player/*` → Requires any authenticated user OR any valid PAT
+- `/api/v1/public/*` → No authentication required
+- `/api/v1/service/*` → Requires valid PAT only
+
+**Resource Ownership Validation** (enforced in API business logic):
+- Admins can only manage their own leagues
+- Players can only modify their own rosters (before roster lock)
+- Ownership checks performed in domain/application layer
+
+---
+
 ## Domain Model
 
 ### Key Aggregates
@@ -419,6 +526,97 @@ public class NFLApiClient implements NFLDataProvider {
 - Applies field goal distance scoring
 - Calculates defensive/special teams points
 - Handles elimination override (eliminated teams = 0 points)
+
+---
+
+## Configuration Immutability
+
+### Business Rule: League Configuration Lock
+
+**CRITICAL BUSINESS RULE**: ALL league configuration becomes **IMMUTABLE** once the first game of the league's starting NFL week begins.
+
+#### Lock Mechanism
+
+**Trigger**: `Instant.now() > league.firstGameStartTime`
+
+**Lock Timestamp**: Set to the kickoff time of the first scheduled NFL game for `league.startingWeek`
+
+**Validation Guard**: All configuration update methods must call:
+```java
+public void validateConfigurationMutable() {
+    if (isConfigurationLocked()) {
+        throw new ConfigurationLockedException(
+            "LEAGUE_STARTED_CONFIGURATION_LOCKED",
+            "Configuration cannot be changed after first game starts"
+        );
+    }
+}
+```
+
+#### Immutable Fields After Lock
+
+**All of the following become read-only**:
+- ✅ `startingWeek`
+- ✅ `numberOfWeeks`
+- ✅ `name`
+- ✅ `description`
+- ✅ `scoringRules` (all sub-rules)
+- ✅ `isPublic`
+- ✅ `maxPlayers`
+- ✅ Pick deadlines for all weeks
+
+#### Configuration Lock Lifecycle
+
+```
+DRAFT → ACTIVE (Before First Game) → STARTED (First Game Kicks Off) → COMPLETED
+  ↓              ↓                           ↓                           ↓
+Mutable       Mutable                   IMMUTABLE                   IMMUTABLE
+```
+
+**Timeline Example**:
+- **Dec 14, 9:00 AM**: Admin activates league → Status: `ACTIVE`, Locked: `false`
+- **Dec 14, 3:00 PM**: Admin modifies scoring rules → ✅ Allowed
+- **Dec 15, 12:59 PM**: Admin updates team name → ✅ Allowed
+- **Dec 15, 1:00 PM**: First NFL game kicks off → Locked: `true`
+- **Dec 15, 1:01 PM**: Admin tries to modify scoring → ❌ **REJECTED**
+
+#### Domain Event: LeagueConfigurationLockedEvent
+
+Triggered when `configurationLocked` changes from `false` to `true`.
+
+**Event Payload**:
+```json
+{
+  "leagueId": 123,
+  "lockTimestamp": "2024-12-15T18:00:00Z",
+  "lockReason": "FIRST_GAME_STARTED",
+  "nflWeekNumber": 15,
+  "firstGameStartTime": "2024-12-15T18:00:00Z"
+}
+```
+
+**Event Handlers**:
+1. Send notification to league admin
+2. Create audit log entry
+3. Update UI to show read-only configuration
+4. Disable configuration editing buttons
+
+#### Background Job: ConfigurationLockEnforcer
+
+Runs every minute to automatically lock leagues:
+```javascript
+SELECT * FROM leagues
+WHERE status = 'ACTIVE'
+  AND configuration_locked = false
+  AND first_game_start_time < NOW();
+```
+
+For each league found:
+1. Set `configurationLocked = true`
+2. Set `lockTimestamp = firstGameStartTime`
+3. Publish `LeagueConfigurationLockedEvent`
+
+---
 
 ## Data Flow
 
@@ -512,6 +710,144 @@ HTTP POST /api/v1/player/selections
       ↓
 [EmailService] (Infrastructure)
 ```
+
+---
+
+## Deployment Architecture
+
+### Kubernetes Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ffl-playoffs-api
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+        - name: envoy-sidecar
+          image: envoyproxy/envoy:v1.28
+          ports:
+            - containerPort: 443  # External HTTPS
+          volumeMounts:
+            - name: envoy-config
+              mountPath: /etc/envoy
+
+        - name: auth-service
+          image: ffl-playoffs-auth:latest
+          ports:
+            - containerPort: 9191  # localhost only
+
+        - name: main-api
+          image: ffl-playoffs-api:latest
+          ports:
+            - containerPort: 8080  # localhost only
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-secret
+                  key: uri
+```
+
+### Service Mesh Configuration
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ffl-playoffs-api-service
+spec:
+  selector:
+    app: ffl-playoffs-api
+  ports:
+    - name: https
+      port: 443
+      targetPort: 443  # Envoy sidecar
+  type: LoadBalancer
+```
+
+### Network Policy
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ffl-api-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: ffl-playoffs-api
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only allow external traffic to Envoy port 443
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Block direct access to ports 8080 and 9191
+    # (only allow from localhost within pod)
+```
+
+### Database Schema
+
+#### leagues Collection
+```javascript
+{
+  _id: ObjectId,
+  name: String,
+  description: String,
+  ownerId: String,
+  startingWeek: Number,  // 1-18
+  numberOfWeeks: Number, // 1-17
+  status: String,        // DRAFT, ACTIVE, PAUSED, COMPLETED, ARCHIVED
+  isPublic: Boolean,
+  maxPlayers: Number,
+  scoringRules: {
+    pprRules: { ... },
+    fieldGoalRules: { ... },
+    defensiveRules: { ... }
+  },
+
+  // Configuration Lock Fields
+  configurationLocked: Boolean,
+  lockTimestamp: Date,
+  lockReason: String,
+  firstGameStartTime: Date,
+
+  createdAt: Date,
+  updatedAt: Date
+}
+
+// Indexes
+db.leagues.createIndex({ ownerId: 1 })
+db.leagues.createIndex({ status: 1 })
+db.leagues.createIndex({ configurationLocked: 1, firstGameStartTime: 1 })
+```
+
+#### weeks Collection
+```javascript
+{
+  _id: ObjectId,
+  leagueId: String,
+  gameWeekNumber: Number,
+  nflWeekNumber: Number,
+  pickDeadline: Date,
+  status: String,  // UPCOMING, ACTIVE, LOCKED, COMPLETED
+  createdAt: Date
+}
+
+// Indexes
+db.weeks.createIndex({ leagueId: 1, gameWeekNumber: 1 }, { unique: true })
+db.weeks.createIndex({ nflWeekNumber: 1 })
+```
+
+---
 
 ## Design Decisions
 

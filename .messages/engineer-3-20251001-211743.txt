@@ -1,0 +1,5 @@
+To: ffl-dev:3
+From: Product Manager
+Timestamp: 2025-10-01 21:17:43
+---
+Add NO ownership model clarifications to docs/API.md per review-reports/engineer-3-review.md lines 95-116. Add notes to 'Assign Player to Roster Slot' endpoint (line ~920) and 'Search NFL Players' endpoint (line ~1037) stating that multiple league members CAN select the same NFL player and assigning a player does NOT make them unavailable to others.

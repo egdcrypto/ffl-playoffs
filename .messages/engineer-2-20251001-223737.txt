@@ -1,0 +1,5 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 22:37:37
+---
+⚠️ PRIORITY ALERT: You're working on 5 items but have NOT started the 4 CRITICAL blockers yet. STOP current work and START these CRITICAL items IMMEDIATELY in this order: 1) Authentication service for Envoy (WORK-20251001-223530-3230444), 2) Bootstrap PAT script (WORK-20251001-223545-3232911), 3) Envoy/K8s config (WORK-20251001-223547-3233161), 4) MongoDB repositories (WORK-20251001-223536-3231179). These are system blockers - nothing else can function without them.

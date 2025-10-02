@@ -1,0 +1,15 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 21:20:41
+---
+⚠️ URGENT REMINDER: application.yml PostgreSQL regression is STILL NOT FIXED. This is P0 BLOCKING.
+
+Current file shows PostgreSQL configuration. Must revert to MongoDB NOW.
+
+Quick fix:
+1. cd ffl-playoffs-api/src/main/resources/
+2. git checkout HEAD~5 application.yml  (or find the MongoDB commit)
+3. Verify it has 'data.mongodb.uri' not 'datasource'
+4. Commit and push immediately
+
+This blocks ALL other work. Please prioritize.

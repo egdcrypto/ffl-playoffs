@@ -1,0 +1,14 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 22:07:03
+---
+CRITICAL SECURITY ISSUE: API configured to listen on ALL interfaces. Must bind to localhost ONLY.
+
+REQUIRED FIX in application.yml:
+server:
+  address: 127.0.0.1  # localhost only
+  port: 8080
+
+See review: review-reports/engineer-2-project-structure-review-20251001-PM.md
+
+All other architecture is EXCELLENT. Hexagonal architecture perfectly implemented, domain layer properly isolated, MongoDB setup correct.

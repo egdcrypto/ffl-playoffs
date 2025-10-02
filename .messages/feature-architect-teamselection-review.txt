@@ -1,0 +1,253 @@
+CODE REVIEW REPORT: WORK-20251001-224630-3346333
+========================================================
+
+Task: Review and address code changes in TeamSelectionRepository.java
+
+Status: ⚠️ ARCHITECTURAL VIOLATIONS FOUND - CRITICAL ISSUES
+
+File Reviewed: ffl-playoffs-api/src/main/java/com/ffl/playoffs/domain/port/TeamSelectionRepository.java
+
+## Critical Issues Identified
+
+### Issue #1: Domain Layer Depending on Application Layer ❌
+
+**Problem**: The repository port (domain layer) is using DTOs from the application layer.
+
+**Current Code** (INCORRECT):
+```java
+package com.ffl.playoffs.domain.port;
+
+import com.ffl.playoffs.application.dto.TeamSelectionDTO;  // ❌ Domain depends on Application
+import com.ffl.playoffs.application.dto.Page;              // ❌ Domain depends on Application
+import com.ffl.playoffs.application.dto.PageRequest;       // ❌ Domain depends on Application
+
+public interface TeamSelectionRepository {
+    TeamSelectionDTO save(TeamSelectionDTO teamSelection);  // ❌ Using DTO
+    Optional<TeamSelectionDTO> findById(UUID id);           // ❌ Using DTO
+    Page<TeamSelectionDTO> findByPlayerId(...);             // ❌ Using DTO + Application Page
+}
+```
+
+**Hexagonal Architecture Violation**:
+```
+Domain Layer (should have NO dependencies)
+    ↓ WRONG DEPENDENCY
+Application Layer (depends on Domain)
+```
+
+**Correct Dependency Flow**:
+```
+Infrastructure Layer → Application Layer → Domain Layer
+                                            ↑
+                                    (no dependencies)
+```
+
+### Why This Is Critical:
+
+1. **Breaks Hexagonal Architecture**: Domain is the innermost layer and should be pure business logic with NO framework or application dependencies
+
+2. **Circular Dependency Risk**: Domain → Application → Domain creates potential circular dependencies
+
+3. **Testability Issues**: Domain layer tests now require application layer classes
+
+4. **Violates Dependency Inversion Principle**: High-level modules (Domain) should not depend on low-level modules (Application)
+
+5. **Coupling**: Domain model is now coupled to application-specific DTOs
+
+## Correct Implementation
+
+The repository port should use domain entities, not DTOs:
+
+```java
+package com.ffl.playoffs.domain.port;
+
+import com.ffl.playoffs.domain.model.TeamSelection;  // ✅ Domain entity
+import java.util.List;                                // ✅ Standard Java
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Port interface for TeamSelection persistence
+ * Domain defines the contract, infrastructure implements it
+ * No framework or application layer dependencies
+ */
+public interface TeamSelectionRepository {
+
+    /**
+     * Save a team selection
+     * @param teamSelection the selection to save
+     * @return the saved selection
+     */
+    TeamSelection save(TeamSelection teamSelection);  // ✅ Domain entity
+
+    /**
+     * Find a team selection by ID
+     * @param id the selection ID
+     * @return Optional containing the selection if found
+     */
+    Optional<TeamSelection> findById(UUID id);  // ✅ Domain entity
+
+    /**
+     * Find all selections for a player
+     * @param playerId the player ID
+     * @return list of all team selections for the player
+     */
+    List<TeamSelection> findByPlayerId(UUID playerId);  // ✅ Use List, not Page
+
+    /**
+     * Find selection for a specific player and week
+     * @param playerId the player ID
+     * @param week the week number
+     * @return Optional containing the selection if found
+     */
+    Optional<TeamSelection> findByPlayerIdAndWeek(UUID playerId, int week);
+
+    /**
+     * Find all selections for a game and week
+     * @param gameId the game ID
+     * @param week the week number
+     * @return list of all team selections for the game and week
+     */
+    List<TeamSelection> findByGameIdAndWeek(UUID gameId, int week);
+
+    /**
+     * Check if a player has already selected a specific team
+     * @param playerId the player ID
+     * @param teamName the team name
+     * @return true if the player has already selected this team
+     */
+    boolean hasPlayerSelectedTeam(UUID playerId, String teamName);
+
+    /**
+     * Delete a team selection
+     * @param id the selection ID
+     */
+    void delete(UUID id);
+}
+```
+
+### Pagination Handling
+
+**Application Layer Responsibility**:
+Pagination should be handled in the application layer, NOT the domain layer:
+
+```java
+// Application Layer Service
+public class TeamSelectionService {
+
+    private final TeamSelectionRepository repository;
+
+    public Page<TeamSelectionDTO> getPlayerSelectionsPageinated(
+            UUID playerId,
+            PageRequest pageRequest) {
+
+        // Get all from domain repository
+        List<TeamSelection> selections = repository.findByPlayerId(playerId);
+
+        // Convert to DTOs in application layer
+        List<TeamSelectionDTO> dtos = selections.stream()
+            .map(this::toDTO)
+            .collect(Collectors.toList());
+
+        // Apply pagination in application layer
+        return paginationService.paginate(dtos, pageRequest);
+    }
+}
+```
+
+**Alternative**: If pagination must be at repository level, create domain-level pagination:
+
+```java
+// Domain layer - create your own Page concept
+package com.ffl.playoffs.domain.model;
+
+public class PagedResult<T> {
+    private List<T> items;
+    private long totalCount;
+    private int pageNumber;
+    private int pageSize;
+
+    // ... constructors, getters
+}
+
+// Domain repository can then use domain Page
+List<TeamSelection> findByPlayerId(UUID playerId, int offset, int limit);
+```
+
+## Other Files With Same Issue
+
+Found **3 repository ports** with similar violations:
+
+1. ✅ **LeaguePlayerRepository.java** - MIXED (uses domain entities but Page/PageRequest from application)
+2. ❌ **LeaderboardRepository.java** - CRITICAL (uses LeaderboardEntryDTO from application)
+3. ❌ **NFLTeamRepository.java** - Needs review
+4. ❌ **TeamSelectionRepository.java** - CRITICAL (this file)
+
+## Impact Assessment
+
+**Severity**: 🔴 CRITICAL
+
+**Impact**:
+- Breaks hexagonal architecture principles
+- Creates wrong dependencies (Domain → Application)
+- Makes domain layer impure and dependent
+- Reduces testability of domain layer
+- Violates clean architecture/DDD principles
+
+**Affected Components**:
+- Domain layer purity
+- Test isolation
+- Future refactoring flexibility
+- Architecture documentation accuracy
+
+## Recommended Actions
+
+### Immediate (High Priority):
+1. ✅ Fix TeamSelectionRepository to use TeamSelection domain entity
+2. ⏳ Fix LeaderboardRepository to use domain entities
+3. ⏳ Review and fix NFLTeamRepository
+4. ⏳ Move pagination logic to application layer OR create domain-level pagination
+
+### Short-term:
+5. ⏳ Audit ALL repository ports for application layer dependencies
+6. ⏳ Update architecture documentation to clarify repository patterns
+7. ⏳ Add architecture tests to prevent future violations
+
+### Long-term:
+8. ⏳ Consider ArchUnit or similar tool to enforce architecture rules
+9. ⏳ Training for team on hexagonal architecture principles
+
+## Corrected File
+
+See attached: TeamSelectionRepository.java (corrected version)
+
+## References
+
+- requirements.md: "Hexagonal Architecture (Ports & Adapters)"
+- features/README.md: "Domain Layer - Game, Player, League, Roster aggregates"
+- Dependency Rule: Domain ← Application ← Infrastructure
+
+## Architecture Principles Violated
+
+1. ❌ **Dependency Rule**: "Dependencies point inward toward domain"
+2. ❌ **Domain Purity**: "Domain model with no framework dependencies"
+3. ❌ **Separation of Concerns**: "Clear boundaries between layers"
+4. ❌ **Port Interface Contract**: "Domain defines contract, infrastructure implements"
+
+## Conclusion
+
+The current implementation violates core hexagonal architecture principles by creating dependencies from the domain layer to the application layer. This must be corrected to:
+
+1. Use domain entities (TeamSelection) instead of DTOs
+2. Remove Page/PageRequest dependencies from domain ports
+3. Handle DTO mapping and pagination in application layer
+
+**Priority**: CRITICAL - Should be fixed before merging to main
+
+**Recommendation**: DO NOT MERGE current implementation until architectural violations are corrected.
+
+---
+
+Feature Architect Review
+Status: REJECTED - Needs Architectural Corrections
+Date: 2025-10-01

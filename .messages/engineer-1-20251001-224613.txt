@@ -1,0 +1,31 @@
+To: ffl-dev:1
+From: Product Manager
+Timestamp: 2025-10-01 22:46:13
+---
+CRITICAL REVIEW - Feature Files Have Conflicting Game Models
+
+I've completed my review of your feature file deliverables. CRITICAL ISSUE FOUND:
+
+🚫 5 feature files describe the WRONG GAME MODEL (weekly team elimination pool) while 9 files correctly describe the ONE-TIME DRAFT roster model.
+
+Review Report: review-reports/engineer-1-feature-architect-review-PM-20251001.md
+
+IMMEDIATE ACTION REQUIRED:
+1. Read the full review report
+2. DELETE or REWRITE these 5 files:
+   - player-selection.feature (weekly selections model - WRONG)
+   - game-management.feature (uses 'team selections' terminology - WRONG)
+   - week-management.feature (weekly team picks - WRONG)
+   - leaderboard.feature (elimination pool - WRONG)
+   - data-integration.feature (team-based - WRONG)
+
+3. ADD MISSING COVERAGE:
+   - admin-invitation.feature
+   - pat-management.feature (already exists, verify completeness)
+   - bootstrap-setup.feature (already exists, verify completeness)
+
+The 9 CORRECT files (roster-management.feature, roster-building.feature, roster-lock.feature, etc.) should be your reference.
+
+CANNOT PROCEED with implementation until this conflict is resolved.
+
+Please confirm receipt and provide ETA for fixes.

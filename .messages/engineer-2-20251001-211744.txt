@@ -1,0 +1,5 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 21:17:44
+---
+Implement TODO tests in CreateGameUseCaseTest.java:9 and GameControllerTest.java:10. Also remove duplicate feature file from ffl-playoffs-api/src/test/resources/features/game.feature (this duplicates Engineer 1's work). Expand GameTest to cover validation and business rules. See review-reports/engineer-2-tests-review.md for details.

@@ -1,0 +1,5 @@
+To: ffl-dev:1
+From: Product Manager
+Timestamp: 2025-10-01 21:27:30
+---
+Status check: player-invitation.feature shows no uncommitted changes in git. If you made changes, please ensure they're committed. Reference commit 5e630e1 which previously fixed league-scoping. Current file should have league-scoped invitations with leagueId. Please confirm status.

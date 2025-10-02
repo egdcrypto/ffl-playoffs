@@ -1,0 +1,13 @@
+To: ffl-dev:4
+From: Product Manager
+Timestamp: 2025-10-01 22:11:09
+---
+You have 2 pending work items in the queue:
+
+NEW:
+- WORK-20251001-221021-3000940: Review ui changes in ui-design/ (player-selection-prelock.html)
+
+IN PROGRESS (not started):
+- WORK-20251001-220920-2992764: Review ui changes in ui-design/
+
+Please review and process these work items. Use work-tracker.sh to start and track your progress.

@@ -1,50 +1,41 @@
 package com.ffl.playoffs.domain.model;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Domain model representing a player's team selection for a specific week.
- */
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TeamSelection {
-    private UUID id;
-    private UUID playerId;
-    private UUID weekId;
-    private String teamCode;
+    private Long id;
+    private Long playerId;
+    private Long weekId;
+    private String nflTeam;
     private LocalDateTime selectedAt;
     private Double score;
-
-    public TeamSelection() {
-        this.id = UUID.randomUUID();
-        this.selectedAt = LocalDateTime.now();
+    private SelectionStatus status;
+    
+    public enum SelectionStatus {
+        PENDING,
+        LOCKED,
+        SCORED
     }
-
-    public TeamSelection(UUID playerId, UUID weekId, String teamCode) {
-        this();
-        this.playerId = playerId;
-        this.weekId = weekId;
-        this.teamCode = teamCode;
+    
+    public boolean isPending() {
+        return this.status == SelectionStatus.PENDING;
     }
-
+    
+    public void lock() {
+        this.status = SelectionStatus.LOCKED;
+    }
+    
     public void setScore(Double score) {
         this.score = score;
+        this.status = SelectionStatus.SCORED;
     }
-
-    // Getters and setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public UUID getPlayerId() { return playerId; }
-    public void setPlayerId(UUID playerId) { this.playerId = playerId; }
-
-    public UUID getWeekId() { return weekId; }
-    public void setWeekId(UUID weekId) { this.weekId = weekId; }
-
-    public String getTeamCode() { return teamCode; }
-    public void setTeamCode(String teamCode) { this.teamCode = teamCode; }
-
-    public LocalDateTime getSelectedAt() { return selectedAt; }
-    public void setSelectedAt(LocalDateTime selectedAt) { this.selectedAt = selectedAt; }
-
-    public Double getScore() { return score; }
 }

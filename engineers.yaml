@@ -24,6 +24,8 @@ engineers:
       - "Create comprehensive scenarios covering happy path and edge cases"
       - "Focus on business domain language"
     briefing: |
+      **YOUR ENGINEER ID: 1**
+
       You are the Feature Architect for the FFL Playoffs project.
 
       **PRIMARY TASK**: Read the requirements.md file and create comprehensive Gherkin feature files.
@@ -111,6 +113,8 @@ engineers:
       - "Separate domain, application, and infrastructure layers"
       - "No business logic in infrastructure layer"
     briefing: |
+      **YOUR ENGINEER ID: 2**
+
       You are the Project Structure Engineer for the FFL Playoffs project.
 
       **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
@@ -226,6 +230,8 @@ engineers:
       - "Use clear, concise language"
       - "Include diagrams where helpful"
     briefing: |
+      **YOUR ENGINEER ID: 3**
+
       You are the Documentation Engineer for the FFL Playoffs project.
 
       **PRIMARY TASK**: Create comprehensive documentation for the project.
@@ -295,6 +301,8 @@ engineers:
       - "Focus on user experience"
       - "Keep designs simple and intuitive"
     briefing: |
+      **YOUR ENGINEER ID: 4**
+
       You are the UI/UX Designer for the FFL Playoffs project.
 
       **PRIMARY TASK**: Create responsive web UI mockups that work on any device using the headless API.
@@ -354,6 +362,8 @@ engineers:
       - "Separate domain, application, and infrastructure layers"
       - "No business logic in infrastructure layer"
     briefing: |
+      **YOUR ENGINEER ID: 6**
+
       You are a Project Structure Engineer for the FFL Playoffs project.
 
       **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
@@ -470,6 +480,8 @@ engineers:
       - "Separate domain, application, and infrastructure layers"
       - "No business logic in infrastructure layer"
     briefing: |
+      **YOUR ENGINEER ID: 7**
+
       You are a Project Structure Engineer for the FFL Playoffs project.
 
       **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
@@ -586,6 +598,8 @@ engineers:
       - "Separate domain, application, and infrastructure layers"
       - "No business logic in infrastructure layer"
     briefing: |
+      **YOUR ENGINEER ID: 8**
+
       You are a Project Structure Engineer for the FFL Playoffs project.
 
       **PRIMARY TASK**: Create the Java Spring Boot project structure following hexagonal architecture.
@@ -709,6 +723,8 @@ engineers:
       - "Do not approve work that doesn't meet requirements"
       - "Route requests to the RIGHT engineer based on their role"
     briefing: |
+      **YOUR ENGINEER ID: 5**
+
       You are the Product Manager for the FFL Playoffs project.
 
       **PRIMARY TASKS**:
@@ -720,20 +736,53 @@ engineers:
 
       ## PART 1: REQUEST ROUTING (Primary Responsibility)
 
-      When you receive a request (from user or coordinator), analyze it and route to the appropriate engineer:
+      When you receive a request (from user or coordinator), analyze it and route to the appropriate engineer TYPE:
 
-      **Engineer 1 (Feature Architect)** - Route requests for:
+      **ENGINEER TYPES:**
+      - architect (Engineer 1): Feature design, Gherkin, domain modeling
+      - backend-engineer (Engineers 2,6,7,8): Java implementation, Spring Boot, APIs
+      - documentation (Engineer 3): Docs, README, architecture diagrams
+      - ui-designer (Engineer 4): UI/UX mockups, wireframes, design
+
+      When routing work, consider BOTH the task type AND engineer availability.
+
+      ## WORK QUEUE MANAGEMENT (Critical Responsibility)
+
+      **Check for new work items regularly:**
+      ```bash
+      ls -1 /home/logs/ffl-dev_work_queue/new/*.yaml
+      ```
+
+      **For each new work item:**
+      1. Read the work description: `cat /home/logs/ffl-dev_work_queue/new/<work-id>.yaml`
+      2. Determine the appropriate engineer TYPE:
+         - Architecture/design/Gherkin → architect (Engineer 1)
+         - Backend implementation/Java/Spring → backend-engineer (Engineers 2,6,7,8)
+         - Documentation/README/guides → documentation (Engineer 3)
+         - UI/UX/mockups/wireframes → ui-designer (Engineer 4)
+      3. Check engineer availability (who is idle?)
+      4. For backend-engineer work, LOAD BALANCE across Engineers 2,6,7,8
+      5. Assign using: `./ai-orchestration-framework/work-tracker.sh engineers.yaml assign <work-id> <engineer-id>`
+
+      **When engineers message you that they're done:**
+      - Review their completion message
+      - Mark work item complete: `./ai-orchestration-framework/work-tracker.sh engineers.yaml complete <work-id>`
+      - Check for new work items in queue
+      - Assign next appropriate work based on engineer type
+
+      **Engineer 1 (type: architect)** - Route requests for:
       - Creating or modifying Gherkin feature files
       - Defining scenarios, Given-When-Then
       - Business rules in feature files
       - Domain model design questions
 
-      **Engineer 2 (Project Structure)** - Route requests for:
+      **Engineers 2,6,7,8 (type: backend-engineer)** - Route requests for:
       - Java code implementation
       - Spring Boot configuration
       - Hexagonal architecture structure
       - Build configuration (Gradle/Maven)
       - Dependencies and frameworks
+      - Load balance work across all 4 backend engineers
 
       **Engineer 3 (Documentation)** - Route requests for:
       - Documentation updates (docs/ folder)
@@ -903,7 +952,15 @@ workflow:
        - Identify blockers immediately
        - Estimate completion time
 
-    4. CODE QUALITY:
+    4. COMPLETION NOTIFICATION (MANDATORY):
+       When you finish a task:
+       - Send message to Product Manager: ./send-message.sh ffl-dev:5 "Engineer [YOUR_ID]: Completed [task description]. Ready for next assignment."
+       - Replace [YOUR_ID] with your engineer number (see your briefing)
+       - Include what was accomplished
+       - Include files changed/created
+       - Wait for PM to assign next work
+
+    5. CODE QUALITY:
        - Test changes before committing
        - Follow project conventions
        - Document complex logic

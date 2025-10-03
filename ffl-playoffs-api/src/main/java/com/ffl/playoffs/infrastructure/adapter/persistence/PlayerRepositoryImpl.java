@@ -6,52 +6,49 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-/**
- * In-memory implementation of PlayerRepository for initial development.
- * Will be replaced with JPA implementation later.
- */
 @Repository
 public class PlayerRepositoryImpl implements PlayerRepository {
+    // TODO: Implement JPA repository integration
     
-    private final ConcurrentHashMap<UUID, Player> players = new ConcurrentHashMap<>();
-
     @Override
     public Player save(Player player) {
-        players.put(player.getId(), player);
+        // TODO: Map domain model to JPA entity and save
         return player;
     }
-
+    
     @Override
-    public Optional<Player> findById(UUID id) {
-        return Optional.ofNullable(players.get(id));
+    public Optional<Player> findById(Long id) {
+        // TODO: Implement
+        return Optional.empty();
     }
-
+    
     @Override
-    public List<Player> findByGameId(UUID gameId) {
-        return players.values().stream()
-                .filter(p -> p.getGameId().equals(gameId))
-                .collect(Collectors.toList());
+    public Optional<Player> findByEmail(String email) {
+        // TODO: Implement
+        return Optional.empty();
     }
-
+    
     @Override
-    public Optional<Player> findByEmailAndGameId(String email, UUID gameId) {
-        return players.values().stream()
-                .filter(p -> p.getEmail().equals(email) && p.getGameId().equals(gameId))
-                .findFirst();
+    public Optional<Player> findByGoogleId(String googleId) {
+        // TODO: Implement
+        return Optional.empty();
     }
-
+    
     @Override
-    public void delete(UUID id) {
-        players.remove(id);
+    public List<Player> findAll() {
+        // TODO: Implement
+        return List.of();
     }
-
+    
     @Override
-    public boolean existsByEmailAndGameId(String email, UUID gameId) {
-        return players.values().stream()
-                .anyMatch(p -> p.getEmail().equals(email) && p.getGameId().equals(gameId));
+    public List<Player> findByGameId(Long gameId) {
+        // TODO: Implement
+        return List.of();
+    }
+    
+    @Override
+    public void delete(Long id) {
+        // TODO: Implement
     }
 }

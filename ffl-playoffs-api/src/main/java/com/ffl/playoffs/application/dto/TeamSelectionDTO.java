@@ -1,46 +1,35 @@
 package com.ffl.playoffs.application.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.ffl.playoffs.domain.model.TeamSelection;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * Data Transfer Object for TeamSelection.
- */
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TeamSelectionDTO {
-    private UUID id;
-    private UUID playerId;
-    private UUID weekId;
-    private Integer weekNumber;
-    private String teamCode;
-    private String teamName;
+    private Long id;
+    private Long playerId;
+    private Long weekId;
+    private String nflTeam;
     private LocalDateTime selectedAt;
     private Double score;
-
-    // Constructors
-    public TeamSelectionDTO() {}
-
-    // Getters and Setters
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-
-    public UUID getPlayerId() { return playerId; }
-    public void setPlayerId(UUID playerId) { this.playerId = playerId; }
-
-    public UUID getWeekId() { return weekId; }
-    public void setWeekId(UUID weekId) { this.weekId = weekId; }
-
-    public Integer getWeekNumber() { return weekNumber; }
-    public void setWeekNumber(Integer weekNumber) { this.weekNumber = weekNumber; }
-
-    public String getTeamCode() { return teamCode; }
-    public void setTeamCode(String teamCode) { this.teamCode = teamCode; }
-
-    public String getTeamName() { return teamName; }
-    public void setTeamName(String teamName) { this.teamName = teamName; }
-
-    public LocalDateTime getSelectedAt() { return selectedAt; }
-    public void setSelectedAt(LocalDateTime selectedAt) { this.selectedAt = selectedAt; }
-
-    public Double getScore() { return score; }
-    public void setScore(Double score) { this.score = score; }
+    private String status;
+    
+    public static TeamSelectionDTO fromDomain(TeamSelection selection) {
+        return TeamSelectionDTO.builder()
+                .id(selection.getId())
+                .playerId(selection.getPlayerId())
+                .weekId(selection.getWeekId())
+                .nflTeam(selection.getNflTeam())
+                .selectedAt(selection.getSelectedAt())
+                .score(selection.getScore())
+                .status(selection.getStatus().name())
+                .build();
+    }
 }

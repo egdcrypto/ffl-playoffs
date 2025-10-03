@@ -1,32 +1,26 @@
 package com.ffl.playoffs.domain.port;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Port interface for NFL data integration.
- * No framework dependencies - pure domain interface.
- */
 public interface NflDataProvider {
+    /**
+     * Get all NFL playoff teams for a given season
+     */
+    List<String> getPlayoffTeams(int season);
     
     /**
-     * Get team statistics for a specific team and week.
+     * Get player statistics for a specific NFL team and week
      */
-    Map<String, Object> getTeamStats(String teamCode, int nflWeek, int season);
+    Map<String, Object> getTeamPlayerStats(String teamAbbreviation, int week, int season);
     
     /**
-     * Get all NFL teams playing in a specific week.
+     * Get game schedule for a specific week
      */
-    List<String> getTeamsPlayingInWeek(int nflWeek, int season);
+    List<Map<String, Object>> getWeekSchedule(int week, int season);
     
     /**
-     * Check if a team code is valid.
+     * Check if a team is playing in a specific week
      */
-    boolean isValidTeamCode(String teamCode);
-    
-    /**
-     * Get the current NFL week based on the date.
-     */
-    int getCurrentNflWeek(LocalDate date);
+    boolean isTeamPlaying(String teamAbbreviation, int week, int season);
 }

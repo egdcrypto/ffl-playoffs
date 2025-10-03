@@ -6,23 +6,24 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Security configuration for the application.
- * Currently allows all requests - will be enhanced with proper authentication.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
+    
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configure(http))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/api/games/**", "/api/players/**").permitAll()
+                .requestMatchers("/api/admin/**").authenticated()
+                .requestMatchers("/docs", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             );
+        
+        // TODO: Add JWT authentication when ready
+        // .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.configure()));
         
         return http.build();
     }

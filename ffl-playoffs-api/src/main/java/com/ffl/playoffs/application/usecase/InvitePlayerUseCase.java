@@ -1,43 +1,41 @@
 package com.ffl.playoffs.application.usecase;
 
+import com.ffl.playoffs.application.dto.PlayerDTO;
 import com.ffl.playoffs.domain.model.Game;
 import com.ffl.playoffs.domain.model.Player;
 import com.ffl.playoffs.domain.port.GameRepository;
 import com.ffl.playoffs.domain.port.PlayerRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import java.time.LocalDateTime;
 
-/**
- * Use case for inviting a player to a game.
- */
+@Service
+@RequiredArgsConstructor
 public class InvitePlayerUseCase {
-    
     private final GameRepository gameRepository;
     private final PlayerRepository playerRepository;
-
-    public InvitePlayerUseCase(GameRepository gameRepository, PlayerRepository playerRepository) {
-        this.gameRepository = gameRepository;
-        this.playerRepository = playerRepository;
-    }
-
-    public Player execute(UUID gameId, String playerName, String playerEmail) {
-        // Validate game exists
-        Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new IllegalArgumentException("Game not found"));
+    
+    public PlayerDTO execute(String inviteCode, String email, String displayName, String googleId) {
+        Game game = gameRepository.findByInviteCode(inviteCode)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid invite code"));
         
-        // Check if player already exists in game
-        if (playerRepository.existsByEmailAndGameId(playerEmail, gameId)) {
-            throw new IllegalStateException("Player already invited to this game");
+        if (game.getStatus() != Game.GameStatus.PENDING) {
+            throw new IllegalStateException("Game has already started");
         }
         
-        // Create and save player
-        Player player = new Player(playerName, playerEmail, gameId);
-        Player savedPlayer = playerRepository.save(player);
+        Player player = Player.builder()
+                .email(email)
+                .displayName(displayName)
+                .googleId(googleId)
+                .joinedAt(LocalDateTime.now())
+                .status(Player.PlayerStatus.ACTIVE)
+                .build();
         
-        // Add player to game
+        Player savedPlayer = playerRepository.save(player);
         game.addPlayer(savedPlayer);
         gameRepository.save(game);
         
-        return savedPlayer;
+        return PlayerDTO.fromDomain(savedPlayer);
     }
 }

@@ -1,33 +1,51 @@
 package com.ffl.playoffs.application.usecase;
 
+import com.ffl.playoffs.application.dto.GameDTO;
 import com.ffl.playoffs.domain.event.GameCreatedEvent;
 import com.ffl.playoffs.domain.model.Game;
 import com.ffl.playoffs.domain.port.GameRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * Use case for creating a new game.
- */
+@Service
+@RequiredArgsConstructor
 public class CreateGameUseCase {
-    
     private final GameRepository gameRepository;
-
-    public CreateGameUseCase(GameRepository gameRepository) {
-        this.gameRepository = gameRepository;
-    }
-
-    public Game execute(String name, LocalDateTime startDate, LocalDateTime endDate, UUID creatorId) {
-        // Create new game
-        Game game = new Game(name, startDate, endDate, creatorId);
+    
+    public GameDTO execute(String gameName, String creatorEmail) {
+        String inviteCode = generateInviteCode();
         
-        // Save game
+        Game game = Game.builder()
+                .name(gameName)
+                .inviteCode(inviteCode)
+                .createdAt(LocalDateTime.now())
+                .currentWeek(0)
+                .status(Game.GameStatus.PENDING)
+                .build();
+        
         Game savedGame = gameRepository.save(game);
         
-        // Publish event (in a real implementation, this would use an event bus)
-        GameCreatedEvent event = new GameCreatedEvent(savedGame.getId(), name, creatorId);
+        // Publish event (implement event publisher later)
+        publishGameCreatedEvent(savedGame, creatorEmail);
         
-        return savedGame;
+        return GameDTO.fromDomain(savedGame);
+    }
+    
+    private String generateInviteCode() {
+        return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+    
+    private void publishGameCreatedEvent(Game game, String creatorEmail) {
+        GameCreatedEvent event = GameCreatedEvent.builder()
+                .gameId(game.getId())
+                .gameName(game.getName())
+                .inviteCode(game.getInviteCode())
+                .creatorEmail(creatorEmail)
+                .createdAt(game.getCreatedAt())
+                .build();
+        // TODO: Publish event to event bus
     }
 }

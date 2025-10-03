@@ -2,66 +2,60 @@ package com.ffl.playoffs.infrastructure.adapter.rest;
 
 import com.ffl.playoffs.application.dto.GameDTO;
 import com.ffl.playoffs.application.service.ApplicationService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-/**
- * REST controller for game operations.
- */
 @RestController
-@RequestMapping("/api/games")
+@RequestMapping("/games")
+@RequiredArgsConstructor
 public class GameController {
-    
     private final ApplicationService applicationService;
-
-    public GameController(ApplicationService applicationService) {
-        this.applicationService = applicationService;
-    }
-
+    
     @PostMapping
     public ResponseEntity<GameDTO> createGame(@RequestBody CreateGameRequest request) {
         GameDTO game = applicationService.createGame(
-            request.getName(),
-            request.getStartDate(),
-            request.getEndDate(),
-            request.getCreatorId()
+                request.getGameName(), 
+                request.getCreatorEmail()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(game);
     }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<GameDTO> getGame(@PathVariable UUID id) {
-        // This would call a use case to fetch the game
-        return ResponseEntity.ok().build();
+    
+    @PostMapping("/join")
+    public ResponseEntity<String> joinGame(@RequestBody JoinGameRequest request) {
+        applicationService.invitePlayer(
+                request.getInviteCode(),
+                request.getEmail(),
+                request.getDisplayName(),
+                request.getGoogleId()
+        );
+        return ResponseEntity.ok("Successfully joined game");
     }
+}
 
-    @PostMapping("/{id}/start")
-    public ResponseEntity<Void> startGame(@PathVariable UUID id) {
-        // This would call a use case to start the game
-        return ResponseEntity.ok().build();
-    }
+class CreateGameRequest {
+    private String gameName;
+    private String creatorEmail;
+    
+    public String getGameName() { return gameName; }
+    public void setGameName(String gameName) { this.gameName = gameName; }
+    public String getCreatorEmail() { return creatorEmail; }
+    public void setCreatorEmail(String creatorEmail) { this.creatorEmail = creatorEmail; }
+}
 
-    // Request DTOs
-    public static class CreateGameRequest {
-        private String name;
-        private LocalDateTime startDate;
-        private LocalDateTime endDate;
-        private UUID creatorId;
-
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-
-        public LocalDateTime getStartDate() { return startDate; }
-        public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
-
-        public LocalDateTime getEndDate() { return endDate; }
-        public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
-
-        public UUID getCreatorId() { return creatorId; }
-        public void setCreatorId(UUID creatorId) { this.creatorId = creatorId; }
-    }
+class JoinGameRequest {
+    private String inviteCode;
+    private String email;
+    private String displayName;
+    private String googleId;
+    
+    public String getInviteCode() { return inviteCode; }
+    public void setInviteCode(String inviteCode) { this.inviteCode = inviteCode; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public String getGoogleId() { return googleId; }
+    public void setGoogleId(String googleId) { this.googleId = googleId; }
 }

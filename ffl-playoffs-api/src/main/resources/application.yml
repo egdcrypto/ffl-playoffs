@@ -4,8 +4,8 @@ spring:
   
   datasource:
     url: jdbc:postgresql://localhost:5432/ffl_playoffs
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: ${DB_USERNAME:ffl_user}
+    password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -16,26 +16,25 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    open-in-view: false
+        default_schema: public
   
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-    time-zone: UTC
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://accounts.google.com}
 
 server:
   port: 8080
-  error:
-    include-message: always
-    include-binding-errors: always
+  servlet:
+    context-path: /api
 
 springdoc:
   api-docs:
-    path: /api-docs
+    path: /docs
   swagger-ui:
     path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
+    enabled: true
 
 logging:
   level:

@@ -7,14 +7,20 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Port (interface) for Game persistence.
- * This defines the contract that infrastructure adapters must implement.
+ * Port interface for Game persistence.
+ * No framework dependencies - pure domain interface.
  */
 public interface GameRepository {
+    
     Game save(Game game);
+    
     Optional<Game> findById(UUID id);
-    List<Game> findByCreatorId(UUID creatorId);
+    
+    Optional<Game> findByInviteCode(String inviteCode);
+    
     List<Game> findAll();
+    
     void delete(UUID id);
-    boolean existsById(UUID id);
+    
+    boolean existsByInviteCode(String inviteCode);
 }

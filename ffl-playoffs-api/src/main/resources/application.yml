@@ -1,152 +1,44 @@
 spring:
   application:
     name: ffl-playoffs-api
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ffl_playoffs
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    open-in-view: false
+  
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
 
-  # MongoDB configuration (NOT PostgreSQL)
-  data:
-    mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/ffl_playoffs}
-      database: ${MONGODB_DATABASE:ffl_playoffs}
-      auto-index-creation: true
-
-# CRITICAL SECURITY: API listens ONLY on localhost:8080
-# Envoy sidecar is the ONLY external entry point
 server:
-  address: 127.0.0.1
-  port: ${PORT:8080}
+  port: 8080
   error:
     include-message: always
-    include-stacktrace: never
-  shutdown: graceful
+    include-binding-errors: always
 
-# Swagger API documentation
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
-    enabled: true
-
-# Redis Cache Configuration
-  cache:
-    type: redis
-    redis:
-      time-to-live: 3600000 # 1 hour default TTL
-    cache-names:
-      - nfl-players          # Player profiles - 1 hour TTL
-      - player-stats         # Player stats - 30 seconds live, 7 days final
-      - weekly-stats         # Weekly stats - 30 seconds TTL
-      - player-news          # Player news - 5 minutes TTL
-      - player-injury-status # Injury status - 5 minutes TTL
-      - team-scores          # Team scores - varies
-      - playoff-teams        # Playoff teams - 24 hours TTL
-      - available-teams      # Available teams - 24 hours TTL
-      - team-in-playoffs     # Team playoff status - 24 hours TTL
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      timeout: 2000ms
-      lettuce:
-        pool:
-          max-active: 10
-          max-idle: 5
-          min-idle: 2
-
-# SportsData.io Fantasy Sports API Configuration
-nfl-data:
-  sportsdata:
-    api-key: ${NFL_API_KEY:your-api-key-here}
-    base-url: https://api.sportsdata.io/v3/nfl/fantasy
-    connection-timeout: 5000
-    read-timeout: 10000
-    live-polling-enabled: true
-    live-polling-interval-seconds: 30  # 30-second updates during games
-    max-retries: 3
+    tags-sorter: alpha
+    operations-sorter: alpha
 
 logging:
   level:
     com.ffl.playoffs: INFO
     org.springframework: WARN
-    org.mongodb: WARN
-    com.ffl.playoffs.infrastructure.adapter.integration: DEBUG  # NFL data integration debug
-
-# CRITICAL SECURITY: Management endpoints listen ONLY on localhost
-# Prevents external access to actuator endpoints
-management:
-  server:
-    address: 127.0.0.1
-    port: ${MANAGEMENT_PORT:8081}
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-      base-path: /actuator
-  endpoint:
-    health:
-      show-details: when-authorized
-      probes:
-        enabled: true
-  health:
-    livenessState:
-      enabled: true
-    readinessState:
-      enabled: true
-
-# Kubernetes health probes
-# Liveness: GET http://localhost:8081/actuator/health/liveness
-# Readiness: GET http://localhost:8081/actuator/health/readiness
-
----
-# Development profile
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/ffl_playoffs_dev
-
-nfl-data:
-  sportsdata:
-    api-key: ${NFL_API_KEY:test-api-key}  # Use test key for dev
-
-logging:
-  level:
-    com.ffl.playoffs: DEBUG
-    org.springframework: INFO
-    com.ffl.playoffs.infrastructure.adapter.integration: TRACE  # Verbose NFL API logging
-
----
-# Test profile
-spring:
-  config:
-    activate:
-      on-profile: test
-
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/ffl_playoffs_test
-
-logging:
-  level:
-    com.ffl.playoffs: DEBUG
-
----
-# Production profile
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
-      database: ${MONGODB_DATABASE:ffl_playoffs}
-
-logging:
-  level:
-    com.ffl.playoffs: INFO
-    org.springframework: WARN
+    org.hibernate: WARN

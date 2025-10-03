@@ -1,35 +1,50 @@
 package com.ffl.playoffs.domain.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Domain model representing a player's team selection for a week.
+ * Domain model representing a player's team selection for a specific week.
  */
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class TeamSelection {
     private UUID id;
     private UUID playerId;
-    private Integer weekNumber;
-    private String nflTeam;
+    private UUID weekId;
+    private String teamCode;
     private LocalDateTime selectedAt;
-    private Integer pointsEarned;
-    private boolean isScored;
+    private Double score;
 
-    public void score(Integer points) {
-        this.pointsEarned = points;
-        this.isScored = true;
+    public TeamSelection() {
+        this.id = UUID.randomUUID();
+        this.selectedAt = LocalDateTime.now();
     }
 
-    public boolean hasBeenScored() {
-        return this.isScored;
+    public TeamSelection(UUID playerId, UUID weekId, String teamCode) {
+        this();
+        this.playerId = playerId;
+        this.weekId = weekId;
+        this.teamCode = teamCode;
     }
+
+    public void setScore(Double score) {
+        this.score = score;
+    }
+
+    // Getters and setters
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
+    public UUID getPlayerId() { return playerId; }
+    public void setPlayerId(UUID playerId) { this.playerId = playerId; }
+
+    public UUID getWeekId() { return weekId; }
+    public void setWeekId(UUID weekId) { this.weekId = weekId; }
+
+    public String getTeamCode() { return teamCode; }
+    public void setTeamCode(String teamCode) { this.teamCode = teamCode; }
+
+    public LocalDateTime getSelectedAt() { return selectedAt; }
+    public void setSelectedAt(LocalDateTime selectedAt) { this.selectedAt = selectedAt; }
+
+    public Double getScore() { return score; }
 }

@@ -11,6 +11,7 @@ paths:
 engineers:
   engineer1:
     name: "Feature Architect"
+    type: "architect"
     window: 1
     role: "Create comprehensive Gherkin feature files and design domain model"
     responsibilities:
@@ -96,6 +97,7 @@ engineers:
 
   engineer2:
     name: "Project Structure Engineer"
+    type: "backend-engineer"
     window: 2
     role: "Create Java Spring Boot hexagonal architecture project structure"
     responsibilities:
@@ -211,6 +213,7 @@ engineers:
 
   engineer3:
     name: "Documentation Engineer"
+    type: "documentation"
     window: 3
     role: "Create comprehensive documentation and architecture diagrams"
     responsibilities:
@@ -277,6 +280,7 @@ engineers:
 
   engineer4:
     name: "UI/UX Designer"
+    type: "ui-designer"
     window: 4
     role: "Design responsive web UI mockups for headless API"
     responsibilities:
@@ -336,6 +340,7 @@ engineers:
 
   engineer6:
     name: "Project Structure Engineer 2"
+    type: "backend-engineer"
     window: 6
     role: "Create Java Spring Boot hexagonal architecture project structure"
     responsibilities:
@@ -451,6 +456,7 @@ engineers:
 
   engineer7:
     name: "Project Structure Engineer 3"
+    type: "backend-engineer"
     window: 7
     role: "Create Java Spring Boot hexagonal architecture project structure"
     responsibilities:
@@ -566,6 +572,7 @@ engineers:
 
   engineer8:
     name: "Project Structure Engineer 4"
+    type: "backend-engineer"
     window: 8
     role: "Create Java Spring Boot hexagonal architecture project structure"
     responsibilities:
@@ -681,6 +688,7 @@ engineers:
 
   engineer5:
     name: "Product Manager"
+    type: "product-manager"
     window: 5
     role: "Route requests to engineers, coordinate work, and ensure all deliverables meet requirements"
     responsibilities:
@@ -864,8 +872,8 @@ coordination:
   communication_method: "files"  # or "tmux", "api"
   status_check_interval: 300  # seconds
   max_idle_time: 600  # seconds before alert
-  todo_directory: "/tmp/ffl-dev_todos"
-  progress_directory: "/tmp/ffl-dev_progress"
+  todo_directory: "/home/logs/ffl-dev_todos"
+  progress_directory: "/home/logs/ffl-dev_progress"
 
 workflow:
   instructions: |

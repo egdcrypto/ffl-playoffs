@@ -8,20 +8,22 @@ import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Security configuration for the application.
+ * Currently allows all requests - will be enhanced with proper authentication.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Disable CSRF for API endpoints
-            .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/**").permitAll() // Allow all API endpoints for now
-                .requestMatchers("/swagger-ui/**", "/api-docs/**").permitAll() // Allow Swagger
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/**").permitAll()
+                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             );
+        
         return http.build();
     }
 }

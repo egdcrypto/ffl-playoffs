@@ -4,48 +4,51 @@ import com.ffl.playoffs.domain.model.Game;
 import com.ffl.playoffs.domain.port.GameRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * In-memory implementation of GameRepository.
- * Replace with JPA implementation when persistence is needed.
+ * In-memory implementation of GameRepository for initial development.
+ * Will be replaced with JPA implementation later.
  */
 @Repository
 public class GameRepositoryImpl implements GameRepository {
-
-    private final Map<UUID, Game> storage = new ConcurrentHashMap<>();
+    
+    private final ConcurrentHashMap<UUID, Game> games = new ConcurrentHashMap<>();
 
     @Override
     public Game save(Game game) {
-        storage.put(game.getId(), game);
+        games.put(game.getId(), game);
         return game;
     }
 
     @Override
     public Optional<Game> findById(UUID id) {
-        return Optional.ofNullable(storage.get(id));
+        return Optional.ofNullable(games.get(id));
     }
 
     @Override
-    public List<Game> findByCreatorId(UUID creatorId) {
-        return storage.values().stream()
-                .filter(game -> game.getCreatorId().equals(creatorId))
-                .toList();
+    public Optional<Game> findByInviteCode(String inviteCode) {
+        // Not implemented in this simple version
+        return Optional.empty();
     }
 
     @Override
     public List<Game> findAll() {
-        return new ArrayList<>(storage.values());
+        return new ArrayList<>(games.values());
     }
 
     @Override
     public void delete(UUID id) {
-        storage.remove(id);
+        games.remove(id);
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        return storage.containsKey(id);
+    public boolean existsByInviteCode(String inviteCode) {
+        // Not implemented in this simple version
+        return false;
     }
 }

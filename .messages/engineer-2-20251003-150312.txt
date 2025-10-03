@@ -1,0 +1,5 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-03 15:03:12
+---
+PRIORITY WORK: You have 3 work items pending. Complete WORK-20251003-133937-2980341 (in progress) first, then handle WORK-20251003-145712-6993 and WORK-20251003-150205-50376. All involve reviewing code changes in ffl-playoffs-api/src/. Verify hexagonal architecture compliance, check domain layer has NO framework dependencies, ensure ports/adapters pattern is correct. Push commits when done.

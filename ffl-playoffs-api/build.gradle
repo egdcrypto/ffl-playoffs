@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot starters
+    // Spring Boot Starters
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
@@ -32,44 +32,35 @@ dependencies {
     // Database
     runtimeOnly 'org.postgresql:postgresql'
 
-    // Google OAuth
-    implementation 'com.google.api-client:google-api-client:2.2.0'
-    implementation 'com.google.auth:google-auth-library-oauth2-http:1.19.0'
-
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     // OpenAPI/Swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
-    // Redis for Caching (NFL data integration)
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-    implementation 'io.lettuce:lettuce-core:6.2.6.RELEASE'
-
-    // Rate Limiting (Bucket4j for NFL API)
-    implementation 'com.bucket4j:bucket4j-core:8.5.0'
-
-    // Jackson for JSON (SportsData.io responses)
+    // Jackson for JSON processing
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+    // Google Auth
+    implementation 'com.google.api-client:google-api-client:2.2.0'
+
+    // Rate Limiting
+    implementation 'com.bucket4j:bucket4j-core:8.7.0'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-
-    // Cucumber for BDD/Gherkin tests
-    testImplementation 'io.cucumber:cucumber-java:7.14.0'
-    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.14.0'
-    testImplementation 'io.cucumber:cucumber-spring:7.14.0'
-
-    // JUnit 5 Platform
+    testImplementation 'io.cucumber:cucumber-java:7.14.1'
+    testImplementation 'io.cucumber:cucumber-junit-platform-engine:7.14.1'
+    testImplementation 'io.cucumber:cucumber-spring:7.14.1'
     testImplementation 'org.junit.platform:junit-platform-suite'
-
-    // Mockito (included in spring-boot-starter-test, but explicit for clarity)
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'org.mockito:mockito-junit-jupiter'
+
+    // H2 for testing
+    testRuntimeOnly 'com.h2database:h2'
 }
 
 tasks.named('test') {

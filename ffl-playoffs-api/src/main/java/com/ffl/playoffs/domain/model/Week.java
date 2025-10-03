@@ -1,48 +1,69 @@
 package com.ffl.playoffs.domain.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 /**
- * Domain model representing a playoff week.
+ * Domain model representing a playoff week in the game.
  */
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Week {
     private UUID id;
+    private UUID gameId;
     private Integer weekNumber;
+    private Integer nflWeek;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private WeekStatus status;
-    private List<String> availableTeams;
 
-    public enum WeekStatus {
-        UPCOMING,
-        ACTIVE,
-        COMPLETED
+    public Week() {
+        this.id = UUID.randomUUID();
+        this.status = WeekStatus.PENDING;
     }
 
-    public void activate() {
-        this.status = WeekStatus.ACTIVE;
+    public Week(UUID gameId, Integer weekNumber, Integer nflWeek, LocalDateTime startDate, LocalDateTime endDate) {
+        this();
+        this.gameId = gameId;
+        this.weekNumber = weekNumber;
+        this.nflWeek = nflWeek;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public void open() {
+        this.status = WeekStatus.OPEN;
+    }
+
+    public void close() {
+        this.status = WeekStatus.CLOSED;
     }
 
     public void complete() {
         this.status = WeekStatus.COMPLETED;
     }
 
-    public boolean isActive() {
-        return WeekStatus.ACTIVE.equals(this.status);
+    public boolean isOpen() {
+        return this.status == WeekStatus.OPEN;
     }
 
-    public boolean isCompleted() {
-        return WeekStatus.COMPLETED.equals(this.status);
-    }
+    // Getters and setters
+    public UUID getId() { return id; }
+    public void setId(UUID id) { this.id = id; }
+
+    public UUID getGameId() { return gameId; }
+    public void setGameId(UUID gameId) { this.gameId = gameId; }
+
+    public Integer getWeekNumber() { return weekNumber; }
+    public void setWeekNumber(Integer weekNumber) { this.weekNumber = weekNumber; }
+
+    public Integer getNflWeek() { return nflWeek; }
+    public void setNflWeek(Integer nflWeek) { this.nflWeek = nflWeek; }
+
+    public LocalDateTime getStartDate() { return startDate; }
+    public void setStartDate(LocalDateTime startDate) { this.startDate = startDate; }
+
+    public LocalDateTime getEndDate() { return endDate; }
+    public void setEndDate(LocalDateTime endDate) { this.endDate = endDate; }
+
+    public WeekStatus getStatus() { return status; }
+    public void setStatus(WeekStatus status) { this.status = status; }
 }

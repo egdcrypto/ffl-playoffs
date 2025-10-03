@@ -4,52 +4,54 @@ import com.ffl.playoffs.domain.model.Player;
 import com.ffl.playoffs.domain.port.PlayerRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
- * In-memory implementation of PlayerRepository.
- * Replace with JPA implementation when persistence is needed.
+ * In-memory implementation of PlayerRepository for initial development.
+ * Will be replaced with JPA implementation later.
  */
 @Repository
 public class PlayerRepositoryImpl implements PlayerRepository {
-
-    private final Map<UUID, Player> storage = new ConcurrentHashMap<>();
+    
+    private final ConcurrentHashMap<UUID, Player> players = new ConcurrentHashMap<>();
 
     @Override
     public Player save(Player player) {
-        storage.put(player.getId(), player);
+        players.put(player.getId(), player);
         return player;
     }
 
     @Override
     public Optional<Player> findById(UUID id) {
-        return Optional.ofNullable(storage.get(id));
+        return Optional.ofNullable(players.get(id));
     }
 
     @Override
     public List<Player> findByGameId(UUID gameId) {
-        return storage.values().stream()
-                .filter(player -> player.getGameId().equals(gameId))
-                .toList();
+        return players.values().stream()
+                .filter(p -> p.getGameId().equals(gameId))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Player> findActivePlayersByGameId(UUID gameId) {
-        return storage.values().stream()
-                .filter(player -> player.getGameId().equals(gameId))
-                .filter(player -> !player.isEliminated())
-                .toList();
+    public Optional<Player> findByEmailAndGameId(String email, UUID gameId) {
+        return players.values().stream()
+                .filter(p -> p.getEmail().equals(email) && p.getGameId().equals(gameId))
+                .findFirst();
     }
 
     @Override
     public void delete(UUID id) {
-        storage.remove(id);
+        players.remove(id);
     }
 
     @Override
-    public boolean existsByEmail(String email) {
-        return storage.values().stream()
-                .anyMatch(player -> player.getEmail().equals(email));
+    public boolean existsByEmailAndGameId(String email, UUID gameId) {
+        return players.values().stream()
+                .anyMatch(p -> p.getEmail().equals(email) && p.getGameId().equals(gameId));
     }
 }

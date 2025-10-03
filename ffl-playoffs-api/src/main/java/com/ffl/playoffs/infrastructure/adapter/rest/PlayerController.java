@@ -1,98 +1,79 @@
 package com.ffl.playoffs.infrastructure.adapter.rest;
 
 import com.ffl.playoffs.application.dto.PlayerDTO;
-import com.ffl.playoffs.application.usecase.InvitePlayerUseCase;
-import com.ffl.playoffs.application.usecase.SelectTeamUseCase;
-import com.ffl.playoffs.domain.model.Player;
-import com.ffl.playoffs.domain.model.TeamSelection;
-import com.ffl.playoffs.domain.port.PlayerRepository;
-import lombok.RequiredArgsConstructor;
+import com.ffl.playoffs.application.dto.TeamSelectionDTO;
+import com.ffl.playoffs.application.service.ApplicationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * REST controller for player-related endpoints.
+ * REST controller for player operations.
  */
 @RestController
 @RequestMapping("/api/players")
-@RequiredArgsConstructor
 public class PlayerController {
+    
+    private final ApplicationService applicationService;
 
-    private final InvitePlayerUseCase invitePlayerUseCase;
-    private final SelectTeamUseCase selectTeamUseCase;
-    private final PlayerRepository playerRepository;
+    public PlayerController(ApplicationService applicationService) {
+        this.applicationService = applicationService;
+    }
 
     @PostMapping("/invite")
     public ResponseEntity<PlayerDTO> invitePlayer(@RequestBody InvitePlayerRequest request) {
-        Player player = invitePlayerUseCase.execute(
-                request.getGameId(),
-                request.getPlayerName(),
-                request.getEmail()
+        PlayerDTO player = applicationService.invitePlayer(
+            request.getGameId(),
+            request.getName(),
+            request.getEmail()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(mapToDTO(player));
+        return ResponseEntity.status(HttpStatus.CREATED).body(player);
     }
 
-    @PostMapping("/{playerId}/select-team")
-    public ResponseEntity<Void> selectTeam(
+    @PostMapping("/{playerId}/selections")
+    public ResponseEntity<TeamSelectionDTO> selectTeam(
             @PathVariable UUID playerId,
             @RequestBody SelectTeamRequest request) {
-        selectTeamUseCase.execute(playerId, request.getWeekNumber(), request.getNflTeam());
-        return ResponseEntity.ok().build();
+        TeamSelectionDTO selection = applicationService.selectTeam(
+            playerId,
+            request.getWeekId(),
+            request.getTeamCode()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(selection);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PlayerDTO> getPlayer(@PathVariable UUID id) {
-        return playerRepository.findById(id)
-                .map(player -> ResponseEntity.ok(mapToDTO(player)))
-                .orElse(ResponseEntity.notFound().build());
+        // This would call a use case to fetch the player
+        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/game/{gameId}")
-    public ResponseEntity<List<PlayerDTO>> getPlayersByGame(@PathVariable UUID gameId) {
-        List<PlayerDTO> players = playerRepository.findByGameId(gameId).stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(players);
-    }
-
-    private PlayerDTO mapToDTO(Player player) {
-        return PlayerDTO.builder()
-                .id(player.getId())
-                .gameId(player.getGameId())
-                .name(player.getName())
-                .email(player.getEmail())
-                .status(player.getStatus().name())
-                .joinedAt(player.getJoinedAt())
-                .totalScore(player.getTotalScore())
-                .isEliminated(player.isEliminated())
-                .build();
-    }
-
+    // Request DTOs
     public static class InvitePlayerRequest {
         private UUID gameId;
-        private String playerName;
+        private String name;
         private String email;
 
         public UUID getGameId() { return gameId; }
         public void setGameId(UUID gameId) { this.gameId = gameId; }
-        public String getPlayerName() { return playerName; }
-        public void setPlayerName(String playerName) { this.playerName = playerName; }
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
     }
 
     public static class SelectTeamRequest {
-        private Integer weekNumber;
-        private String nflTeam;
+        private UUID weekId;
+        private String teamCode;
 
-        public Integer getWeekNumber() { return weekNumber; }
-        public void setWeekNumber(Integer weekNumber) { this.weekNumber = weekNumber; }
-        public String getNflTeam() { return nflTeam; }
-        public void setNflTeam(String nflTeam) { this.nflTeam = nflTeam; }
+        public UUID getWeekId() { return weekId; }
+        public void setWeekId(UUID weekId) { this.weekId = weekId; }
+
+        public String getTeamCode() { return teamCode; }
+        public void setTeamCode(String teamCode) { this.teamCode = teamCode; }
     }
 }

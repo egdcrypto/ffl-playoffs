@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Selection (PRE-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .player-row {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .player-row:hover {
+            background-color: #f8f9fa;
+        }
+        .position-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .position-QB { background-color: #dc3545; color: white; }
+        .position-RB { background-color: #198754; color: white; }
+        .position-WR { background-color: #0d6efd; color: white; }
+        .position-TE { background-color: #ffc107; color: black; }
+        .position-K { background-color: #6c757d; color: white; }
+        .position-DEF { background-color: #6f42c1; color: white; }
+        .team-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .stats-cell {
+            font-size: 0.85rem;
+        }
+        .countdown-timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .lock-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.9; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-dashboard-prelock.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="player-selection-prelock.html">
+                            <i class="bi bi-person-plus"></i> Build Roster
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-roster-prelock.html">My Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <span class="badge bg-warning text-dark me-2"><i class="bi bi-clock-history"></i> PRE-LOCK</span>
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard-prelock.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">Build Roster</li>
+            </ol>
+        </nav>
+
+        <!-- URGENT: Countdown Timer Banner -->
+        <div class="alert lock-warning alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items-center flex-wrap">
+                <i class="bi bi-alarm-fill me-3" style="font-size: 2.5rem; color: #dc3545;"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle-fill"></i> PERMANENT ROSTER LOCK COUNTDOWN</h4>
+                    <div class="countdown-timer mb-2">2 hours, 15 minutes until PERMANENT LOCK</div>
+                    <p class="mb-2"><strong>CRITICAL:</strong> This is a ONE-TIME DRAFT. Your roster will be <strong>PERMANENTLY LOCKED</strong> when the first game starts on Sunday, January 12 at 1:00 PM ET.</p>
+                    <ul class="mb-0">
+                        <li><strong>NO waiver wire</strong> - Cannot add free agents after lock</li>
+                        <li><strong>NO trades</strong> - Cannot trade with other players after lock</li>
+                        <li><strong>NO lineup changes</strong> - Cannot substitute players after lock</li>
+                        <li><strong>NO injury replacements</strong> - Injured players remain on roster</li>
+                    </ul>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-9">
+                <h2><i class="bi bi-unlock-fill text-success"></i> ONE-TIME DRAFT: Build Your Roster <span class="badge bg-success">DRAFT ACTIVE</span></h2>
+                <p class="text-muted">Draft individual NFL players to build your roster. <strong>You have 2 hours and 15 minutes to complete your roster before permanent lock!</strong></p>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select form-select-lg">
+                    <option selected>2025 NFL Playoffs Pool</option>
+                    <option>Friends League</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Sidebar: Roster Status -->
+            <div class="col-lg-3 mb-4">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-list-check"></i> Your Roster Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger py-2 px-3 mb-3">
+                            <small><strong>INCOMPLETE - 6 of 9 filled</strong></small>
+                        </div>
+                        
+                        <h6 class="mb-2">Filled Positions:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li><span class="badge bg-success me-2">✓</span> QB: Patrick Mahomes</li>
+                            <li><span class="badge bg-success me-2">✓</span> RB1: Christian McCaffrey</li>
+                            <li><span class="badge bg-success me-2">✓</span> RB2: Saquon Barkley</li>
+                            <li><span class="badge bg-success me-2">✓</span> WR1: Tyreek Hill</li>
+                            <li><span class="badge bg-success me-2">✓</span> WR2: CeeDee Lamb</li>
+                            <li><span class="badge bg-success me-2">✓</span> DEF: SF 49ers</li>
+                        </ul>
+
+                        <h6 class="mb-2 text-danger">Missing Positions:</h6>
+                        <ul class="list-unstyled mb-3">
+                            <li><span class="badge bg-danger me-2">!</span> TE: <strong>EMPTY</strong></li>
+                            <li><span class="badge bg-danger me-2">!</span> FLEX: <strong>EMPTY</strong></li>
+                            <li><span class="badge bg-danger me-2">!</span> K: <strong>EMPTY</strong></li>
+                        </ul>
+
+                        <a href="my-roster-prelock.html" class="btn btn-warning w-100 mb-2">
+                            <i class="bi bi-list-check"></i> View My Roster
+                        </a>
+                        <a href="player-dashboard-prelock.html" class="btn btn-outline-secondary w-100">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card mt-3 border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Draft Tips</h6>
+                    </div>
+                    <div class="card-body">
+                        <small>
+                            <ul class="mb-0 ps-3">
+                                <li>Click <strong>"Add to Roster"</strong> to draft a player</li>
+                                <li>Fill all 9 positions before lock</li>
+                                <li>Use filters to find players by position</li>
+                                <li>Review player stats and weekly performance</li>
+                                <li><strong>Remember:</strong> No changes after lock!</li>
+                            </ul>
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content: Player List -->
+            <div class="col-lg-9 mb-4">
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Position</label>
+                                <select class="form-select" id="positionFilter">
+                                    <option value="">All Positions</option>
+                                    <option value="QB">QB - Quarterback</option>
+                                    <option value="RB">RB - Running Back</option>
+                                    <option value="WR">WR - Wide Receiver</option>
+                                    <option value="TE">TE - Tight End</option>
+                                    <option value="K">K - Kicker</option>
+                                    <option value="DEF">DEF - Defense</option>
+                                    <option value="FLEX">FLEX - RB/WR/TE</option>
+                                    <option value="SUPERFLEX">SUPERFLEX - QB/RB/WR/TE</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">NFL Team</label>
+                                <select class="form-select" id="teamFilter">
+                                    <option value="">All Teams</option>
+                                    <option value="KC">Kansas City Chiefs</option>
+                                    <option value="SF">San Francisco 49ers</option>
+                                    <option value="BAL">Baltimore Ravens</option>
+                                    <option value="BUF">Buffalo Bills</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Search Player</label>
+                                <input type="text" class="form-control" placeholder="Search by name..." id="searchInput">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Sort By</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="points" selected>Total Points</option>
+                                    <option value="name">Name</option>
+                                    <option value="avg">Avg Points</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Players Table -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-people-fill"></i> Available NFL Players <span class="badge bg-light text-success ms-2">DRAFT ACTIVE</span></h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 60px;">POS</th>
+                                    <th>Player Name</th>
+                                    <th style="width: 80px;">Team</th>
+                                    <th class="text-center">Total Pts</th>
+                                    <th class="text-center">Avg</th>
+                                    <th class="text-center">Last 3 Wks</th>
+                                    <th style="width: 140px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- TE Players (Missing Position) -->
+                                <tr class="player-row table-warning">
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>Travis Kelce</strong>
+                                        <br><small class="text-muted">#87 • Kansas City Chiefs</small>
+                                        <br><span class="badge bg-danger badge-sm">YOU NEED TE!</span>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">KC</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>85.5</strong></td>
+                                    <td class="text-center stats-cell">21.4</td>
+                                    <td class="text-center stats-cell">18, 22, 15</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Add to Roster
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row table-warning">
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>George Kittle</strong>
+                                        <br><small class="text-muted">#85 • San Francisco 49ers</small>
+                                        <br><span class="badge bg-danger badge-sm">YOU NEED TE!</span>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">SF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>78.0</strong></td>
+                                    <td class="text-center stats-cell">19.5</td>
+                                    <td class="text-center stats-cell">20, 16, 22</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Add to Roster
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- K Players (Missing Position) -->
+                                <tr class="player-row table-warning">
+                                    <td>
+                                        <div class="position-badge position-K">K</div>
+                                    </td>
+                                    <td>
+                                        <strong>Justin Tucker</strong>
+                                        <br><small class="text-muted">#9 • Baltimore Ravens</small>
+                                        <br><span class="badge bg-danger badge-sm">YOU NEED K!</span>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>52.0</strong></td>
+                                    <td class="text-center stats-cell">13.0</td>
+                                    <td class="text-center stats-cell">12, 14, 11</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Add to Roster
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Other Available Players -->
+                                <tr class="player-row">
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Lamar Jackson</strong>
+                                        <br><small class="text-muted">#8 • Baltimore Ravens</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>125.0</strong></td>
+                                    <td class="text-center stats-cell">31.3</td>
+                                    <td class="text-center stats-cell">33, 28, 35</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Add to Roster
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Derrick Henry</strong>
+                                        <br><small class="text-muted">#22 • Baltimore Ravens</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>98.5</strong></td>
+                                    <td class="text-center stats-cell">24.6</td>
+                                    <td class="text-center stats-cell">28, 22, 25</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Add to Roster
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Amon-Ra St. Brown</strong>
+                                        <br><small class="text-muted">#14 • Detroit Lions</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">DET</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>95.0</strong></td>
+                                    <td class="text-center stats-cell">23.8</td>
+                                    <td class="text-center stats-cell">26, 22, 24</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle-fill"></i> Add to Roster
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">Showing 1-20 of 500+ available players</small>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

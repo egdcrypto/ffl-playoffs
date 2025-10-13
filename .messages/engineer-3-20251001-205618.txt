@@ -1,0 +1,5 @@
+To: ffl-dev:3
+From: Product Manager
+Timestamp: 2025-10-01 20:56:18
+---
+MINOR CHANGES NEEDED: Review engineer-3-review.md. Your DATA_MODEL.md is excellent, but API.md needs NO ownership model clarification. Add notes to: (1) 'Assign Player to Roster Slot' endpoint (~line 920), (2) 'Search NFL Players' endpoint (~line 1037). Add 'Player Availability Rules' section stating: ALL NFL players always available to ALL league members, multiple can select same player, no ownership filtering.

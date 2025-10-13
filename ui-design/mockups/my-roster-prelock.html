@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Roster (PRE-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .position-badge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .position-QB { background-color: #dc3545; color: white; }
+        .position-RB { background-color: #198754; color: white; }
+        .position-WR { background-color: #0d6efd; color: white; }
+        .position-TE { background-color: #ffc107; color: black; }
+        .position-K { background-color: #6c757d; color: white; }
+        .position-DEF { background-color: #6f42c1; color: white; }
+        .position-FLEX { background-color: #fd7e14; color: white; }
+        .player-card { transition: transform 0.2s; }
+        .player-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+        .empty-slot { border: 3px dashed #dc3545; background-color: #ffe6e6; }
+        .countdown-timer { font-size: 1.3rem; font-weight: bold; color: #dc3545; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+        <div class="container-fluid">
+            <a class="navbar-brand text-dark" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link text-dark" href="player-dashboard-prelock.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" href="player-selection-prelock.html">Build Roster</a></li>
+                    <li class="nav-item"><a class="nav-link active bg-dark text-white" href="my-roster-prelock.html">My Roster</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" href="league-standings.html">Standings</a></li>
+                </ul>
+                <div class="d-flex align-items-center text-dark">
+                    <span class="badge bg-danger me-2"><i class="bi bi-clock-history"></i> PRE-LOCK</span>
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard-prelock.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">My Roster</li>
+            </ol>
+        </nav>
+
+        <!-- URGENT Lock Warning -->
+        <div class="alert alert-danger border-danger mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-alarm-fill me-3" style="font-size: 2.5rem;"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle-fill"></i> ROSTER INCOMPLETE - LOCK IN 2 HOURS</h4>
+                    <div class="countdown-timer mb-2">2 hours, 15 minutes until PERMANENT LOCK</div>
+                    <p class="mb-0"><strong>CRITICAL:</strong> You have 3 empty roster positions. Complete your roster before <strong>Sunday, January 12 at 1:00 PM ET</strong> or face permanent incomplete roster!</p>
+                </div>
+                <a href="player-selection-prelock.html" class="btn btn-danger btn-lg ms-3">
+                    <i class="bi bi-person-plus"></i> Add Players NOW
+                </a>
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2><i class="bi bi-unlock-fill text-success"></i> My Roster <span class="badge bg-warning text-dark">DRAFT ACTIVE</span></h2>
+                <p class="text-muted">Build your roster now - changes allowed until first game starts!</p>
+            </div>
+            <div class="col-lg-4">
+                <select class="form-select form-select-lg">
+                    <option selected>2025 NFL Playoffs Pool</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Roster Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-danger">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Completion</h6>
+                        <h2 class="card-title mb-0 text-danger">6/9</h2>
+                        <small class="text-danger">3 positions empty!</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Time to Lock</h6>
+                        <h2 class="card-title mb-0 text-warning">2h 15m</h2>
+                        <small class="text-danger">URGENT!</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Value</h6>
+                        <h2 class="card-title mb-0">465.0</h2>
+                        <small class="text-muted">Total pts (6 players)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
+                        <h2 class="card-title mb-0 text-warning">67%</h2>
+                        <small class="text-danger">Incomplete</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filled Positions -->
+        <h4 class="mb-3"><i class="bi bi-check-circle text-success"></i> Filled Positions (6)</h4>
+
+        <!-- QB -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-QB">QB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Patrick Mahomes <span class="badge bg-success">FILLED</span></h5>
+                                <small class="text-muted">#15 • Kansas City Chiefs • QB</small>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">115.5</h4>
+                            </div>
+                            <div class="col-auto">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle"></i> Drop
+                                    </button>
+                                    <a href="player-selection-prelock.html" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-left-right"></i> Replace
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RBs -->
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-RB me-3">RB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Christian McCaffrey <span class="badge bg-success badge-sm">FILLED</span></h6>
+                                <small class="text-muted">SF 49ers • RB1</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">98.5</h5>
+                            </div>
+                            <div class="btn-group-vertical">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-RB me-3">RB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Saquon Barkley <span class="badge bg-success badge-sm">FILLED</span></h6>
+                                <small class="text-muted">PHI Eagles • RB2</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">92.0</h5>
+                            </div>
+                            <div class="btn-group-vertical">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WRs -->
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-WR me-3">WR</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Tyreek Hill <span class="badge bg-success badge-sm">FILLED</span></h6>
+                                <small class="text-muted">MIA Dolphins • WR1</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">88.0</h5>
+                            </div>
+                            <div class="btn-group-vertical">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-WR me-3">WR</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">CeeDee Lamb <span class="badge bg-success badge-sm">FILLED</span></h6>
+                                <small class="text-muted">DAL Cowboys • WR2</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">95.5</h5>
+                            </div>
+                            <div class="btn-group-vertical">
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEF -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-DEF me-3">DEF</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">San Francisco 49ers <span class="badge bg-success">FILLED</span></h5>
+                                <small class="text-muted">Defense/Special Teams</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h4 class="mb-0">58.0</h4>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle"></i> Drop</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMPTY Positions -->
+        <h4 class="mb-3 mt-5 text-danger"><i class="bi bi-exclamation-triangle-fill"></i> EMPTY Positions (3) - MUST FILL BEFORE LOCK!</h4>
+
+        <!-- Empty TE -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card empty-slot">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-TE me-3">TE</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 text-danger">EMPTY SLOT - TIGHT END NEEDED</h5>
+                                <small class="text-danger">You must draft a TE before roster lock or this position will remain empty all season!</small>
+                            </div>
+                            <div>
+                                <a href="player-selection-prelock.html" class="btn btn-danger">
+                                    <i class="bi bi-person-plus-fill"></i> Add TE Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty FLEX -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card empty-slot">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-FLEX me-3">FX</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 text-danger">EMPTY SLOT - FLEX NEEDED</h5>
+                                <small class="text-danger">Draft any RB, WR, or TE for this position</small>
+                            </div>
+                            <div>
+                                <a href="player-selection-prelock.html" class="btn btn-danger">
+                                    <i class="bi bi-person-plus-fill"></i> Add FLEX Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty K -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card empty-slot">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-K me-3">K</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1 text-danger">EMPTY SLOT - KICKER NEEDED</h5>
+                                <small class="text-danger">Draft a kicker before lock</small>
+                            </div>
+                            <div>
+                                <a href="player-selection-prelock.html" class="btn btn-danger">
+                                    <i class="bi bi-person-plus-fill"></i> Add Kicker Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Warning -->
+        <div class="alert alert-warning mt-4">
+            <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> Remember: One-Time Draft Model</h5>
+            <p class="mb-0">Your roster will be <strong>PERMANENTLY LOCKED</strong> when the first game starts. Complete all 9 positions now or face an incomplete roster for the entire season with no way to add players!</p>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

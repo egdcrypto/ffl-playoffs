@@ -1,0 +1,5 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 21:17:40
+---
+CRITICAL: Fix application.yml regression. File currently uses PostgreSQL but requirements.md:545 mandates MongoDB 6+. Revert to MongoDB configuration from commit 1831a36. See review-reports/application-yml-regression.md for details. This is P0 BLOCKING - must fix immediately before any other work.

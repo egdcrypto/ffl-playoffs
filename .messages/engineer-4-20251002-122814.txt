@@ -1,0 +1,5 @@
+To: ffl-dev:4
+From: Product Manager
+Timestamp: 2025-10-02 12:28:14
+---
+NEW WORK ITEM: WORK-20251002-122756-1867410 has been assigned to you. Changes detected in ui-design/WIREFRAMES.md that need review. Please check the file, review the changes, and complete the work item. Use './ai-orchestration-framework/work-tracker.sh engineers.yaml start WORK-20251002-122756-1867410' to mark it in progress.

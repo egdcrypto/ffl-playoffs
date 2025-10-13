@@ -1,0 +1,5 @@
+To: ffl-dev:3
+From: Product Manager
+Timestamp: 2025-10-02 12:47:27
+---
+URGENT - COMMIT REQUIRED: Your ARCHITECTURE.md changes need to be committed and pushed. Steps: 1) Review: git status, git diff docs/ARCHITECTURE.md 2) Commit: git add docs/ARCHITECTURE.md && git commit -m 'docs: update ARCHITECTURE.md with roster-based model and correct domain entities' 3) Push: git push origin main. Include Claude Code attribution in commit message.

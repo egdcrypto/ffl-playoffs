@@ -1,0 +1,173 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ffl-playoffs-api-netpol
+  namespace: ffl-playoffs
+  labels:
+    app: ffl-playoffs-api
+spec:
+  podSelector:
+    matchLabels:
+      app: ffl-playoffs-api
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow HTTPS traffic from anywhere to Envoy (port 443)
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+
+  # Allow health checks from Kubernetes (port 8081)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 8081
+
+  # Allow Prometheus scraping (port 8081)
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 8081
+
+  egress:
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+
+  # Allow MongoDB connection
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: databases
+    - podSelector:
+        matchLabels:
+          app: mongodb
+    ports:
+    - protocol: TCP
+      port: 27017
+
+  # Allow external Google OAuth validation
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-direct-api-access
+  namespace: ffl-playoffs
+  labels:
+    app: ffl-playoffs-api
+    policy: deny-direct-access
+spec:
+  podSelector:
+    matchLabels:
+      app: ffl-playoffs-api
+  policyTypes:
+  - Ingress
+
+  ingress:
+  # CRITICAL: Block all direct access to API port 8080 from outside the pod
+  # API is localhost-only, but this adds defense in depth
+  # Only Envoy sidecar (within same pod) can access port 8080
+  []
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-direct-auth-access
+  namespace: ffl-playoffs
+  labels:
+    app: ffl-playoffs-api
+    policy: deny-direct-access
+spec:
+  podSelector:
+    matchLabels:
+      app: ffl-playoffs-api
+  policyTypes:
+  - Ingress
+
+  ingress:
+  # CRITICAL: Block all direct access to auth service port 9191 from outside the pod
+  # Auth service is localhost-only, but this adds defense in depth
+  # Only Envoy sidecar (within same pod) can access port 9191
+  []
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ffl-playoffs-api-pdb
+  namespace: ffl-playoffs
+  labels:
+    app: ffl-playoffs-api
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: ffl-playoffs-api
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ffl-playoffs-api-hpa
+  namespace: ffl-playoffs
+  labels:
+    app: ffl-playoffs-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ffl-playoffs-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max

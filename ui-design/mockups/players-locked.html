@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Build Roster (POST-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .position-badge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+        .position-QB { background-color: #dc3545; color: white; }
+        .position-RB { background-color: #198754; color: white; }
+        .position-WR { background-color: #0d6efd; color: white; }
+        .position-TE { background-color: #ffc107; color: black; }
+        .position-K { background-color: #6c757d; color: white; }
+        .position-DEF { background-color: #6f42c1; color: white; }
+        .player-card { transition: transform 0.2s, box-shadow 0.2s; height: 100%; }
+        .player-card:hover { transform: translateY(-5px); box-shadow: 0 4px 15px rgba(0,0,0,.15); }
+        .filter-btn { margin: 0.25rem; }
+        .locked-banner { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; border-left: 4px solid #0d6efd; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="player-dashboard-locked.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="players-locked.html"><i class="bi bi-people-fill"></i> Build Roster</a></li>
+                    <li class="nav-item"><a class="nav-link" href="my-roster-locked.html">My Roster</a></li>
+                    <li class="nav-item"><a class="nav-link" href="league-standings-locked.html">Standings</a></li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <span class="badge bg-dark me-2"><i class="bi bi-lock-fill"></i> LOCKED</span>
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard-locked.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">Build Roster</li>
+            </ol>
+        </nav>
+
+        <!-- Locked Banner -->
+        <div class="alert locked-banner mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-lock-fill me-3" style="font-size: 2.5rem;"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-2"><i class="bi bi-shield-lock-fill"></i> Rosters Permanently Locked</h4>
+                    <p class="mb-1">All rosters were locked on <strong>Sunday, January 12, 2025 at 1:00 PM ET</strong> when the first game started.</p>
+                    <p class="mb-0"><strong>Browse-only mode:</strong> You can view player stats but cannot add or drop players.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2><i class="bi bi-lock-fill text-success"></i> Build Roster <span class="badge bg-success">LOCKED</span></h2>
+                <p class="text-muted">View NFL player statistics and performance - roster modifications disabled</p>
+            </div>
+            <div class="col-lg-4">
+                <select class="form-select form-select-lg" disabled>
+                    <option selected>2025 NFL Playoffs Pool</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control form-control-lg" placeholder="Search by player name...">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-lg">
+                            <option selected>Sort By: Points (High to Low)</option>
+                            <option>Sort By: Points (Low to High)</option>
+                            <option>Sort By: Name (A-Z)</option>
+                            <option>Sort By: Name (Z-A)</option>
+                            <option>Sort By: Position</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-lg">
+                            <option selected>All NFL Teams</option>
+                            <option>Kansas City Chiefs</option>
+                            <option>San Francisco 49ers</option>
+                            <option>Philadelphia Eagles</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <strong>Position Filters:</strong>
+                    <button class="btn btn-sm btn-primary filter-btn">All</button>
+                    <button class="btn btn-sm btn-outline-danger filter-btn">QB</button>
+                    <button class="btn btn-sm btn-outline-success filter-btn">RB</button>
+                    <button class="btn btn-sm btn-outline-primary filter-btn">WR</button>
+                    <button class="btn btn-sm btn-outline-warning filter-btn">TE</button>
+                    <button class="btn btn-sm btn-outline-secondary filter-btn">K</button>
+                    <button class="btn btn-sm btn-outline-dark filter-btn">DEF</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">Showing 24 of 127 players</h5>
+            <div>
+                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-grid-3x3-gap-fill"></i> Grid</button>
+                <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-list-ul"></i> List</button>
+            </div>
+        </div>
+
+        <!-- Player Grid -->
+        <div class="row g-3 mb-4">
+            <!-- Player Card 1 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-danger">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-QB me-3">QB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Patrick Mahomes</h6>
+                                <small class="text-muted">Kansas City Chiefs</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">115.5</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>28.9</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 2 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-RB me-3">RB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Christian McCaffrey</h6>
+                                <small class="text-muted">San Francisco 49ers</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">98.5</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>24.6</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 3 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-primary">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-WR me-3">WR</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Tyreek Hill</h6>
+                                <small class="text-muted">Miami Dolphins</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">95.0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>23.8</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 4 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-warning">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-TE me-3">TE</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Travis Kelce</h6>
+                                <small class="text-muted">Kansas City Chiefs</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">85.5</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>21.4</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 5 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-success">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-RB me-3">RB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Saquon Barkley</h6>
+                                <small class="text-muted">Philadelphia Eagles</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">105.0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>26.3</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 6 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-primary">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-WR me-3">WR</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">CeeDee Lamb</h6>
+                                <small class="text-muted">Dallas Cowboys</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">112.0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>28.0</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 7 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-secondary">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-K me-3">K</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">Justin Tucker</h6>
+                                <small class="text-muted">Baltimore Ravens</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">52.0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>13.0</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Player Card 8 -->
+            <div class="col-lg-3 col-md-4 col-sm-6">
+                <div class="card player-card border-dark">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="position-badge position-DEF me-3">DEF</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0">SF 49ers</h6>
+                                <small class="text-muted">Defense/ST</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Total Points</small>
+                                <strong class="text-success">58.0</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Avg/Game</small>
+                                <strong>14.5</strong>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-bar-chart-fill"></i> View Stats
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional player cards would continue here... -->
+            <!-- Cards 9-24 would follow the same pattern -->
+        </div>
+
+        <!-- Pagination -->
+        <nav aria-label="Player pagination">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1">Previous</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">4</a></li>
+                <li class="page-item"><a class="page-link" href="#">5</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Locked State Info -->
+        <div class="alert alert-success mt-4">
+            <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> One-Time Draft Model - Rosters Locked</h5>
+            <p class="mb-0">All rosters are permanently locked for the season. You can view player statistics and track performance, but roster modifications are disabled. Compare players to analyze your roster's performance!</p>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Player Detail Modal -->
+    <div class="modal fade" id="playerDetailModal" tabindex="-1" aria-labelledby="playerDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <div class="position-badge position-QB me-3">QB</div>
+                        <div>
+                            <h5 class="modal-title mb-0" id="playerDetailModalLabel">Patrick Mahomes</h5>
+                            <small>Kansas City Chiefs • #15 • QB</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Player Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <small class="text-muted d-block">Total Points</small>
+                                    <h3 class="mb-0 text-success">115.5</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <small class="text-muted d-block">Avg Per Game</small>
+                                    <h3 class="mb-0">28.9</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <small class="text-muted d-block">Games Played</small>
+                                    <h3 class="mb-0">4</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <small class="text-muted d-block">Best Week</small>
+                                    <h3 class="mb-0 text-warning">32.4</h3>
+                                    <small class="text-muted">Week 2</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Week-by-Week Breakdown -->
+                    <h5 class="mb-3"><i class="bi bi-calendar-week"></i> Week-by-Week Scoring Breakdown</h5>
+                    <div class="table-responsive mb-4">
+                        <table class="table table-striped">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Week</th>
+                                    <th>Opponent</th>
+                                    <th>Pass Yds</th>
+                                    <th>Pass TDs</th>
+                                    <th>INTs</th>
+                                    <th>Rush Yds</th>
+                                    <th>Rush TDs</th>
+                                    <th class="text-end">Fantasy Points</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Wild Card</strong></td>
+                                    <td>vs MIA</td>
+                                    <td>262</td>
+                                    <td>2</td>
+                                    <td>0</td>
+                                    <td>15</td>
+                                    <td>0</td>
+                                    <td class="text-end"><strong class="text-success">26.98</strong></td>
+                                </tr>
+                                <tr class="table-warning">
+                                    <td><strong>Divisional</strong></td>
+                                    <td>@ BUF</td>
+                                    <td>355</td>
+                                    <td>2</td>
+                                    <td>1</td>
+                                    <td>42</td>
+                                    <td>1</td>
+                                    <td class="text-end"><strong class="text-success">32.40</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Conf Champ</strong></td>
+                                    <td>vs BAL</td>
+                                    <td>241</td>
+                                    <td>2</td>
+                                    <td>0</td>
+                                    <td>8</td>
+                                    <td>0</td>
+                                    <td class="text-end"><strong class="text-success">26.44</strong></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Super Bowl</strong></td>
+                                    <td>vs SF</td>
+                                    <td>333</td>
+                                    <td>2</td>
+                                    <td>1</td>
+                                    <td>18</td>
+                                    <td>0</td>
+                                    <td class="text-end"><strong class="text-success">29.72</strong></td>
+                                </tr>
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <th colspan="7" class="text-end">Season Total:</th>
+                                    <th class="text-end"><strong class="text-success">115.54</strong></th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Detailed Scoring Calculation Example -->
+                    <h5 class="mb-3"><i class="bi bi-calculator"></i> PPR Scoring Calculation (Week 2 Example)</h5>
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="text-muted">Divisional Round @ BUF - 32.40 Points</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td>355 passing yards ÷ 25</td>
+                                                <td class="text-end"><strong>= 14.20 pts</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2 passing TDs × 4</td>
+                                                <td class="text-end"><strong>= 8.00 pts</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td>1 interception × (-2)</td>
+                                                <td class="text-end"><strong>= -2.00 pts</strong></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td>42 rushing yards ÷ 10</td>
+                                                <td class="text-end"><strong>= 4.20 pts</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td>1 rushing TD × 6</td>
+                                                <td class="text-end"><strong>= 6.00 pts</strong></td>
+                                            </tr>
+                                            <tr>
+                                                <td>2-pt conversion × 2</td>
+                                                <td class="text-end"><strong>= 2.00 pts</strong></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="text-end">
+                                <strong>Week 2 Total: <span class="text-success fs-5">32.40 points</span></strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- League Scoring Rules -->
+                    <h5 class="mb-3"><i class="bi bi-gear"></i> League Scoring Configuration</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-danger text-white">
+                                    <strong>Passing Scoring</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr><td>Passing Yards</td><td class="text-end">1 pt per 25 yds</td></tr>
+                                            <tr><td>Passing TD</td><td class="text-end">4 pts</td></tr>
+                                            <tr><td>Interception</td><td class="text-end">-2 pts</td></tr>
+                                            <tr><td>2-Pt Conversion</td><td class="text-end">2 pts</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-success text-white">
+                                    <strong>Rushing Scoring</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr><td>Rushing Yards</td><td class="text-end">1 pt per 10 yds</td></tr>
+                                            <tr><td>Rushing TD</td><td class="text-end">6 pts</td></tr>
+                                            <tr><td>2-Pt Conversion</td><td class="text-end">2 pts</td></tr>
+                                            <tr><td>Fumble Lost</td><td class="text-end">-2 pts</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-primary text-white">
+                                    <strong>Receiving Scoring (PPR)</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr><td>Reception</td><td class="text-end">1.0 pt (PPR)</td></tr>
+                                            <tr><td>Receiving Yards</td><td class="text-end">1 pt per 10 yds</td></tr>
+                                            <tr><td>Receiving TD</td><td class="text-end">6 pts</td></tr>
+                                            <tr><td>2-Pt Conversion</td><td class="text-end">2 pts</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-secondary text-white">
+                                    <strong>Misc Scoring</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
+                                        <tbody>
+                                            <tr><td>Fumble Recovery TD</td><td class="text-end">6 pts</td></tr>
+                                            <tr><td>Kickoff/Punt Return TD</td><td class="text-end">6 pts</td></tr>
+                                            <tr><td>Fumble Lost</td><td class="text-end">-2 pts</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <span class="text-muted"><i class="bi bi-lock-fill"></i> Rosters locked - cannot add players</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

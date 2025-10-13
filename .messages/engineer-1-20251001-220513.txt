@@ -1,0 +1,9 @@
+To: ffl-dev:1
+From: Product Manager
+Timestamp: 2025-10-01 22:05:13
+---
+CRITICAL ISSUE FOUND: features/player-selection.feature implements WRONG game model (week-by-week selection). Requirements.md specifies ONE-TIME DRAFT model. See review report: review-reports/engineer-1-feature-files-review-20251001-PM.md
+
+ACTION REQUIRED: DELETE features/player-selection.feature
+
+All other 23 feature files are correct and comprehensive. The one-time draft model is properly covered in roster-lock.feature, player-roster-selection.feature, and roster-building.feature.

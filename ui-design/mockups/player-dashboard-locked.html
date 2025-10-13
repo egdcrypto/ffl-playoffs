@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Dashboard (POST-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .league-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .league-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,.1);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .stat-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .locked-banner {
+            background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+            color: white;
+            border-left: 4px solid #0d6efd;
+        }
+        .lock-icon-large {
+            font-size: 3rem;
+            color: #0d6efd;
+            opacity: 1.0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="player-dashboard-locked.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-selection-locked.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-roster-locked.html">My Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <span class="badge bg-dark me-2"><i class="bi bi-lock-fill"></i> ROSTERS LOCKED</span>
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header with State Indicator -->
+        <div class="row mb-4">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                </nav>
+                <h2>My Dashboard <span class="badge bg-success"><i class="bi bi-lock-fill"></i> POST-LOCK STATE</span></h2>
+                <p class="text-muted">All rosters permanently locked - viewing only</p>
+            </div>
+        </div>
+
+        <!-- PERMANENT LOCK NOTIFICATION -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert locked-banner" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-lock-fill me-3" style="font-size: 2.5rem;"></i>
+                        <div class="flex-grow-1">
+                            <h4 class="alert-heading mb-2"><i class="bi bi-shield-lock"></i> ROSTERS PERMANENTLY LOCKED</h4>
+                            <p class="mb-1">All rosters were locked on <strong>Sunday, January 12 at 1:00 PM ET</strong> when the first game started.</p>
+                            <p class="mb-0"><strong>No roster changes allowed for the entire season:</strong></p>
+                            <ul class="mb-0 mt-1">
+                                <li>No player additions or drops</li>
+                                <li>No waiver wire transactions</li>
+                                <li>No trades between league players</li>
+                                <li>No weekly lineup changes</li>
+                                <li>Injured players remain on roster</li>
+                            </ul>
+                        </div>
+                        <div class="text-center">
+                            <i class="lock-icon-large bi bi-lock-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Active Leagues</h6>
+                        <h3 class="card-title mb-0">3 <span class="badge bg-success">LOCKED</span></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #198754;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Best Ranking</h6>
+                        <h3 class="card-title mb-0">#2 <small class="text-muted">of 12</small></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #ffc107;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Total Points</h6>
+                        <h3 class="card-title mb-0">487.5</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #6c757d;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
+                        <h3 class="card-title mb-0">3 <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Leagues -->
+        <div class="row mb-4">
+            <div class="col">
+                <h4 class="mb-3">My Leagues <span class="badge bg-success"><i class="bi bi-lock-fill"></i> All Rosters Locked</span></h4>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- League Card 1 - LOCKED -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100 border-primary">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-lock-fill"></i> 2025 NFL Playoffs Pool</h5>
+                        <span class="badge bg-dark status-badge">LOCKED</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success py-2 px-3 mb-3">
+                            <small><i class="bi bi-lock-fill"></i> Roster locked Jan 12, 1:00 PM ET</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Current Week</small>
+                            <h4 class="mb-0">Week 2 <span class="text-muted small">(NFL Week 16)</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Your Rank</small>
+                                <h5 class="text-success mb-0">#2 <small>of 12</small></h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Your Points</small>
+                                <h5 class="mb-0">245.5</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Status</small>
+                                <small class="text-success"><i class="bi bi-lock-fill"></i> 9 of 9 LOCKED</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-success py-2 px-3 mb-0">
+                            <small><i class="bi bi-star-fill"></i> Top Scorer: Mahomes 28.5 pts</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <a href="my-roster-locked.html" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-eye"></i> View Roster (Read-Only)
+                        </a>
+                        <a href="league-standings.html" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-trophy"></i> View Standings
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="bi bi-lock-fill"></i> No roster changes allowed
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Card 2 - LOCKED -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100 border-success">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-lock-fill"></i> Friends League</h5>
+                        <span class="badge bg-dark status-badge">LOCKED</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success py-2 px-3 mb-3">
+                            <small><i class="bi bi-lock-fill"></i> Roster locked Jan 6, 1:00 PM ET</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Current Week</small>
+                            <h4 class="mb-0">Week 3 <span class="text-muted small">(NFL Week 17)</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Your Rank</small>
+                                <h5 class="text-warning mb-0">#5 <small>of 8</small></h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Your Points</small>
+                                <h5 class="mb-0">178.5</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Status</small>
+                                <small class="text-success"><i class="bi bi-lock-fill"></i> 9 of 9 LOCKED</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info py-2 px-3 mb-0">
+                            <small><i class="bi bi-info-circle"></i> Top Scorer: Allen 31.0 pts</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <a href="my-roster-locked.html" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-eye"></i> View Roster (Read-Only)
+                        </a>
+                        <a href="league-standings.html" class="btn btn-outline-success w-100">
+                            <i class="bi bi-trophy"></i> View Standings
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="bi bi-lock-fill"></i> No roster changes allowed
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Card 3 - LOCKED (With Injuries) -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100 border-warning">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-lock-fill"></i> Office Pool 2024</h5>
+                        <span class="badge bg-dark status-badge">LOCKED</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success py-2 px-3 mb-3">
+                            <small><i class="bi bi-lock-fill"></i> Roster locked Jan 12, 1:00 PM ET</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Current Week</small>
+                            <h4 class="mb-0">Week 3 <span class="text-muted small">(NFL Week 17)</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Your Rank</small>
+                                <h5 class="text-danger mb-0">#8 <small>of 10</small></h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Total Points</small>
+                                <h5 class="mb-0">95.0</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Status</small>
+                                <small class="text-warning"><i class="bi bi-lock-fill"></i> 9 of 9 LOCKED</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-danger py-2 px-3 mb-0">
+                            <small><i class="bi bi-bandaid-fill"></i> 3 injured players - roster locked, cannot replace</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <a href="my-roster-locked.html" class="btn btn-warning w-100 mb-2">
+                            <i class="bi bi-eye"></i> View Roster (Read-Only)
+                        </a>
+                        <a href="league-standings.html" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-trophy"></i> View Standings
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="bi bi-lock-fill"></i> No roster changes allowed
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row mb-4">
+            <div class="col">
+                <h4 class="mb-3">Recent Activity</h4>
+                <div class="card">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-star-fill text-success me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Patrick Mahomes scored 28.5 pts (Week 2)
+                            </div>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-trophy-fill text-warning me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Moved to #2 in standings
+                            </div>
+                            <small class="text-muted">1 day ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-bandaid-fill text-danger me-2"></i>
+                                <strong>Office Pool 2024:</strong> Christian McCaffrey injured - scoring 0 pts (roster locked)
+                            </div>
+                            <small class="text-muted">2 days ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-calculator-fill text-primary me-2"></i>
+                                <strong>Friends League:</strong> Week 2 scores calculated (178.5 pts)
+                            </div>
+                            <small class="text-muted">3 days ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-lock-fill text-success me-2"></i>
+                                <strong>ALL LEAGUES:</strong> Rosters permanently locked - no changes allowed
+                            </div>
+                            <small class="text-muted">1 week ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locked State Information -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert alert-secondary">
+                    <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> ONE-TIME DRAFT MODEL - Rosters Permanently Locked</h5>
+                    <p>All rosters were built once before the season and are now <strong>permanently locked</strong> for the entire season.</p>
+                    <hr>
+                    <p class="mb-0"><strong>What this means:</strong></p>
+                    <ul class="mb-0">
+                        <li>You must compete with your current roster for all remaining weeks</li>
+                        <li>Injured or underperforming players cannot be replaced</li>
+                        <li>No waiver wire pickups available</li>
+                        <li>No trading with other league players</li>
+                        <li>Focus on tracking your players' weekly performance and standings</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

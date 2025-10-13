@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Roster - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .position-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .position-QB { background-color: #dc3545; color: white; }
+        .position-RB { background-color: #198754; color: white; }
+        .position-WR { background-color: #0d6efd; color: white; }
+        .position-TE { background-color: #ffc107; color: black; }
+        .position-K { background-color: #6c757d; color: white; }
+        .position-DEF { background-color: #6f42c1; color: white; }
+        .position-FLEX { background-color: #fd7e14; color: white; }
+        .position-SUPERFLEX { background-color: #20c997; color: white; }
+        .player-card {
+            transition: transform 0.2s;
+        }
+        .player-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,.15);
+        }
+        .stats-badge {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-selection.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="my-roster.html">My Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">My Roster</li>
+            </ol>
+        </nav>
+
+        <!-- Roster Lock Status Alert -->
+        <div class="alert alert-success border-success mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="flex-shrink-0">
+                    <i class="bi bi-lock-fill" style="font-size: 2rem;"></i>
+                </div>
+                <div class="flex-grow-1 ms-3">
+                    <h5 class="alert-heading mb-1"><i class="bi bi-check-circle-fill"></i> Roster Permanently Locked</h5>
+                    <p class="mb-0">Your roster was locked on <strong>January 12, 2025 at 1:00 PM ET</strong> when the first game started. No changes can be made for the remainder of the season.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2><i class="bi bi-clipboard-check"></i> My Roster <span class="badge bg-success">LOCKED</span></h2>
+                <p class="text-muted">Your selected NFL players and their performance for the entire season</p>
+            </div>
+            <div class="col-lg-4">
+                <select class="form-select form-select-lg">
+                    <option selected>2025 NFL Playoffs Pool</option>
+                    <option>Friends League</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Roster Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Total Score</h6>
+                        <h2 class="card-title mb-0 text-success">862.8</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Avg Per Week</h6>
+                        <h2 class="card-title mb-0">215.7</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Spots</h6>
+                        <h2 class="card-title mb-0">10/10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Your Rank</h6>
+                        <h2 class="card-title mb-0 text-warning">#2</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quarterbacks -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge bg-danger">QB</span> Quarterbacks (1)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-QB">QB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Patrick Mahomes</h5>
+                                <p class="text-muted mb-0">#15 • Kansas City Chiefs</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">112.5</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">28.1</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 32.5</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 25.0</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 28.5</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 26.5</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Running Backs -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge bg-success">RB</span> Running Backs (2)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-RB">RB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Christian McCaffrey</h5>
+                                <p class="text-muted mb-0">#23 • San Francisco 49ers</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">95.8</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">23.9</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 28.5</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 22.0</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 25.3</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 20.0</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-RB">RB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Derrick Henry</h5>
+                                <p class="text-muted mb-0">#22 • Baltimore Ravens</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">88.5</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">22.1</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 24.0</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 20.5</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 22.5</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 21.5</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wide Receivers -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge bg-primary">WR</span> Wide Receivers (2)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-WR">WR</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Tyreek Hill</h5>
+                                <p class="text-muted mb-0">#10 • Miami Dolphins</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">102.5</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">25.6</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 28.5</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 25.0</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 27.0</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 22.0</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-WR">WR</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">CeeDee Lamb</h5>
+                                <p class="text-muted mb-0">#88 • Dallas Cowboys</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">98.0</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">24.5</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 26.5</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 24.0</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 25.5</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 22.0</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tight End -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge bg-warning text-dark">TE</span> Tight End (1)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-TE">TE</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Travis Kelce</h5>
+                                <p class="text-muted mb-0">#87 • Kansas City Chiefs</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">78.5</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">19.6</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 22.0</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 18.5</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 20.5</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 17.5</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kicker -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge bg-secondary text-white">K</span> Kicker (1)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-K">K</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Justin Tucker</h5>
+                                <p class="text-muted mb-0">#9 • Baltimore Ravens</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">42.0</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">10.5</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 12.0</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 9.0</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 11.0</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 10.0</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Defense -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge" style="background-color: #6f42c1; color: white;">DEF</span> Defense (1)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-DEF">DEF</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">San Francisco 49ers</h5>
+                                <p class="text-muted mb-0">Defense/Special Teams</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">58.0</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">14.5</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 16.0</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 13.0</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 15.0</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 14.0</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLEX -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge" style="background-color: #fd7e14; color: white;">FLEX</span> FLEX - RB/WR/TE (1)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-RB">RB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Jahmyr Gibbs <span class="badge bg-warning text-dark">FLEX</span></h5>
+                                <p class="text-muted mb-0">#26 • Detroit Lions</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">72.0</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">18.0</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 19.0</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 16.5</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 18.5</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 18.0</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SUPERFLEX -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4 class="mb-3"><span class="badge" style="background-color: #20c997; color: white;">SUPERFLEX</span> SUPERFLEX - QB/RB/WR/TE (1)</h4>
+            </div>
+            <div class="col-lg-12 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-QB">QB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Josh Allen <span class="badge bg-success">SUPERFLEX</span></h5>
+                                <p class="text-muted mb-0">#17 • Buffalo Bills</p>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">115.0</h4>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Avg/Week</small>
+                                <h5 class="mb-0">28.8</h5>
+                            </div>
+                            <div class="col-auto">
+                                <div class="d-flex gap-2">
+                                    <span class="badge stats-badge bg-secondary">W15: 35.0</span>
+                                    <span class="badge stats-badge bg-secondary">W16: 26.5</span>
+                                    <span class="badge stats-badge bg-secondary">W17: 29.0</span>
+                                    <span class="badge stats-badge bg-secondary">W18: 24.5</span>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-danger">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex gap-3">
+                    <a href="player-selection.html" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle"></i> Add More Players
+                    </a>
+                    <a href="league-standings.html" class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-trophy"></i> View Standings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

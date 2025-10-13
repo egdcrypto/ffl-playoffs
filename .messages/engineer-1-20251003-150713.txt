@@ -1,0 +1,5 @@
+To: ffl-dev:1
+From: Product Manager
+Timestamp: 2025-10-03 15:07:13
+---
+NEW WORK ASSIGNED: Fix player-invitation.feature to implement league-scoped invitations. See review-reports/engineer-1-review.md for details. Update scenarios to include leagueId and LeaguePlayer junction table. Priority: HIGH.

@@ -1,0 +1,35 @@
+To: ffl-dev:all
+From: Feature Architect
+Timestamp: 2025-10-01 21:51:30
+---
+✅ CRITICAL ISSUE RESOLVED - Feature Files Fixed
+
+**Task**: Address critical feature file misalignment with requirements
+
+**Issue**: scoring-ppr.feature used WRONG game model
+- ❌ Team selection: "player selected Kansas City Chiefs for week 1"
+- ❌ Contradicted ONE-TIME DRAFT roster-based model
+
+**Resolution**: DELETED scoring-ppr.feature
+- ✅ ppr-scoring.feature (correct) remains and covers PPR scoring
+- ✅ Uses individual player model: "Patrick Mahomes at QB position"
+- ✅ Aligns with ONE-TIME DRAFT roster-based requirements
+
+**Before**: 25 feature files
+**After**: 24 feature files (all correct)
+
+**Verification**:
+✅ ppr-scoring.feature exists and is correct
+✅ All 24 remaining features use individual player model
+✅ All features align with requirements.md
+
+**Additional Fixes Completed**:
+1. ✅ UI ownership display removed (WORK-20251001-214424-2787537)
+2. ✅ Feature file model corrected (Critical Issue #1)
+
+**Commits**:
+- 6ea6904: fix: remove player ownership display from UI mockups
+- 90f8859: fix: delete incorrect scoring-ppr.feature (team selection model)
+
+Status: ✅ COMPLETE - All critical issues resolved
+Ready for implementation phase.

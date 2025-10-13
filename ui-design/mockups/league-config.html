@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Configuration - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .config-section {
+            background-color: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #0d6efd;
+        }
+        .position-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .position-qb { background-color: #dc3545; color: white; }
+        .position-rb { background-color: #198754; color: white; }
+        .position-wr { background-color: #0d6efd; color: white; }
+        .position-te { background-color: #ffc107; color: black; }
+        .position-k { background-color: #6c757d; color: white; }
+        .position-def { background-color: #6f42c1; color: white; }
+        .position-flex { background-color: #fd7e14; color: white; }
+        .position-superflex { background-color: #20c997; color: white; }
+        .scoring-row {
+            padding: 0.75rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .scoring-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.html"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin-dashboard.html">Admin Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">League Configuration</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <span class="badge bg-danger me-3">ADMIN</span>
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item"><a href="admin-dashboard.html">Admin Dashboard</a></li>
+                        <li class="breadcrumb-item active">League Configuration</li>
+                    </ol>
+                </nav>
+                <h2><i class="bi bi-sliders text-primary"></i> League Configuration</h2>
+                <p class="text-muted mb-0">Configure roster slots, scoring rules, and league settings</p>
+            </div>
+        </div>
+
+        <!-- Configuration Tabs -->
+        <ul class="nav nav-tabs mb-4" id="configTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="basic-tab" data-bs-toggle="tab" data-bs-target="#basic" type="button" role="tab">
+                    <i class="bi bi-info-circle"></i> Basic Info
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="roster-tab" data-bs-toggle="tab" data-bs-target="#roster" type="button" role="tab">
+                    <i class="bi bi-grid-3x3"></i> Roster Slots
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="scoring-tab" data-bs-toggle="tab" data-bs-target="#scoring" type="button" role="tab">
+                    <i class="bi bi-calculator"></i> Scoring Rules
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="schedule-tab" data-bs-toggle="tab" data-bs-target="#schedule" type="button" role="tab">
+                    <i class="bi bi-calendar"></i> Schedule
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="configTabContent">
+            <!-- Basic Info Tab -->
+            <div class="tab-pane fade show active" id="basic" role="tabpanel">
+                <div class="config-section">
+                    <h5 class="mb-3"><i class="bi bi-info-circle text-primary"></i> Basic Information</h5>
+                    <div class="mb-3">
+                        <label for="leagueName" class="form-label">League Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="leagueName" value="Office League" placeholder="Enter league name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="leagueDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="leagueDescription" rows="3" placeholder="Describe your league...">Traditional fantasy football league for the office</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">League Code</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" value="OFF2025-XYZ" readonly>
+                            <button class="btn btn-outline-secondary" type="button">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                        </div>
+                        <small class="form-text text-muted">Share this code with players to join your league</small>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h5 class="mb-3"><i class="bi bi-lock text-warning"></i> Roster Lock Settings</h5>
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                        <strong>ONE-TIME DRAFT MODEL:</strong> Rosters are built ONCE before the season and PERMANENTLY LOCKED when the first game starts. No waiver wire, no trades, no weekly changes.
+                    </div>
+                    <div class="mb-3">
+                        <label for="draftDeadline" class="form-label">Draft Deadline (Roster Lock) <span class="text-danger">*</span></label>
+                        <input type="datetime-local" class="form-control" id="draftDeadline" value="2025-01-12T13:00">
+                        <small class="form-text text-muted">Rosters permanently lock at this date/time</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roster Slots Tab -->
+            <div class="tab-pane fade" id="roster" role="tabpanel">
+                <div class="config-section">
+                    <h5 class="mb-3"><i class="bi bi-grid-3x3 text-primary"></i> Roster Slot Configuration</h5>
+                    <p class="text-muted">Configure how many players of each position each roster must have</p>
+
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Number of Slots</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="position-badge position-qb">QB</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">Quarterback</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-rb">RB</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2" selected>2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">Running Back</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-wr">WR</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2" selected>2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">Wide Receiver</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-te">TE</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">Tight End</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-flex">FLEX</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">RB/WR/TE</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-k">K</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">Kicker</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-def">DEF</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0">0</option>
+                                        <option value="1" selected>1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">Defense/Special Teams</small></td>
+                            </tr>
+                            <tr>
+                                <td><span class="position-badge position-superflex">SUPERFLEX</span></td>
+                                <td>
+                                    <select class="form-select form-select-sm" style="width: 100px;">
+                                        <option value="0" selected>0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                    </select>
+                                </td>
+                                <td><small class="text-muted">QB/RB/WR/TE</small></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="alert alert-info mt-3">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Total Roster Slots:</strong> 9 players (based on current settings)
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>No Ownership Model:</strong> All NFL players are available to ALL league members. Multiple players can select the same NFL player.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoring Rules Tab -->
+            <div class="tab-pane fade" id="scoring" role="tabpanel">
+                <div class="config-section">
+                    <h5 class="mb-3"><i class="bi bi-calculator text-primary"></i> PPR Scoring Configuration</h5>
+
+                    <h6 class="mt-4 mb-3">Passing</h6>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Passing Yards</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="0.04" step="0.01">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per yard</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Passing Touchdowns</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="4" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per TD</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Interceptions</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="-2" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per INT</small></div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Rushing</h6>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Rushing Yards</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="0.1" step="0.01">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per yard</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Rushing Touchdowns</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="6" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per TD</small></div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Receiving (PPR)</h6>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Receptions</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="1" step="0.1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per reception</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Receiving Yards</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="0.1" step="0.01">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per yard</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Receiving Touchdowns</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="6" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per TD</small></div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Kicking</h6>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Field Goals (0-39 yards)</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="3" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per FG</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Field Goals (40-49 yards)</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="4" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per FG</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Field Goals (50+ yards)</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="5" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per FG</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Extra Points</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="1" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per PAT</small></div>
+                        </div>
+                    </div>
+
+                    <h6 class="mt-4 mb-3">Defense/Special Teams</h6>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Sacks</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="1" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per sack</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Interceptions</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="2" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per INT</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Fumble Recoveries</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="2" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per FR</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Defensive Touchdowns</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="6" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">pts per TD</small></div>
+                        </div>
+                    </div>
+                    <div class="scoring-row">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">Points Allowed (0)</div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control form-control-sm" value="10" step="1">
+                            </div>
+                            <div class="col-md-3"><small class="text-muted">bonus pts</small></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Scoring Type:</strong> Full PPR (Point Per Reception) with standard NFL scoring
+                </div>
+            </div>
+
+            <!-- Schedule Tab -->
+            <div class="tab-pane fade" id="schedule" role="tabpanel">
+                <div class="config-section">
+                    <h5 class="mb-3"><i class="bi bi-calendar text-primary"></i> League Schedule</h5>
+
+                    <div class="mb-3">
+                        <label for="startWeek" class="form-label">Starting Week <span class="text-danger">*</span></label>
+                        <select class="form-select" id="startWeek">
+                            <option value="1" selected>Week 1 (Season Start)</option>
+                            <option value="15">Week 15 (Playoffs Start)</option>
+                            <option value="16">Week 16</option>
+                            <option value="17">Week 17</option>
+                            <option value="18">Week 18</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="endWeek" class="form-label">Ending Week <span class="text-danger">*</span></label>
+                        <select class="form-select" id="endWeek">
+                            <option value="17">Week 17</option>
+                            <option value="18" selected>Week 18 (Regular Season End)</option>
+                            <option value="21">Week 21 (Super Bowl)</option>
+                            <option value="22">Week 22</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        League runs from <strong>Week 1</strong> to <strong>Week 18</strong> (18 weeks total)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Save/Cancel Buttons -->
+        <div class="row mt-4">
+            <div class="col">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="admin-dashboard.html" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                    <button class="btn btn-primary" onclick="showSuccessToast()">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+        <div id="successToast" class="toast" role="alert">
+            <div class="toast-header bg-success text-white">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <strong class="me-auto">Success</strong>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                League configuration saved successfully!
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showSuccessToast() {
+            const toastEl = document.getElementById('successToast');
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
+</body>
+</html>

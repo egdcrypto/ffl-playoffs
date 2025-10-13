@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ffl-playoffs-api
+  namespace: ffl-playoffs
+  labels:
+    app: ffl-playoffs-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ffl-playoffs-api
+  template:
+    metadata:
+      labels:
+        app: ffl-playoffs-api
+    spec:
+      containers:
+      # Container 1: Envoy Sidecar
+      - name: envoy
+        image: envoyproxy/envoy:v1.28-latest
+        ports:
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        - containerPort: 9901
+          name: admin
+          protocol: TCP
+        volumeMounts:
+        - name: envoy-config
+          mountPath: /etc/envoy
+          readOnly: true
+        - name: envoy-tls
+          mountPath: /etc/envoy/certs
+          readOnly: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 9901
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 9901
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+      # Container 2: Auth Service
+      - name: auth-service
+        image: ffl-playoffs/auth-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9191
+          name: http
+          protocol: TCP
+        env:
+        - name: SERVER_ADDRESS
+          value: "127.0.0.1"
+        - name: SERVER_PORT
+          value: "9191"
+        - name: SPRING_DATA_MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: MONGODB_URI
+        - name: GOOGLE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: google-oauth
+              key: CLIENT_ID
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9191
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9191
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 3
+
+      # Container 3: Main API
+      - name: api
+        image: ffl-playoffs/api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        - containerPort: 8081
+          name: actuator
+          protocol: TCP
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: "production"
+        - name: SERVER_ADDRESS
+          value: "127.0.0.1"
+        - name: SERVER_PORT
+          value: "8080"
+        - name: MANAGEMENT_SERVER_ADDRESS
+          value: "127.0.0.1"
+        - name: MANAGEMENT_SERVER_PORT
+          value: "8081"
+        - name: SPRING_DATA_MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: MONGODB_URI
+        - name: NFL_API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: NFL_API_URL
+              optional: true
+        - name: NFL_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: nfl-api-credentials
+              key: API_KEY
+              optional: true
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /actuator/health/liveness
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /actuator/health/readiness
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 5
+          failureThreshold: 3
+
+      volumes:
+      - name: envoy-config
+        configMap:
+          name: envoy-config
+      - name: envoy-tls
+        secret:
+          secretName: envoy-tls

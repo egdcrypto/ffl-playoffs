@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Roster (POST-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .position-badge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .position-QB { background-color: #dc3545; color: white; }
+        .position-RB { background-color: #198754; color: white; }
+        .position-WR { background-color: #0d6efd; color: white; }
+        .position-TE { background-color: #ffc107; color: black; }
+        .position-K { background-color: #6c757d; color: white; }
+        .position-DEF { background-color: #6f42c1; color: white; }
+        .position-FLEX { background-color: #fd7e14; color: white; }
+        .player-card { border-left: 4px solid #0d6efd; }
+        .locked-banner { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; border-left: 4px solid #0d6efd; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="player-dashboard-locked.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="player-selection-locked.html">Build Roster</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="my-roster-locked.html">My Roster</a></li>
+                    <li class="nav-item"><a class="nav-link" href="league-standings.html">Standings</a></li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <span class="badge bg-dark me-2"><i class="bi bi-lock-fill"></i> LOCKED</span>
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard-locked.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">My Roster</li>
+            </ol>
+        </nav>
+
+        <!-- LOCKED Banner -->
+        <div class="alert locked-banner mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-lock-fill me-3" style="font-size: 2.5rem;"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-2"><i class="bi bi-shield-lock-fill"></i> Roster Permanently Locked (Read-Only)</h4>
+                    <p class="mb-1">Your roster was locked on <strong>Sunday, January 12, 2025 at 1:00 PM ET</strong> when the first game started.</p>
+                    <p class="mb-0"><strong>No roster changes allowed for the entire season.</strong> All edit, drop, and add functions are disabled.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2><i class="bi bi-lock-fill text-success"></i> My Roster <span class="badge bg-success">LOCKED</span></h2>
+                <p class="text-muted">Your complete roster competing for the season</p>
+            </div>
+            <div class="col-lg-4">
+                <select class="form-select form-select-lg" disabled>
+                    <option selected>2025 NFL Playoffs Pool</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Roster Summary -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Total Score</h6>
+                        <h2 class="card-title mb-0 text-success">862.8</h2>
+                        <small class="text-muted">Season total</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Avg Per Week</h6>
+                        <h2 class="card-title mb-0">215.7</h2>
+                        <small class="text-muted">4 weeks</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-success">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
+                        <h2 class="card-title mb-0 text-success"><i class="bi bi-lock-fill"></i> 9/9</h2>
+                        <small class="text-muted">Complete & Locked</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-warning">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Your Rank</h6>
+                        <h2 class="card-title mb-0 text-warning">#2</h2>
+                        <small class="text-muted">of 12</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="mb-3"><i class="bi bi-lock-fill text-success"></i> Complete Locked Roster (9 Players)</h4>
+
+        <!-- QB (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-auto">
+                                <div class="position-badge position-QB">QB</div>
+                            </div>
+                            <div class="col">
+                                <h5 class="mb-1">Patrick Mahomes <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <small class="text-muted">#15 • Kansas City Chiefs • QB</small>
+                            </div>
+                            <div class="col-auto text-center">
+                                <small class="text-muted d-block">Total Points</small>
+                                <h4 class="mb-0 text-success">115.5</h4>
+                            </div>
+                            <div class="col-auto">
+                                <span class="text-muted"><i class="bi bi-lock-fill"></i> No changes allowed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RBs (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-RB me-3">RB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Christian McCaffrey <span class="badge bg-danger badge-sm">INJURED</span></h6>
+                                <small class="text-muted">SF 49ers • RB1</small>
+                                <br><small class="text-danger">Out Week 3-4 • Cannot replace (locked)</small>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">45.0</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-RB me-3">RB</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Saquon Barkley <span class="badge bg-success badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
+                                <small class="text-muted">PHI Eagles • RB2</small>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">105.0</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WRs (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-WR me-3">WR</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">Tyreek Hill <span class="badge bg-success badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
+                                <small class="text-muted">MIA Dolphins • WR1</small>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">95.0</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-WR me-3">WR</div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">CeeDee Lamb <span class="badge bg-success badge-sm"><i class="bi bi-lock-fill"></i></span></h6>
+                                <small class="text-muted">DAL Cowboys • WR2</small>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted">Total</small>
+                                <h5 class="mb-0">112.0</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TE (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-TE me-3">TE</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Travis Kelce <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <small class="text-muted">#87 • Kansas City Chiefs • TE</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h4 class="mb-0">85.5</h4>
+                            </div>
+                            <span class="text-muted"><i class="bi bi-lock-fill"></i> Locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLEX (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-FLEX me-3">FX</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Stefon Diggs (WR) <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <small class="text-muted">#14 • Buffalo Bills • FLEX</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h4 class="mb-0">78.0</h4>
+                            </div>
+                            <span class="text-muted"><i class="bi bi-lock-fill"></i> Locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- K (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-K me-3">K</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">Justin Tucker <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <small class="text-muted">#9 • Baltimore Ravens • K</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h4 class="mb-0">52.0</h4>
+                            </div>
+                            <span class="text-muted"><i class="bi bi-lock-fill"></i> Locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEF (LOCKED) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="card player-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="position-badge position-DEF me-3">DEF</div>
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">San Francisco 49ers <span class="badge bg-success"><i class="bi bi-lock-fill"></i> LOCKED</span></h5>
+                                <small class="text-muted">Defense/Special Teams</small>
+                            </div>
+                            <div class="text-center me-3">
+                                <small class="text-muted">Total</small>
+                                <h4 class="mb-0">58.0</h4>
+                            </div>
+                            <span class="text-muted"><i class="bi bi-lock-fill"></i> Locked</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Locked State Info -->
+        <div class="alert alert-secondary mt-4">
+            <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> One-Time Draft Model - Roster Locked</h5>
+            <p class="mb-2">Your roster is permanently locked and cannot be changed for the remainder of the season.</p>
+            <ul class="mb-0">
+                <li>Cannot add new players</li>
+                <li>Cannot drop existing players</li>
+                <li>Cannot make trades</li>
+                <li>Injured players (like Christian McCaffrey) remain on your roster</li>
+                <li>Focus on tracking your players' weekly performance</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

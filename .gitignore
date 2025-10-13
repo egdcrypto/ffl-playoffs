@@ -87,3 +87,9 @@ coverage/
 # OS
 .DS_Store
 Thumbs.db
+ai-orchestration-framework/
+.orchestrator/
+work-database.json
+work-database.lock
+work-queue/
+**/work-database.json

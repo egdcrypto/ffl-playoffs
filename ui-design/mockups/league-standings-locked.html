@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Standings (POST-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .rank-badge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        .rank-1 { background-color: #ffd700; color: #000; }
+        .rank-2 { background-color: #c0c0c0; color: #000; }
+        .rank-3 { background-color: #cd7f32; color: #fff; }
+        .rank-other { background-color: #6c757d; color: #fff; }
+        .current-user-row { background-color: #d1e7dd; border-left: 4px solid #198754; }
+        .locked-banner { background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white; border-left: 4px solid #0d6efd; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="player-dashboard-locked.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="player-selection-locked.html">Build Roster</a></li>
+                    <li class="nav-item"><a class="nav-link" href="my-roster-locked.html">My Roster</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="league-standings-locked.html">Standings</a></li>
+                </ul>
+                <span class="badge bg-dark"><i class="bi bi-lock-fill"></i> LOCKED</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard-locked.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">Standings</li>
+            </ol>
+        </nav>
+
+        <!-- LOCKED Banner -->
+        <div class="alert locked-banner mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-lock-fill me-3" style="font-size: 2.5rem;"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-2"><i class="bi bi-shield-lock-fill"></i> Rosters Permanently Locked</h4>
+                    <p class="mb-1">All rosters were locked on <strong>Sunday, January 12, 2025 at 1:00 PM ET</strong> when the first game started.</p>
+                    <p class="mb-0"><strong>Season in progress - No roster changes allowed.</strong> Tracking final scores through playoffs.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2><i class="bi bi-lock-fill text-success"></i> League Standings <span class="badge bg-success">SEASON ACTIVE</span></h2>
+                <p class="text-muted">Complete rosters competing for the season</p>
+            </div>
+        </div>
+
+        <!-- Standings Table -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Final Standings (12 Players) - Week 4 of 4</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th class="text-center">Total Score</th>
+                            <th class="text-center">Week 1</th>
+                            <th class="text-center">Week 2</th>
+                            <th class="text-center">Week 3</th>
+                            <th class="text-center">Week 4</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rank 1 -->
+                        <tr>
+                            <td>
+                                <div class="rank-badge rank-1">1</div>
+                            </td>
+                            <td><strong>Sarah Johnson</strong><br><small class="text-muted">sarah.j@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0 text-success">945.8</h4>
+                                <small class="text-muted">Avg: 236.5/wk</small>
+                            </td>
+                            <td class="text-center">235.2</td>
+                            <td class="text-center">242.8</td>
+                            <td class="text-center">230.5</td>
+                            <td class="text-center">237.3</td>
+                            <td><a href="my-roster-locked.html" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i> View Roster</a></td>
+                        </tr>
+
+                        <!-- Rank 2 - Current User -->
+                        <tr class="current-user-row">
+                            <td>
+                                <div class="rank-badge rank-2">2</div>
+                            </td>
+                            <td><strong>John Doe</strong> <span class="badge bg-info">YOU</span><br><small class="text-muted">john.doe@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0 text-success">862.8</h4>
+                                <small class="text-muted">Avg: 215.7/wk</small>
+                            </td>
+                            <td class="text-center">220.5</td>
+                            <td class="text-center">228.3</td>
+                            <td class="text-center">195.0</td>
+                            <td class="text-center">219.0</td>
+                            <td><a href="my-roster-locked.html" class="btn btn-sm btn-success"><i class="bi bi-eye"></i> View My Roster</a></td>
+                        </tr>
+
+                        <!-- Rank 3 -->
+                        <tr>
+                            <td>
+                                <div class="rank-badge rank-3">3</div>
+                            </td>
+                            <td><strong>Mike Williams</strong><br><small class="text-muted">mike.w@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0 text-success">838.5</h4>
+                                <small class="text-muted">Avg: 209.6/wk</small>
+                            </td>
+                            <td class="text-center">215.0</td>
+                            <td class="text-center">205.5</td>
+                            <td class="text-center">218.0</td>
+                            <td class="text-center">200.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <!-- Ranks 4-12 -->
+                        <tr>
+                            <td><div class="rank-badge rank-other">4</div></td>
+                            <td><strong>Emily Chen</strong><br><small class="text-muted">emily.c@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">815.2</h4>
+                                <small class="text-muted">Avg: 203.8/wk</small>
+                            </td>
+                            <td class="text-center">198.5</td>
+                            <td class="text-center">210.0</td>
+                            <td class="text-center">208.7</td>
+                            <td class="text-center">198.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">5</div></td>
+                            <td><strong>David Martinez</strong><br><small class="text-muted">david.m@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">792.0</h4>
+                                <small class="text-muted">Avg: 198.0/wk</small>
+                            </td>
+                            <td class="text-center">205.0</td>
+                            <td class="text-center">195.5</td>
+                            <td class="text-center">192.5</td>
+                            <td class="text-center">199.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">6</div></td>
+                            <td><strong>Jessica Brown</strong><br><small class="text-muted">jessica.b@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">768.5</h4>
+                                <small class="text-muted">Avg: 192.1/wk</small>
+                            </td>
+                            <td class="text-center">188.0</td>
+                            <td class="text-center">192.5</td>
+                            <td class="text-center">198.0</td>
+                            <td class="text-center">190.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">7</div></td>
+                            <td><strong>Chris Taylor</strong><br><small class="text-muted">chris.t@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">745.8</h4>
+                                <small class="text-muted">Avg: 186.5/wk</small>
+                            </td>
+                            <td class="text-center">180.5</td>
+                            <td class="text-center">188.3</td>
+                            <td class="text-center">192.0</td>
+                            <td class="text-center">185.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">8</div></td>
+                            <td><strong>Amanda White</strong><br><small class="text-muted">amanda.w@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">722.3</h4>
+                                <small class="text-muted">Avg: 180.6/wk</small>
+                            </td>
+                            <td class="text-center">175.5</td>
+                            <td class="text-center">182.8</td>
+                            <td class="text-center">188.0</td>
+                            <td class="text-center">176.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">9</div></td>
+                            <td><strong>Kevin Lee</strong><br><small class="text-muted">kevin.l@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">698.0</h4>
+                                <small class="text-muted">Avg: 174.5/wk</small>
+                            </td>
+                            <td class="text-center">170.0</td>
+                            <td class="text-center">178.0</td>
+                            <td class="text-center">175.0</td>
+                            <td class="text-center">175.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">10</div></td>
+                            <td><strong>Rachel Green</strong><br><small class="text-muted">rachel.g@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">672.5</h4>
+                                <small class="text-muted">Avg: 168.1/wk</small>
+                            </td>
+                            <td class="text-center">165.0</td>
+                            <td class="text-center">172.5</td>
+                            <td class="text-center">170.0</td>
+                            <td class="text-center">165.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">11</div></td>
+                            <td><strong>Tom Harris</strong><br><small class="text-muted">tom.h@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">645.0</h4>
+                                <small class="text-muted">Avg: 161.3/wk</small>
+                            </td>
+                            <td class="text-center">158.0</td>
+                            <td class="text-center">165.0</td>
+                            <td class="text-center">162.0</td>
+                            <td class="text-center">160.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+
+                        <tr>
+                            <td><div class="rank-badge rank-other">12</div></td>
+                            <td><strong>Lisa Anderson</strong><br><small class="text-muted">lisa.a@email.com</small></td>
+                            <td class="text-center">
+                                <h4 class="mb-0">625.0</h4>
+                                <small class="text-muted">Avg: 156.3/wk</small>
+                            </td>
+                            <td class="text-center">155.0</td>
+                            <td class="text-center">160.0</td>
+                            <td class="text-center">152.0</td>
+                            <td class="text-center">158.0</td>
+                            <td><button class="btn btn-sm btn-outline-primary" disabled><i class="bi bi-lock-fill"></i> Locked</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-success"><strong>12 players</strong> competing with complete rosters</small>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <small class="text-muted"><i class="bi bi-lock-fill"></i> Rosters locked Jan 12, 1:00 PM ET</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="alert alert-success mt-4">
+            <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> One-Time Draft Model - Season in Progress</h5>
+            <p class="mb-0">All 12 rosters are complete and permanently locked for the season. Scores update weekly as playoff games are played. Players compete with their locked rosters through all remaining weeks.</p>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Dashboard - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .league-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .league-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,.1);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .stat-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .deadline-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="player-dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-selection.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-roster.html">My Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                        <li class="breadcrumb-item active">Dashboard</li>
+                    </ol>
+                </nav>
+                <h2>My Dashboard</h2>
+                <p class="text-muted">Welcome back! Here's your fantasy playoff status.</p>
+            </div>
+        </div>
+
+        <!-- Urgent Action Alert -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert deadline-warning alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>ROSTER LOCK WARNING!</strong> Your roster for "2025 NFL Playoffs Pool" is incomplete.
+                            <br><small>⚠️ PERMANENT LOCK in 2 days, 5 hours (Sunday, January 12 at 1:00 PM ET when first game starts)</small>
+                            <br><small>Complete your roster now - NO changes allowed after lock!</small>
+                        </div>
+                        <a href="player-selection.html" class="btn btn-warning ms-auto">Build Roster Now</a>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Active Leagues</h6>
+                        <h3 class="card-title mb-0">3</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #198754;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Best Ranking</h6>
+                        <h3 class="card-title mb-0">#2 <small class="text-muted">of 12</small></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #ffc107;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Total Points</h6>
+                        <h3 class="card-title mb-0">487.5</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #198754;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
+                        <h3 class="card-title mb-0">2 <span class="badge bg-success">LOCKED</span></h3>
+                        <small class="text-muted">1 incomplete</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Leagues -->
+        <div class="row mb-4">
+            <div class="col">
+                <h4 class="mb-3">My Leagues</h4>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- League Card 1 -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">2025 NFL Playoffs Pool</h5>
+                        <span class="badge bg-danger status-badge">INCOMPLETE</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Roster Status</small>
+                            <h4 class="mb-0">6 of 9 players <span class="text-danger small">INCOMPLETE</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Your Rank</small>
+                                <h5 class="text-muted mb-0">-- <small>of 12</small></h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Your Points</small>
+                                <h5 class="mb-0">0.0</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Completion</small>
+                                <small>6 of 9</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 67%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-danger py-2 px-3 mb-0">
+                            <small><i class="bi bi-lock-fill"></i> LOCK in 2d 5h - Complete roster now!</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="btn-group w-100" role="group">
+                            <a href="player-selection.html" class="btn btn-warning"><i class="bi bi-person-plus"></i> Build Roster</a>
+                            <a href="league-standings.html" class="btn btn-outline-primary"><i class="bi bi-trophy"></i> Standings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Card 2 -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Friends League</h5>
+                        <span class="badge bg-success status-badge">ACTIVE</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Current Week</small>
+                            <h4 class="mb-0">Week 2 <span class="text-muted small">(NFL Week 16)</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Your Rank</small>
+                                <h5 class="text-warning mb-0">#5 <small>of 8</small></h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Your Points</small>
+                                <h5 class="mb-0">132.0</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Status</small>
+                                <small>9 of 9</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-success py-2 px-3 mb-0">
+                            <small><i class="bi bi-lock-fill"></i> Roster LOCKED - Top Scorer: Mahomes 28.5 pts</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="btn-group w-100" role="group">
+                            <a href="my-roster.html" class="btn btn-outline-primary"><i class="bi bi-list-check"></i> View Roster</a>
+                            <a href="league-standings.html" class="btn btn-outline-primary"><i class="bi bi-trophy"></i> Standings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Card 3 -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Office Pool 2024</h5>
+                        <span class="badge bg-danger status-badge">STRUGGLING</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Current Week</small>
+                            <h4 class="mb-0">Week 3 <span class="text-muted small">(NFL Week 17)</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Your Rank</small>
+                                <h5 class="text-danger mb-0">#8 <small>of 10</small></h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Total Points</small>
+                                <h5 class="mb-0">68.0</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Status</small>
+                                <small>9 of 9</small>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-danger py-2 px-3 mb-0">
+                            <small><i class="bi bi-x-circle"></i> 3 injured players - roster locked</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="league-standings.html" class="btn btn-outline-secondary w-100"><i class="bi bi-trophy"></i> View Standings</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row mb-4">
+            <div class="col">
+                <h4 class="mb-3">Recent Activity</h4>
+                <div class="card">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-star-fill text-success me-2"></i>
+                                <strong>Friends League:</strong> Patrick Mahomes scored 28.5 pts (Week 2)
+                            </div>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-trophy-fill text-warning me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Moved to #2 in standings
+                            </div>
+                            <small class="text-muted">1 day ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-bandaid-fill text-danger me-2"></i>
+                                <strong>Office Pool 2024:</strong> Christian McCaffrey injured (0 pts)
+                            </div>
+                            <small class="text-muted">2 days ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-calculator-fill text-primary me-2"></i>
+                                <strong>Friends League:</strong> Week 1 scores calculated (132.0 pts)
+                            </div>
+                            <small class="text-muted">3 days ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-lock-fill text-info me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Roster permanently locked (9 players)
+                            </div>
+                            <small class="text-muted">1 week ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

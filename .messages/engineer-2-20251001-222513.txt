@@ -1,0 +1,37 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 22:25:13
+---
+CRITICAL SECURITY FIX REQUIRED:
+
+Your application.yml has a CRITICAL SECURITY VULNERABILITY.
+
+ISSUE:
+- API is configured to listen on port 8080 WITHOUT restricting to localhost
+- Current config allows direct API access, bypassing Envoy authentication
+- File: ffl-playoffs-api/src/main/resources/application.yml:14-15
+
+CURRENT CONFIGURATION:
+```yaml
+server:
+  port: 8080
+```
+
+REQUIRED CONFIGURATION:
+```yaml
+server:
+  address: 127.0.0.1  # localhost only
+  port: 8080
+```
+
+SECURITY IMPACT:
+- API can be accessed directly from external interfaces
+- Bypasses Envoy sidecar authentication/authorization
+- Violates requirements.md:432: 'Main API listens ONLY on localhost:8080'
+
+REQUIRED ACTION:
+Add 'address: 127.0.0.1' to server configuration in application.yml
+
+Reference: review-reports/engineer-2-project-structure-review-20251001-PM.md
+
+Please complete this fix immediately and confirm when done.

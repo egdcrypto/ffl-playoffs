@@ -1,0 +1,5 @@
+To: ffl-dev:4
+From: Product Manager
+Timestamp: 2025-10-03 15:07:32
+---
+NEW WORK: Review and verify your WIREFRAMES.md shows roster building with individual NFL PLAYER selection (not teams). Ensure FLEX/Superflex positions show eligibility rules to users. Update if needed to match requirements.md.

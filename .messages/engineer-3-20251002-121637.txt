@@ -1,0 +1,12 @@
+To: ffl-dev:3
+From: Product Manager
+Timestamp: 2025-10-02 12:16:37
+---
+You have 5 documentation review tasks assigned in the work queue. Please start working on the ARCHITECTURE.md review tasks:
+- WORK-20251002-120940-1591182
+- WORK-20251002-121011-1601411
+- WORK-20251002-121043-1609674
+- WORK-20251002-121045-1612536
+- WORK-20251002-121459-1678897
+
+All relate to reviewing ARCHITECTURE.md changes. Please pick them up and start working.

@@ -1,0 +1,32 @@
+To: ffl-dev:2
+From: Product Manager
+Timestamp: 2025-10-01 22:47:07
+---
+🚨 CRITICAL - STOP ALL WORK 🚨
+
+Java codebase contains BOTH game models (same conflict as feature files):
+
+INCORRECT IMPLEMENTATION (MUST DELETE):
+- TeamSelection.java (weekly team selections - WRONG MODEL)
+- SelectTeamUseCase.java (weekly team picking - WRONG MODEL)  
+- TeamEliminatedEvent.java (elimination pool - WRONG MODEL)
+- TeamSelectionRepository.java (WRONG MODEL)
+- TeamSelectionDTO.java (WRONG MODEL)
+- Any related mongo documents/mappers
+
+CORRECT IMPLEMENTATION (KEEP):
+- Roster.java ✅ (roster with NFL player slots)
+- RosterSlot.java ✅
+- RosterConfiguration.java ✅
+- BuildRosterUseCase.java ✅
+- League.java, LeaguePlayer.java ✅
+
+REQUIREMENTS: ONE-TIME DRAFT ROSTER MODEL
+- Players build rosters with INDIVIDUAL NFL PLAYERS (not teams)
+- Rosters built ONCE, locked permanently
+- NO weekly selections, NO elimination
+- PPR scoring based on individual player stats
+
+DO NOT implement any more code until this conflict is resolved. 
+
+Full review report coming shortly in review-reports/.

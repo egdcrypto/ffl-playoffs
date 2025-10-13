@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Dashboard (PRE-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .league-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .league-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,.1);
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .stat-card {
+            border-left: 4px solid #0d6efd;
+        }
+        .deadline-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.85; }
+        }
+        .countdown-timer {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #dc3545;
+            text-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="player-dashboard-prelock.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-selection-prelock.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-roster-prelock.html">My Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item active">Dashboard</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header with State Indicator -->
+        <div class="row mb-4">
+            <div class="col">
+                <h2>My Dashboard <span class="badge bg-warning text-dark"><i class="bi bi-clock-history"></i> PRE-LOCK STATE</span></h2>
+                <p class="text-muted">Complete your rosters before permanent lock!</p>
+            </div>
+        </div>
+
+        <!-- CRITICAL: Countdown Timer Alert -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert deadline-warning alert-dismissible fade show" role="alert">
+                    <div class="d-flex align-items-center flex-wrap">
+                        <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 2rem;"></i>
+                        <div class="flex-grow-1">
+                            <h4 class="alert-heading mb-2"><i class="bi bi-alarm"></i> PERMANENT ROSTER LOCK COUNTDOWN</h4>
+                            <div class="countdown-timer mb-2">2 days, 5 hours, 23 minutes</div>
+                            <strong>CRITICAL:</strong> Your roster for "2025 NFL Playoffs Pool" is incomplete!
+                            <br><small>⚠️ First game starts: <strong>Sunday, January 12 at 1:00 PM ET</strong></small>
+                            <br><small class="text-danger"><strong>After lock, NO changes allowed for ENTIRE SEASON - no waiver wire, no trades, no substitutions!</strong></small>
+                        </div>
+                        <a href="player-selection-prelock.html" class="btn btn-danger btn-lg ms-auto mt-2 mt-md-0">
+                            <i class="bi bi-person-plus"></i> Complete Roster NOW
+                        </a>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Active Leagues</h6>
+                        <h3 class="card-title mb-0">3</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #dc3545;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Incomplete Rosters</h6>
+                        <h3 class="card-title mb-0 text-danger">2 <small class="text-muted">of 3</small></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #ffc107;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Time to Lock</h6>
+                        <h3 class="card-title mb-0 text-warning">2d 5h</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stat-card" style="border-left-color: #198754;">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Roster Status</h6>
+                        <h3 class="card-title mb-0">1 <span class="badge bg-success">COMPLETE</span></h3>
+                        <small class="text-danger">2 incomplete</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Leagues -->
+        <div class="row mb-4">
+            <div class="col">
+                <h4 class="mb-3">My Leagues <span class="badge bg-warning text-dark">Building Phase</span></h4>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- League Card 1 - INCOMPLETE (URGENT) -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100 border-danger">
+                    <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">2025 NFL Playoffs Pool</h5>
+                        <span class="badge bg-white text-danger status-badge">INCOMPLETE</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger py-2 px-3 mb-3">
+                            <small><i class="bi bi-alarm-fill"></i> <strong>LOCKS IN 2d 5h 23m</strong></small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Roster Status</small>
+                            <h4 class="mb-0">6 of 9 players <span class="text-danger small"><i class="bi bi-exclamation-circle"></i> INCOMPLETE</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Missing Positions</small>
+                                <h5 class="text-danger mb-0">3</h5>
+                                <small class="text-muted">TE, FLEX, K</small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Draft Progress</small>
+                                <h5 class="mb-0">67%</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Completion</small>
+                                <small class="text-danger"><strong>6 of 9</strong></small>
+                            </div>
+                            <div class="progress" style="height: 12px;">
+                                <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" style="width: 67%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <a href="player-selection-prelock.html" class="btn btn-danger">
+                                <i class="bi bi-person-plus-fill"></i> Add Players
+                            </a>
+                            <a href="my-roster-prelock.html" class="btn btn-outline-danger">
+                                <i class="bi bi-pencil"></i> Edit Roster
+                            </a>
+                        </div>
+                        <a href="league-standings.html" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-trophy"></i> View Standings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Card 2 - INCOMPLETE -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100 border-warning">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Friends League</h5>
+                        <span class="badge bg-white text-warning status-badge">INCOMPLETE</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning py-2 px-3 mb-3">
+                            <small><i class="bi bi-clock"></i> Locks in 6 days, 8 hours</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Roster Status</small>
+                            <h4 class="mb-0">8 of 9 players <span class="text-warning small"><i class="bi bi-exclamation-triangle"></i> 1 MISSING</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Missing Positions</small>
+                                <h5 class="text-warning mb-0">1</h5>
+                                <small class="text-muted">SUPERFLEX</small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Draft Progress</small>
+                                <h5 class="mb-0">89%</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Completion</small>
+                                <small class="text-warning"><strong>8 of 9</strong></small>
+                            </div>
+                            <div class="progress" style="height: 12px;">
+                                <div class="progress-bar bg-warning progress-bar-striped progress-bar-animated" style="width: 89%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <a href="player-selection-prelock.html" class="btn btn-warning">
+                                <i class="bi bi-person-plus-fill"></i> Add Players
+                            </a>
+                            <a href="my-roster-prelock.html" class="btn btn-outline-warning">
+                                <i class="bi bi-pencil"></i> Edit Roster
+                            </a>
+                        </div>
+                        <a href="league-standings.html" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-trophy"></i> View Standings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Card 3 - COMPLETE (READY FOR LOCK) -->
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card league-card h-100 border-success">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Office Pool 2024</h5>
+                        <span class="badge bg-white text-success status-badge">COMPLETE ✓</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success py-2 px-3 mb-3">
+                            <small><i class="bi bi-check-circle-fill"></i> Roster complete! Locks in 2 days</small>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Roster Status</small>
+                            <h4 class="mb-0">9 of 9 players <span class="text-success small"><i class="bi bi-check-circle-fill"></i> READY</span></h4>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">All Positions</small>
+                                <h5 class="text-success mb-0">✓ FILLED</h5>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted">Draft Progress</small>
+                                <h5 class="mb-0">100%</h5>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <small class="text-muted">Roster Completion</small>
+                                <small class="text-success"><strong>9 of 9 ✓</strong></small>
+                            </div>
+                            <div class="progress" style="height: 12px;">
+                                <div class="progress-bar bg-success" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info py-2 px-3 mb-0">
+                            <small><i class="bi bi-info-circle"></i> You can still edit until lock</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="btn-group w-100 mb-2" role="group">
+                            <a href="my-roster-prelock.html" class="btn btn-success">
+                                <i class="bi bi-eye"></i> View Roster
+                            </a>
+                            <a href="my-roster-prelock.html" class="btn btn-outline-success">
+                                <i class="bi bi-pencil"></i> Edit Roster
+                            </a>
+                        </div>
+                        <a href="league-standings.html" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-trophy"></i> View Standings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="row mb-4">
+            <div class="col">
+                <h4 class="mb-3">Recent Activity</h4>
+                <div class="card">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-person-plus-fill text-success me-2"></i>
+                                <strong>Office Pool 2024:</strong> Added Justin Tucker (K) to roster
+                            </div>
+                            <small class="text-muted">30 minutes ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-pencil-fill text-warning me-2"></i>
+                                <strong>Friends League:</strong> Replaced Joe Burrow with Josh Allen (QB)
+                            </div>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-person-plus-fill text-success me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Added Tyreek Hill (WR) to roster
+                            </div>
+                            <small class="text-muted">5 hours ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-person-plus-fill text-success me-2"></i>
+                                <strong>Friends League:</strong> Added Christian McCaffrey (RB) to roster
+                            </div>
+                            <small class="text-muted">1 day ago</small>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-people-fill text-primary me-2"></i>
+                                <strong>2025 NFL Playoffs Pool:</strong> Joined league (invited by Admin)
+                            </div>
+                            <small class="text-muted">3 days ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning Footer -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="alert alert-warning">
+                    <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> ONE-TIME DRAFT MODEL REMINDER</h5>
+                    <p class="mb-0">Once the first game starts, your rosters will be <strong>PERMANENTLY LOCKED</strong> for the entire season. There is NO waiver wire, NO trades, and NO weekly lineup changes. Complete and review your rosters carefully!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Standings (PRE-LOCK) - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { box-shadow: 0 2px 4px rgba(0,0,0,.1); }
+        .rank-badge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; }
+        .rank-other { background-color: #6c757d; color: #fff; }
+        .current-user-row { background-color: #d1e7dd; border-left: 4px solid #198754; }
+        .incomplete-roster { background-color: #fff3cd; border-left: 4px solid #ffc107; }
+        .countdown-timer { font-size: 1.3rem; font-weight: bold; color: #dc3545; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+        <div class="container-fluid">
+            <a class="navbar-brand text-dark" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link text-dark" href="player-dashboard-prelock.html">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" href="player-selection-prelock.html">Build Roster</a></li>
+                    <li class="nav-item"><a class="nav-link text-dark" href="my-roster-prelock.html">My Roster</a></li>
+                    <li class="nav-item"><a class="nav-link active bg-dark text-white" href="league-standings-prelock.html">Standings</a></li>
+                </ul>
+                <span class="badge bg-danger me-2"><i class="bi bi-clock-history"></i> PRE-LOCK</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard-prelock.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">Standings</li>
+            </ol>
+        </nav>
+
+        <!-- DRAFT COUNTDOWN -->
+        <div class="alert alert-danger border-danger mb-4">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-alarm-fill me-3" style="font-size: 2.5rem;"></i>
+                <div class="flex-grow-1">
+                    <h4 class="alert-heading mb-2"><i class="bi bi-exclamation-triangle-fill"></i> DRAFT DEADLINE APPROACHING</h4>
+                    <div class="countdown-timer mb-2">2 hours, 15 minutes until PERMANENT ROSTER LOCK</div>
+                    <p class="mb-0"><strong>4 players have incomplete rosters!</strong> First game starts Sunday, January 12 at 1:00 PM ET</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <h2><i class="bi bi-unlock-fill text-success"></i> League Standings <span class="badge bg-warning text-dark">DRAFT PHASE</span></h2>
+                <p class="text-muted">Draft status - rosters must be complete before lock</p>
+            </div>
+        </div>
+
+        <!-- Standings Table -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="bi bi-trophy-fill"></i> Draft Progress (12 Players)</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Player</th>
+                            <th class="text-center">Roster Status</th>
+                            <th class="text-center">Completion</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Complete Rosters -->
+                        <tr>
+                            <td><strong>Sarah Johnson</strong><br><small class="text-muted">sarah.j@email.com</small></td>
+                            <td class="text-center"><span class="badge bg-success">9/9 COMPLETE ✓</span></td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" style="width: 100%">100%</div>
+                                </div>
+                            </td>
+                            <td><a href="player-selection-prelock.html" class="btn btn-sm btn-outline-success"><i class="bi bi-eye"></i> View Draft</a></td>
+                        </tr>
+
+                        <!-- Current User - Incomplete -->
+                        <tr class="current-user-row incomplete-roster">
+                            <td><strong>John Doe</strong> <span class="badge bg-info">YOU</span><br><small class="text-muted">john.doe@email.com</small></td>
+                            <td class="text-center"><span class="badge bg-danger">6/9 INCOMPLETE!</span></td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" style="width: 67%">67%</div>
+                                </div>
+                            </td>
+                            <td><a href="my-roster-prelock.html" class="btn btn-sm btn-danger"><i class="bi bi-person-plus"></i> Complete NOW</a></td>
+                        </tr>
+
+                        <!-- More Complete Rosters -->
+                        <tr>
+                            <td><strong>Mike Williams</strong><br><small class="text-muted">mike.w@email.com</small></td>
+                            <td class="text-center"><span class="badge bg-success">9/9 COMPLETE ✓</span></td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" style="width: 100%">100%</div>
+                                </div>
+                            </td>
+                            <td><button class="btn btn-sm btn-outline-success" disabled><i class="bi bi-check-circle"></i> Ready</button></td>
+                        </tr>
+
+                        <!-- Incomplete Rosters -->
+                        <tr class="incomplete-roster">
+                            <td><strong>Emily Chen</strong><br><small class="text-muted">emily.c@email.com</small></td>
+                            <td class="text-center"><span class="badge bg-warning text-dark">8/9 - Missing 1</span></td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-warning" style="width: 89%">89%</div>
+                                </div>
+                            </td>
+                            <td><span class="text-muted"><i class="bi bi-clock"></i> Drafting...</span></td>
+                        </tr>
+
+                        <tr class="incomplete-roster">
+                            <td><strong>David Martinez</strong><br><small class="text-muted">david.m@email.com</small></td>
+                            <td class="text-center"><span class="badge bg-danger">5/9 INCOMPLETE!</span></td>
+                            <td class="text-center">
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-danger" style="width: 56%">56%</div>
+                                </div>
+                            </td>
+                            <td><span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Urgent</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="row">
+                    <div class="col-md-4">
+                        <small class="text-success"><strong>8 players</strong> with complete rosters ✓</small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-danger"><strong>4 players</strong> with incomplete rosters</small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <small class="text-muted">Lock in 2h 15m</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Warning -->
+        <div class="alert alert-warning mt-4">
+            <h5 class="alert-heading"><i class="bi bi-info-circle-fill"></i> One-Time Draft Reminder</h5>
+            <p class="mb-0">All incomplete rosters will be permanently locked as-is when the first game starts. Players with incomplete rosters will have empty position slots for the entire season!</p>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

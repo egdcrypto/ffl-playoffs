@@ -1,0 +1,23 @@
+# Production-specific configuration
+# Loaded when: --spring.profiles.active=production
+
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE:ffl_playoffs}
+
+server:
+  address: 127.0.0.1  # CRITICAL: Localhost only in production
+  port: 8080
+
+management:
+  server:
+    address: 127.0.0.1  # CRITICAL: Localhost only in production
+    port: 8081
+
+logging:
+  level:
+    com.ffl.playoffs: INFO
+    org.springframework: WARN
+    org.mongodb: WARN

@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Selection - FFL Playoffs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        .player-row {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .player-row:hover {
+            background-color: #f8f9fa;
+        }
+        .player-row.selected {
+            background-color: #d1e7dd;
+            border-left: 4px solid #198754;
+        }
+        .position-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+        }
+        .position-QB { background-color: #dc3545; color: white; }
+        .position-RB { background-color: #198754; color: white; }
+        .position-WR { background-color: #0d6efd; color: white; }
+        .position-TE { background-color: #ffc107; color: black; }
+        .position-K { background-color: #6c757d; color: white; }
+        .position-DEF { background-color: #6f42c1; color: white; }
+        .team-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .stats-cell {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><i class="bi bi-trophy-fill"></i> FFL Playoffs</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="player-dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="player-selection.html">Build Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="my-roster.html">My Roster</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="league-standings.html">Standings</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center text-white">
+                    <i class="bi bi-person-circle me-2" style="font-size: 1.5rem;"></i>
+                    <span>John Doe</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4 mb-5">
+        <!-- Breadcrumbs -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+                <li class="breadcrumb-item"><a href="player-dashboard.html">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">My Leagues</a></li>
+                <li class="breadcrumb-item"><a href="#">2025 NFL Playoffs Pool</a></li>
+                <li class="breadcrumb-item active">Build Roster</li>
+            </ol>
+        </nav>
+
+        <!-- Draft Lock Warning Banner -->
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <h5 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> ONE-TIME DRAFT - Permanent Lock When Season Starts</h5>
+            <p class="mb-2"><strong>CRITICAL:</strong> This is a one-time draft. Once the first game starts, your roster is <strong>PERMANENTLY LOCKED</strong> for the entire season.</p>
+            <ul class="mb-2">
+                <li>No waiver wire pickups</li>
+                <li>No trades</li>
+                <li>No lineup changes</li>
+                <li>No player replacements (even for injuries)</li>
+            </ul>
+            <p class="mb-0"><strong>Time until roster lock: 2 hours 15 minutes</strong> - Complete your roster now!</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-lg-9">
+                <h2><i class="bi bi-trophy-fill text-warning"></i> ONE-TIME DRAFT: Build Your Roster</h2>
+                <p class="text-muted">Draft individual NFL players to build your roster. <strong>ALL players remain available to ALL league members</strong>—multiple members can select the same player. <strong>Rosters lock permanently when the first game starts.</strong></p>
+            </div>
+            <div class="col-lg-3">
+                <select class="form-select form-select-lg">
+                    <option selected>2025 NFL Playoffs Pool</option>
+                    <option>Friends League</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Main Content: Player List -->
+            <div class="col-lg-9 mb-4">
+                <!-- Filters -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <!-- Position Filter -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Position</label>
+                                <select class="form-select" id="positionFilter">
+                                    <option value="">All Positions</option>
+                                    <option value="QB">QB - Quarterback</option>
+                                    <option value="RB">RB - Running Back</option>
+                                    <option value="WR">WR - Wide Receiver</option>
+                                    <option value="TE">TE - Tight End</option>
+                                    <option value="K">K - Kicker</option>
+                                    <option value="DEF">DEF - Defense</option>
+                                    <option value="FLEX">FLEX - RB/WR/TE</option>
+                                    <option value="SUPERFLEX">SUPERFLEX - QB/RB/WR/TE</option>
+                                </select>
+                            </div>
+
+                            <!-- Team Filter -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">NFL Team</label>
+                                <select class="form-select" id="teamFilter">
+                                    <option value="">All Teams</option>
+                                    <option value="KC">Kansas City Chiefs</option>
+                                    <option value="SF">San Francisco 49ers</option>
+                                    <option value="BAL">Baltimore Ravens</option>
+                                    <option value="BUF">Buffalo Bills</option>
+                                    <option value="PHI">Philadelphia Eagles</option>
+                                </select>
+                            </div>
+
+                            <!-- Search -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Search Player</label>
+                                <input type="text" class="form-control" placeholder="Search by name..." id="searchInput">
+                            </div>
+
+                            <!-- Sort -->
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Sort By</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="name">Name</option>
+                                    <option value="points" selected>Total Points</option>
+                                    <option value="avg">Avg Points</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Players Table -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-people-fill"></i> Available NFL Players</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;"></th>
+                                    <th style="width: 60px;">POS</th>
+                                    <th>Player Name</th>
+                                    <th style="width: 80px;">Team</th>
+                                    <th class="text-center">Total Pts</th>
+                                    <th class="text-center">Avg</th>
+                                    <th class="text-center">Wk 15</th>
+                                    <th class="text-center">Wk 16</th>
+                                    <th class="text-center">Wk 17</th>
+                                    <th class="text-center">Wk 18</th>
+                                    <th style="width: 100px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- QB Players -->
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Patrick Mahomes</strong>
+                                        <br><small class="text-muted">#15 • Kansas City Chiefs</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">KC</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>112.5</strong></td>
+                                    <td class="text-center stats-cell">28.1</td>
+                                    <td class="text-center stats-cell">32.5</td>
+                                    <td class="text-center stats-cell">25.0</td>
+                                    <td class="text-center stats-cell">28.5</td>
+                                    <td class="text-center stats-cell">26.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Josh Allen</strong>
+                                        <br><small class="text-muted">#17 • Buffalo Bills</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">BUF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>118.0</strong></td>
+                                    <td class="text-center stats-cell">29.5</td>
+                                    <td class="text-center stats-cell">35.0</td>
+                                    <td class="text-center stats-cell">28.5</td>
+                                    <td class="text-center stats-cell">30.0</td>
+                                    <td class="text-center stats-cell">24.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Jalen Hurts</strong>
+                                        <br><small class="text-muted">#1 • Philadelphia Eagles</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-success text-white">PHI</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>115.2</strong></td>
+                                    <td class="text-center stats-cell">28.8</td>
+                                    <td class="text-center stats-cell">33.5</td>
+                                    <td class="text-center stats-cell">27.0</td>
+                                    <td class="text-center stats-cell">29.2</td>
+                                    <td class="text-center stats-cell">25.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Joe Burrow</strong>
+                                        <br><small class="text-muted">#9 • Cincinnati Bengals</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-warning text-dark">CIN</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>108.4</strong></td>
+                                    <td class="text-center stats-cell">27.1</td>
+                                    <td class="text-center stats-cell">30.5</td>
+                                    <td class="text-center stats-cell">26.0</td>
+                                    <td class="text-center stats-cell">28.4</td>
+                                    <td class="text-center stats-cell">23.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Lamar Jackson</strong>
+                                        <br><small class="text-muted">#8 • Baltimore Ravens</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>113.6</strong></td>
+                                    <td class="text-center stats-cell">28.4</td>
+                                    <td class="text-center stats-cell">31.5</td>
+                                    <td class="text-center stats-cell">27.5</td>
+                                    <td class="text-center stats-cell">29.6</td>
+                                    <td class="text-center stats-cell">25.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Dak Prescott</strong>
+                                        <br><small class="text-muted">#4 • Dallas Cowboys</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-secondary text-white">DAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>105.2</strong></td>
+                                    <td class="text-center stats-cell">26.3</td>
+                                    <td class="text-center stats-cell">29.0</td>
+                                    <td class="text-center stats-cell">25.2</td>
+                                    <td class="text-center stats-cell">27.5</td>
+                                    <td class="text-center stats-cell">23.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Jared Goff</strong>
+                                        <br><small class="text-muted">#16 • Detroit Lions</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">DET</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>102.8</strong></td>
+                                    <td class="text-center stats-cell">25.7</td>
+                                    <td class="text-center stats-cell">28.0</td>
+                                    <td class="text-center stats-cell">24.5</td>
+                                    <td class="text-center stats-cell">26.8</td>
+                                    <td class="text-center stats-cell">23.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-QB">QB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Brock Purdy</strong>
+                                        <br><small class="text-muted">#13 • San Francisco 49ers</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">SF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>98.4</strong></td>
+                                    <td class="text-center stats-cell">24.6</td>
+                                    <td class="text-center stats-cell">27.5</td>
+                                    <td class="text-center stats-cell">23.0</td>
+                                    <td class="text-center stats-cell">25.4</td>
+                                    <td class="text-center stats-cell">22.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- RB Players -->
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Christian McCaffrey</strong>
+                                        <br><small class="text-muted">#23 • San Francisco 49ers</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">SF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>95.8</strong></td>
+                                    <td class="text-center stats-cell">23.9</td>
+                                    <td class="text-center stats-cell">28.5</td>
+                                    <td class="text-center stats-cell">22.0</td>
+                                    <td class="text-center stats-cell">25.3</td>
+                                    <td class="text-center stats-cell">20.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row selected">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input" checked>
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Derrick Henry</strong>
+                                        <br><small class="text-muted">#22 • Baltimore Ravens</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>88.5</strong></td>
+                                    <td class="text-center stats-cell">22.1</td>
+                                    <td class="text-center stats-cell">24.0</td>
+                                    <td class="text-center stats-cell">20.5</td>
+                                    <td class="text-center stats-cell">22.5</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger w-100">
+                                            <i class="bi bi-dash-circle"></i> Remove
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Saquon Barkley</strong>
+                                        <br><small class="text-muted">#26 • Philadelphia Eagles</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-success text-white">PHI</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>92.0</strong></td>
+                                    <td class="text-center stats-cell">23.0</td>
+                                    <td class="text-center stats-cell">26.0</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td class="text-center stats-cell">24.0</td>
+                                    <td class="text-center stats-cell">20.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Nick Chubb</strong>
+                                        <br><small class="text-muted">#24 • Cleveland Browns</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-warning text-dark">CLE</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>78.4</strong></td>
+                                    <td class="text-center stats-cell">19.6</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td class="text-center stats-cell">18.0</td>
+                                    <td class="text-center stats-cell">20.4</td>
+                                    <td class="text-center stats-cell">18.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Dalvin Cook</strong>
+                                        <br><small class="text-muted">#33 • New York Jets</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-success text-white">NYJ</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>68.0</strong></td>
+                                    <td class="text-center stats-cell">17.0</td>
+                                    <td class="text-center stats-cell">19.5</td>
+                                    <td class="text-center stats-cell">16.0</td>
+                                    <td class="text-center stats-cell">17.5</td>
+                                    <td class="text-center stats-cell">15.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Austin Ekeler</strong>
+                                        <br><small class="text-muted">#30 • Washington Commanders</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">WAS</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>72.8</strong></td>
+                                    <td class="text-center stats-cell">18.2</td>
+                                    <td class="text-center stats-cell">20.5</td>
+                                    <td class="text-center stats-cell">17.0</td>
+                                    <td class="text-center stats-cell">18.8</td>
+                                    <td class="text-center stats-cell">16.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Josh Jacobs</strong>
+                                        <br><small class="text-muted">#8 • Green Bay Packers</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-success text-white">GB</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>84.0</strong></td>
+                                    <td class="text-center stats-cell">21.0</td>
+                                    <td class="text-center stats-cell">23.0</td>
+                                    <td class="text-center stats-cell">19.5</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td class="text-center stats-cell">20.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Joe Mixon</strong>
+                                        <br><small class="text-muted">#28 • Houston Texans</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">HOU</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>86.4</strong></td>
+                                    <td class="text-center stats-cell">21.6</td>
+                                    <td class="text-center stats-cell">24.0</td>
+                                    <td class="text-center stats-cell">20.0</td>
+                                    <td class="text-center stats-cell">22.4</td>
+                                    <td class="text-center stats-cell">20.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Jonathan Taylor</strong>
+                                        <br><small class="text-muted">#28 • Indianapolis Colts</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">IND</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>81.2</strong></td>
+                                    <td class="text-center stats-cell">20.3</td>
+                                    <td class="text-center stats-cell">22.5</td>
+                                    <td class="text-center stats-cell">19.0</td>
+                                    <td class="text-center stats-cell">20.7</td>
+                                    <td class="text-center stats-cell">19.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-RB">RB</div>
+                                    </td>
+                                    <td>
+                                        <strong>Alvin Kamara</strong>
+                                        <br><small class="text-muted">#41 • New Orleans Saints</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-warning text-dark">NO</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>76.8</strong></td>
+                                    <td class="text-center stats-cell">19.2</td>
+                                    <td class="text-center stats-cell">21.0</td>
+                                    <td class="text-center stats-cell">18.0</td>
+                                    <td class="text-center stats-cell">19.8</td>
+                                    <td class="text-center stats-cell">18.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- WR Players -->
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Tyreek Hill</strong>
+                                        <br><small class="text-muted">#10 • Miami Dolphins</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">MIA</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>102.5</strong></td>
+                                    <td class="text-center stats-cell">25.6</td>
+                                    <td class="text-center stats-cell">28.5</td>
+                                    <td class="text-center stats-cell">25.0</td>
+                                    <td class="text-center stats-cell">27.0</td>
+                                    <td class="text-center stats-cell">22.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>CeeDee Lamb</strong>
+                                        <br><small class="text-muted">#88 • Dallas Cowboys</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-secondary text-white">DAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>98.0</strong></td>
+                                    <td class="text-center stats-cell">24.5</td>
+                                    <td class="text-center stats-cell">26.5</td>
+                                    <td class="text-center stats-cell">24.0</td>
+                                    <td class="text-center stats-cell">25.5</td>
+                                    <td class="text-center stats-cell">22.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Justin Jefferson</strong>
+                                        <br><small class="text-muted">#18 • Minnesota Vikings</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">MIN</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>106.8</strong></td>
+                                    <td class="text-center stats-cell">26.7</td>
+                                    <td class="text-center stats-cell">29.5</td>
+                                    <td class="text-center stats-cell">25.5</td>
+                                    <td class="text-center stats-cell">27.8</td>
+                                    <td class="text-center stats-cell">24.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Ja'Marr Chase</strong>
+                                        <br><small class="text-muted">#1 • Cincinnati Bengals</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-warning text-dark">CIN</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>104.0</strong></td>
+                                    <td class="text-center stats-cell">26.0</td>
+                                    <td class="text-center stats-cell">28.5</td>
+                                    <td class="text-center stats-cell">25.0</td>
+                                    <td class="text-center stats-cell">27.0</td>
+                                    <td class="text-center stats-cell">23.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Davante Adams</strong>
+                                        <br><small class="text-muted">#17 • Las Vegas Raiders</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-dark text-white">LV</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>88.0</strong></td>
+                                    <td class="text-center stats-cell">22.0</td>
+                                    <td class="text-center stats-cell">24.5</td>
+                                    <td class="text-center stats-cell">21.0</td>
+                                    <td class="text-center stats-cell">22.5</td>
+                                    <td class="text-center stats-cell">20.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Mike Evans</strong>
+                                        <br><small class="text-muted">#13 • Tampa Bay Buccaneers</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">TB</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>92.4</strong></td>
+                                    <td class="text-center stats-cell">23.1</td>
+                                    <td class="text-center stats-cell">25.5</td>
+                                    <td class="text-center stats-cell">22.0</td>
+                                    <td class="text-center stats-cell">23.9</td>
+                                    <td class="text-center stats-cell">21.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>A.J. Brown</strong>
+                                        <br><small class="text-muted">#11 • Philadelphia Eagles</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-success text-white">PHI</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>96.8</strong></td>
+                                    <td class="text-center stats-cell">24.2</td>
+                                    <td class="text-center stats-cell">26.5</td>
+                                    <td class="text-center stats-cell">23.5</td>
+                                    <td class="text-center stats-cell">25.3</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Stefon Diggs</strong>
+                                        <br><small class="text-muted">#1 • Houston Texans</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">HOU</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>90.0</strong></td>
+                                    <td class="text-center stats-cell">22.5</td>
+                                    <td class="text-center stats-cell">24.5</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td class="text-center stats-cell">23.0</td>
+                                    <td class="text-center stats-cell">21.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Cooper Kupp</strong>
+                                        <br><small class="text-muted">#10 • Los Angeles Rams</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">LAR</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>84.4</strong></td>
+                                    <td class="text-center stats-cell">21.1</td>
+                                    <td class="text-center stats-cell">23.0</td>
+                                    <td class="text-center stats-cell">20.5</td>
+                                    <td class="text-center stats-cell">21.9</td>
+                                    <td class="text-center stats-cell">19.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-WR">WR</div>
+                                    </td>
+                                    <td>
+                                        <strong>Amon-Ra St. Brown</strong>
+                                        <br><small class="text-muted">#14 • Detroit Lions</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">DET</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>94.8</strong></td>
+                                    <td class="text-center stats-cell">23.7</td>
+                                    <td class="text-center stats-cell">26.0</td>
+                                    <td class="text-center stats-cell">22.5</td>
+                                    <td class="text-center stats-cell">24.8</td>
+                                    <td class="text-center stats-cell">21.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- TE Players -->
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>Travis Kelce</strong>
+                                        <br><small class="text-muted">#87 • Kansas City Chiefs</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">KC</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>78.5</strong></td>
+                                    <td class="text-center stats-cell">19.6</td>
+                                    <td class="text-center stats-cell">22.0</td>
+                                    <td class="text-center stats-cell">18.5</td>
+                                    <td class="text-center stats-cell">20.5</td>
+                                    <td class="text-center stats-cell">17.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>George Kittle</strong>
+                                        <br><small class="text-muted">#85 • San Francisco 49ers</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">SF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>72.4</strong></td>
+                                    <td class="text-center stats-cell">18.1</td>
+                                    <td class="text-center stats-cell">20.5</td>
+                                    <td class="text-center stats-cell">17.0</td>
+                                    <td class="text-center stats-cell">18.9</td>
+                                    <td class="text-center stats-cell">16.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>Mark Andrews</strong>
+                                        <br><small class="text-muted">#89 • Baltimore Ravens</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>68.0</strong></td>
+                                    <td class="text-center stats-cell">17.0</td>
+                                    <td class="text-center stats-cell">19.5</td>
+                                    <td class="text-center stats-cell">16.0</td>
+                                    <td class="text-center stats-cell">17.5</td>
+                                    <td class="text-center stats-cell">15.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>Sam LaPorta</strong>
+                                        <br><small class="text-muted">#87 • Detroit Lions</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">DET</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>70.8</strong></td>
+                                    <td class="text-center stats-cell">17.7</td>
+                                    <td class="text-center stats-cell">19.5</td>
+                                    <td class="text-center stats-cell">16.5</td>
+                                    <td class="text-center stats-cell">18.3</td>
+                                    <td class="text-center stats-cell">16.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-TE">TE</div>
+                                    </td>
+                                    <td>
+                                        <strong>T.J. Hockenson</strong>
+                                        <br><small class="text-muted">#87 • Minnesota Vikings</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">MIN</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>64.0</strong></td>
+                                    <td class="text-center stats-cell">16.0</td>
+                                    <td class="text-center stats-cell">18.0</td>
+                                    <td class="text-center stats-cell">15.0</td>
+                                    <td class="text-center stats-cell">16.5</td>
+                                    <td class="text-center stats-cell">14.5</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- K Players -->
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-K">K</div>
+                                    </td>
+                                    <td>
+                                        <strong>Justin Tucker</strong>
+                                        <br><small class="text-muted">#9 • Baltimore Ravens</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>42.0</strong></td>
+                                    <td class="text-center stats-cell">10.5</td>
+                                    <td class="text-center stats-cell">12.0</td>
+                                    <td class="text-center stats-cell">9.0</td>
+                                    <td class="text-center stats-cell">11.0</td>
+                                    <td class="text-center stats-cell">10.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-K">K</div>
+                                    </td>
+                                    <td>
+                                        <strong>Tyler Bass</strong>
+                                        <br><small class="text-muted">#2 • Buffalo Bills</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-info text-white">BUF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>38.0</strong></td>
+                                    <td class="text-center stats-cell">9.5</td>
+                                    <td class="text-center stats-cell">11.0</td>
+                                    <td class="text-center stats-cell">8.5</td>
+                                    <td class="text-center stats-cell">9.5</td>
+                                    <td class="text-center stats-cell">9.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-K">K</div>
+                                    </td>
+                                    <td>
+                                        <strong>Harrison Butker</strong>
+                                        <br><small class="text-muted">#7 • Kansas City Chiefs</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">KC</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>44.0</strong></td>
+                                    <td class="text-center stats-cell">11.0</td>
+                                    <td class="text-center stats-cell">12.5</td>
+                                    <td class="text-center stats-cell">10.0</td>
+                                    <td class="text-center stats-cell">11.5</td>
+                                    <td class="text-center stats-cell">10.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- DEF Players -->
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-DEF">DEF</div>
+                                    </td>
+                                    <td>
+                                        <strong>San Francisco 49ers</strong>
+                                        <br><small class="text-muted">Defense/Special Teams</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-danger text-white">SF</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>58.0</strong></td>
+                                    <td class="text-center stats-cell">14.5</td>
+                                    <td class="text-center stats-cell">16.0</td>
+                                    <td class="text-center stats-cell">13.0</td>
+                                    <td class="text-center stats-cell">15.0</td>
+                                    <td class="text-center stats-cell">14.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-DEF">DEF</div>
+                                    </td>
+                                    <td>
+                                        <strong>Dallas Cowboys</strong>
+                                        <br><small class="text-muted">Defense/Special Teams</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-secondary text-white">DAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>52.0</strong></td>
+                                    <td class="text-center stats-cell">13.0</td>
+                                    <td class="text-center stats-cell">14.5</td>
+                                    <td class="text-center stats-cell">12.0</td>
+                                    <td class="text-center stats-cell">13.5</td>
+                                    <td class="text-center stats-cell">12.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="player-row">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input">
+                                    </td>
+                                    <td>
+                                        <div class="position-badge position-DEF">DEF</div>
+                                    </td>
+                                    <td>
+                                        <strong>Baltimore Ravens</strong>
+                                        <br><small class="text-muted">Defense/Special Teams</small>
+                                    </td>
+                                    <td>
+                                        <div class="team-logo bg-primary text-white">BAL</div>
+                                    </td>
+                                    <td class="text-center stats-cell"><strong>56.0</strong></td>
+                                    <td class="text-center stats-cell">14.0</td>
+                                    <td class="text-center stats-cell">15.5</td>
+                                    <td class="text-center stats-cell">13.0</td>
+                                    <td class="text-center stats-cell">14.5</td>
+                                    <td class="text-center stats-cell">13.0</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-success w-100">
+                                            <i class="bi bi-plus-circle"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="card-footer">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted">
+                                Showing <strong>1-10</strong> of <strong>850</strong> players
+                            </div>
+                            <nav>
+                                <ul class="pagination mb-0">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">...</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">85</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                            <select class="form-select form-select-sm" style="width: auto;">
+                                <option value="10" selected>10 per page</option>
+                                <option value="25">25 per page</option>
+                                <option value="50">50 per page</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar: My Current Roster -->
+            <div class="col-lg-3">
+                <div class="card mb-4 sticky-top" style="top: 20px;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-clipboard-check"></i> My Roster (1/10)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning py-2 px-3 mb-2">
+                            <small><i class="bi bi-info-circle"></i> <strong>NO OWNERSHIP MODEL:</strong> All NFL players available to all league members</small>
+                        </div>
+                        <div class="alert alert-info py-2 px-3 mb-3">
+                            <small>Roster: 1 QB, 2 RB, 2 WR, 1 TE, 1 K, 1 DEF, 1 FLEX, 1 SUPERFLEX</small>
+                        </div>
+
+                        <!-- Roster Slots -->
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">QB (0/1)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">RB (1/2)</small>
+                            <div class="border rounded p-2 bg-success text-white mb-1">
+                                <small><strong>D. Henry</strong> - BAL<br>22.1 avg</small>
+                            </div>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">WR (0/2)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                            <div class="border rounded p-2 bg-light text-center text-muted mt-1">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">TE (0/1)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">K (0/1)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">DEF (0/1)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">FLEX (0/1)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">SUPERFLEX (0/1)</small>
+                            <div class="border rounded p-2 bg-light text-center text-muted">
+                                <i class="bi bi-dash-circle"></i> Empty
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-3">
+                            <a href="my-roster.html" class="btn btn-primary">
+                                <i class="bi bi-eye"></i> View Full Roster
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <p class="mb-0">&copy; 2024 FFL Playoffs. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

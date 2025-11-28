@@ -974,32 +974,51 @@ private String sanitize(String input) {
 
 ## Final Recommendation
 
-### ✅ Recommended Solution: SportsData.io Fantasy Sports API with Redis Caching
+### ✅ Recommended Solution: nflreadpy with Polling Strategy
 
-**API URL:** https://sportsdata.io/fantasy-sports-api
+**Repository:** https://github.com/nflverse/nflreadpy
 
 **Why:**
-1. **Production-ready**: Official Fantasy Sports API with SLA guarantees
-2. **Real-time Fantasy Data**: 30-second updates during games, no polling needed
-3. **No League Setup**: Works standalone, direct player/game queries
-4. **Pre-calculated Points**: PPR/Standard/Half-PPR built-in
-5. **Cost-effective**: \$69/month is reasonable for reliability
-6. **Fantasy-optimized**: Built specifically for fantasy football use cases
-7. **Scalable**: Easy to upgrade tiers as we grow
-8. **Low risk**: No legal concerns, versioned API
+1. **Completely FREE** - No API keys, no subscription, no cost
+2. **Comprehensive data** - Players, stats, schedules, PBP back to 1999
+3. **Near real-time via polling** - Schedule updates every 5 minutes, PBP ~15 min after games
+4. **Legal and reliable** - Open source (MIT), data licensed CC-BY 4.0
+5. **Fantasy data included** - FantasyPros rankings, expected fantasy points
+6. **We calculate fantasy points** - Full control over scoring rules (PPR, Standard, custom)
+7. **No vendor lock-in** - Open data, can switch/supplement anytime
+
+**Polling Strategy:**
+
+| Data Type | Polling Frequency | Notes |
+|-----------|-------------------|-------|
+| Game scores/status | Every 5 minutes | During active games |
+| Player stats (PBP) | Every 15 minutes | During/after games |
+| Rosters | Daily (7 AM UTC) | Player status changes |
+| Schedules | Weekly | Or when games are rescheduled |
+| Depth charts | Daily | For lineup decisions |
+
+**Fantasy Point Calculation:**
+We implement our own scoring engine using raw stats from nflreadpy:
+- Passing: yards, TDs, INTs, 2PT conversions
+- Rushing: yards, TDs, 2PT conversions
+- Receiving: receptions (PPR), yards, TDs, 2PT conversions
+- Kicking: FG made (by distance), XP made/missed
+- Defense: calculated from team stats
 
 **Implementation Timeline:**
-- **Week 1**: Core integration with Fantasy Sports API
-- **Week 2**: Real-time caching + resilience patterns
-- **Week 3**: Rate limiting + monitoring
+- **Week 1**: nflreadpy integration, data models, polling scheduler
+- **Week 2**: Fantasy scoring engine implementation
+- **Week 3**: Caching layer (Redis/in-memory) + testing
 - **Week 4**: Production deployment
 
 **Next Steps:**
-1. Approve budget for SportsData.io Fantasy Sports API Starter tier (\$69/month)
-2. Create account at https://sportsdata.io/fantasy-sports-api and obtain API key
-3. Begin Phase 1 implementation with real-time endpoints
-4. Set up Redis for caching (with 30-second TTL for live data)
-5. Configure monitoring and alerting for real-time feeds
+1. Add nflreadpy to project dependencies: `pip install nflreadpy`
+2. Create NflReadPyAdapter implementing NflDataProvider port
+3. Implement FantasyScoringEngine for point calculations
+4. Set up polling scheduler (Spring @Scheduled or Celery)
+5. Configure caching for frequently accessed data
+
+**Cost: \$0/month**
 
 ---
 
@@ -1332,10 +1351,11 @@ Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds
 | 1.0 | 2025-10-02 | Project Structure Engineer | Initial proposal |
 | 1.1 | 2025-11-28 | Backend Engineer | FFL-33: Extended evaluation with ESPN, API-Sports, MySportsFeeds |
 | 1.2 | 2025-11-28 | Feature Architect | Added nflverse/nflreadpy evaluation (Appendix B) |
+| 1.3 | 2025-11-28 | Feature Architect | Changed recommendation to nflreadpy (FREE) with polling strategy |
 
 **Status:** ✅ Spike Complete - Ready for Implementation
 
-**Estimated Budget:** \$89-219/month (SportsData.io + Redis)
+**Estimated Budget:** \$0/month (nflreadpy is free)
 
 **Estimated Implementation Time:** 3-4 weeks
 

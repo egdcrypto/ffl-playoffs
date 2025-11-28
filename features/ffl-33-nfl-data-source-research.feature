@@ -1,3 +1,5 @@
+# @ref: https://github.com/nflverse/nflreadpy
+# @ref: docs/NFL_DATA_INTEGRATION_PROPOSAL.md
 @spike @research @nfl-data
 Feature: NFL Data Source Research
   As a development team

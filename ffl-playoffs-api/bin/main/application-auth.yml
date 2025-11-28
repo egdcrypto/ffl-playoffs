@@ -1,0 +1,42 @@
+# Authentication Service Configuration
+# Runs on localhost:9191 for Envoy ext_authz
+
+server:
+  port: 9191
+  address: 127.0.0.1  # Only listen on localhost
+
+spring:
+  application:
+    name: ffl-playoffs-auth-service
+
+  # MongoDB connection (shared with main API)
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/ffl-playoffs}
+      auto-index-creation: true
+
+# Google OAuth configuration
+google:
+  oauth:
+    client-id: ${GOOGLE_OAUTH_CLIENT_ID}
+    # Client ID is required for JWT verification
+    # Set via environment variable
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.ffl.playoffs.infrastructure.auth: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Actuator endpoints for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when-authorized

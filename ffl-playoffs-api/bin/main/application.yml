@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: ffl-playoffs-api
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ffl_playoffs
+    username: ${DB_USERNAME:ffl_user}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        default_schema: public
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://accounts.google.com}
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+logging:
+  level:
+    com.ffl.playoffs: INFO
+    org.springframework: WARN
+    org.hibernate: WARN

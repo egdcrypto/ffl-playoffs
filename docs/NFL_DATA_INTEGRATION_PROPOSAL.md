@@ -1095,14 +1095,255 @@ Response: [
 
 ---
 
+## Extended Data Source Evaluation (FFL-33 Research Spike)
+
+This section documents the comprehensive evaluation of NFL data sources completed as part of ticket FFL-33.
+
+### Evaluated Data Sources Summary
+
+#### 1. ESPN API (Unofficial)
+
+**API Base URL:** `https://site.api.espn.com/apis/site/v2/sports/football/nfl/`
+
+| Criteria | Assessment |
+|----------|------------|
+| **Data Coverage** | ✅ Comprehensive: Players, teams, schedules, scores, fantasy data |
+| **Rate Limits** | ⚠️ Undocumented, may vary. Community reports suggest generous limits |
+| **Data Freshness** | ✅ Real-time updates during games |
+| **Reliability** | ⚠️ No SLA guarantee, but generally stable |
+| **Authentication** | ✅ None required (public endpoints) |
+| **Terms of Service** | ⚠️ No official public API; may violate ToS for commercial use |
+| **Cost** | ✅ Free |
+
+**Key Endpoints:**
+- Scoreboard: `/scoreboard?seasontype=2&week=1`
+- Player stats: `/seasons/2024/athletes/{playerId}/eventlog`
+- Fantasy: `lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/2024/players`
+
+**Verdict:** ⚠️ **Not recommended for production** due to unofficial nature and legal concerns.
+
+---
+
+#### 2. SportsData.io NFL API (Commercial)
+
+**API Base URL:** `https://api.sportsdata.io/v3/nfl/`
+
+| Criteria | Assessment |
+|----------|------------|
+| **Data Coverage** | ✅ Complete: Players, teams, schedules, scores, fantasy points, injuries |
+| **Rate Limits** | ✅ 10 requests/second; call intervals vary by endpoint (5 min - 4 hrs) |
+| **Data Freshness** | ✅ 30-second updates during games (Fantasy API) |
+| **Reliability** | ✅ 99.9% SLA guaranteed |
+| **Authentication** | API key required (header or query param) |
+| **Terms of Service** | ✅ Clear commercial license |
+| **Cost** | Trial: Free (500 calls/mo), Developer: $0 (1K calls/mo), Starter: $69/mo (10K), Pro: $199/mo (50K) |
+
+**Key Features:**
+- Pre-calculated fantasy points (PPR, Standard, Half-PPR)
+- Real-time injury updates
+- No league setup required
+- Excellent documentation
+
+**Verdict:** ✅ **RECOMMENDED as Primary Source**
+
+---
+
+#### 3. API-Football / API-Sports (Commercial)
+
+**API Base URL:** `https://api-sports.io/documentation/nfl/v1`
+
+| Criteria | Assessment |
+|----------|------------|
+| **Data Coverage** | ✅ Good: Leagues, teams, standings, games, odds |
+| **Rate Limits** | 100 requests/day (Free), 7,500/day (Pro $19/mo) |
+| **Data Freshness** | ✅ Live updates available |
+| **Reliability** | ✅ Professional service with dashboard |
+| **Authentication** | API key required |
+| **Terms of Service** | ✅ Clear, no credit card for free tier |
+| **Cost** | Free: $0 (100/day), Pro: $19/mo, Ultra: $29/mo, Mega: $39/mo |
+
+**Features:**
+- No auto-renewal (prepaid model)
+- Overage protection (stops at quota)
+- Access to all endpoints on all tiers
+- Limited season access on free tier
+
+**Verdict:** ⚠️ **Acceptable alternative** but less NFL fantasy-focused than SportsData.io
+
+---
+
+#### 4. MySportsFeeds (Commercial)
+
+**API Base URL:** `https://api.mysportsfeeds.com/`
+
+| Criteria | Assessment |
+|----------|------------|
+| **Data Coverage** | ✅ Comprehensive: Schedules, scores, boxscores, standings, play-by-play, injuries, DFS |
+| **Rate Limits** | ✅ Frequency-based (not request-count based); unlimited requests allowed |
+| **Data Freshness** | ✅ Updates every few seconds during live games |
+| **Reliability** | ✅ Professional service |
+| **Authentication** | API key + Basic Auth |
+| **Terms of Service** | ✅ Free for non-commercial/personal use |
+| **Cost** | Free (personal/non-commercial), Paid tiers for commercial use |
+
+**Features:**
+- XML, JSON, CSV formats
+- 14-day free trial
+- Patreon support model for hobbyists
+- Highly accurate data
+
+**Verdict:** ✅ **Good fallback option** especially for non-commercial use
+
+---
+
+#### 5. BALLDONTLIE (Commercial/Freemium)
+
+**API Base URL:** `https://www.balldontlie.io/`
+
+| Criteria | Assessment |
+|----------|------------|
+| **Data Coverage** | ✅ NBA, NFL, MLB, NHL, NCAAF, NCAAB |
+| **Rate Limits** | ⚠️ Free tier has limits (unspecified in research) |
+| **Data Freshness** | ✅ Regular updates |
+| **Reliability** | ✅ Trusted by thousands of developers |
+| **Authentication** | API key required |
+| **Terms of Service** | ✅ Clear |
+| **Cost** | Free tier available, paid tiers for more access |
+
+**Verdict:** ⚠️ **Alternative option** - newer service, worth monitoring
+
+---
+
+### Data Source Comparison Matrix
+
+| Feature | SportsData.io | ESPN (Unofficial) | API-Sports | MySportsFeeds |
+|---------|---------------|-------------------|------------|---------------|
+| **Reliability** | ✅ 99.9% SLA | ⚠️ No guarantee | ✅ Good | ✅ Good |
+| **Documentation** | ✅ Excellent | ❌ None (community) | ✅ Good | ✅ Excellent |
+| **Cost (Entry)** | $0-69/mo | ✅ Free | $0-19/mo | Free (personal) |
+| **NFL Fantasy Focus** | ✅ Native | ⚠️ Partial | ❌ Limited | ⚠️ Partial |
+| **Pre-calc Points** | ✅ PPR/Std/Half | ❌ No | ❌ No | ⚠️ Limited |
+| **Real-time Data** | ✅ 30-sec | ✅ Yes | ✅ Yes | ✅ ~2-3 sec |
+| **Legal Risk** | ✅ None | ⚠️ Medium | ✅ None | ✅ None |
+| **Support** | ✅ Dedicated | ❌ None | ✅ Yes | ✅ Yes |
+| **Breaking Changes** | ✅ Rare | ⚠️ Common | ✅ Versioned | ✅ Versioned |
+
+---
+
+### Recommended Data Sources
+
+#### Primary Source: SportsData.io Fantasy Sports API ✅
+
+**Rationale:**
+1. **Fantasy-optimized**: Pre-calculated fantasy points in PPR, Standard, and Half-PPR
+2. **Real-time updates**: 30-second refresh during live games
+3. **Production-ready**: 99.9% SLA with dedicated support
+4. **No legal concerns**: Official commercial API with clear licensing
+5. **Comprehensive data**: Players, stats, schedules, scores, injuries all in one API
+6. **Reasonable cost**: $69/month Starter tier covers typical usage
+
+#### Fallback Source: MySportsFeeds ✅
+
+**Rationale:**
+1. **High data accuracy**: Updates every few seconds during games
+2. **Flexible pricing**: Free for non-commercial; reasonable commercial tiers
+3. **Multiple formats**: JSON, XML, CSV support
+4. **Good documentation**: Well-documented API
+5. **Proven reliability**: Established service with active development
+
+---
+
+### API Key Requirements
+
+| Provider | Key Type | Where to Store | Rotation Policy |
+|----------|----------|----------------|-----------------|
+| SportsData.io | Ocp-Apim-Subscription-Key | K8s Secret / Vault | Quarterly |
+| MySportsFeeds | Basic Auth (user:pass) | K8s Secret / Vault | Quarterly |
+
+**Environment Variables:**
+```bash
+NFL_DATA_PRIMARY_API_KEY=<sportsdata.io-key>
+NFL_DATA_FALLBACK_API_KEY=<mysportsfeeds-key>
+```
+
+---
+
+### Rate Limiting Strategy
+
+**Approach:** Token Bucket Algorithm with Bucket4j
+
+**Configuration:**
+```java
+// Primary: SportsData.io (80% of 10 req/sec limit)
+Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds(1)));
+
+// Fallback: MySportsFeeds (frequency-based, monitor 304 responses)
+// No hard limit but respect subscription-based frequency
+```
+
+**Monthly Usage Estimate:**
+| Operation | Frequency | Monthly Calls |
+|-----------|-----------|---------------|
+| Player roster sync | Daily | 30 |
+| Schedule fetch | Weekly | 4 |
+| Live game polling | 18 weeks × 16 games × 60 polls | ~17,280 |
+| On-demand lookups | User-triggered | ~1,000 |
+| **TOTAL** | | **~18,314** |
+
+**Recommended Tier:** SportsData.io Starter ($69/mo, 10K calls) with caching to reduce actual API calls.
+
+---
+
+### Cost Estimate for Production
+
+| Component | Monthly Cost | Annual Cost |
+|-----------|--------------|-------------|
+| SportsData.io Starter | $69 | $828 |
+| Redis (AWS ElastiCache) | $15 | $180 |
+| MySportsFeeds (fallback) | $0 (free tier)* | $0 |
+| Monitoring/Alerting | $5 | $60 |
+| **TOTAL** | **$89** | **$1,068** |
+
+*MySportsFeeds free tier for fallback/testing; commercial tier if primary fails.
+
+**Scale-up path:**
+- If usage exceeds 10K calls/mo → SportsData.io Pro ($199/mo)
+- Estimated break-even for Pro tier: ~25K monthly calls
+
+---
+
+## Spike Completion Checklist (FFL-33)
+
+| Artifact | Status | Location |
+|----------|--------|----------|
+| Data source comparison matrix | ✅ Complete | This document (Comparison Matrix section) |
+| Recommended primary source | ✅ Complete | SportsData.io Fantasy API |
+| Recommended fallback source | ✅ Complete | MySportsFeeds |
+| API key requirements documented | ✅ Complete | API Key Requirements section |
+| Rate limiting strategy | ✅ Complete | Rate Limiting Strategy section |
+| Cost estimate for production | ✅ Complete | Cost Estimate section |
+
+---
+
 ## Document Control
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-10-02 | Project Structure Engineer | Initial proposal |
+| 1.1 | 2025-11-28 | Backend Engineer | FFL-33: Extended evaluation with ESPN, API-Sports, MySportsFeeds |
 
-**Status:** 📋 Pending Approval
+**Status:** ✅ Spike Complete - Ready for Implementation
 
 **Estimated Budget:** $89-219/month (SportsData.io + Redis)
 
 **Estimated Implementation Time:** 3-4 weeks
+
+---
+
+## Research Sources
+
+- [ESPN Hidden API Guide](https://gist.github.com/nntrn/ee26cb2a0716de0947a0a4e9a157bc1c)
+- [SportsData.io NFL API Documentation](https://sportsdata.io/developers/api-documentation/nfl)
+- [API-Sports NFL Documentation](https://api-sports.io/documentation/nfl/v1)
+- [MySportsFeeds Documentation](https://www.mysportsfeeds.com/data-feeds/api-docs/)
+- [API-Football Pricing](https://www.api-football.com/pricing)

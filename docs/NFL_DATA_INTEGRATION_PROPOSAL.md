@@ -991,11 +991,13 @@ private String sanitize(String input) {
 
 | Data Type | Polling Frequency | Notes |
 |-----------|-------------------|-------|
-| Game scores/status | Every 5 minutes | During active games |
-| Player stats (PBP) | Every 15 minutes | During/after games |
+| Game scores/status | Every 1 minute | During active games (near real-time) |
+| Player stats (PBP) | Every 1 minute | During active games (near real-time) |
 | Rosters | Daily (7 AM UTC) | Player status changes |
 | Schedules | Weekly | Or when games are rescheduled |
 | Depth charts | Daily | For lineup decisions |
+
+**Note:** nflverse data updates every ~5 minutes for schedules. For player stats via PBP, raw data is available ~15 minutes after game completion, but we poll every 1 minute to catch updates as soon as they're available.
 
 **Fantasy Point Calculation:**
 We implement our own scoring engine using raw stats from nflreadpy:

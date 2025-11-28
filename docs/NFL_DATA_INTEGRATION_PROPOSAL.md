@@ -115,15 +115,15 @@ Based on `NFLPlayer`, `PlayerStats`, `NFLGame`, and `NFLTeam` domain models, we 
 - Dedicated support
 
 **Cons:**
-- Paid service ($0-$500+/month depending on tier)
+- Paid service (\$0-\$500+/month depending on tier)
 - Requires API key management
 - Usage-based pricing
 
 **Pricing Tiers:**
 - **Trial**: Free (500 API calls/month)
-- **Developer**: $0/month (1,000 calls/month)
-- **Starter**: $69/month (10,000 calls/month)
-- **Pro**: $199/month (50,000 calls/month)
+- **Developer**: \$0/month (1,000 calls/month)
+- **Starter**: \$69/month (10,000 calls/month)
+- **Pro**: \$199/month (50,000 calls/month)
 - **Enterprise**: Custom pricing
 
 **Real-time Capabilities:**
@@ -802,7 +802,7 @@ resilience4j:
 - 10 requests per second
 - 1,000 requests per month
 
-**Starter Tier ($69/month):**
+**Starter Tier (\$69/month):**
 - 10 requests per second
 - 10,000 requests per month
 
@@ -825,7 +825,7 @@ Bandwidth limit = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds(1
 | On-demand player lookups | User-triggered | ~1,000 |
 | **TOTAL** | | **~18,314** |
 
-**Tier Recommendation:** Starter ($69/month) provides comfortable buffer.
+**Tier Recommendation:** Starter (\$69/month) provides comfortable buffer.
 
 ### Rate Limit Monitoring
 
@@ -934,23 +934,23 @@ private String sanitize(String input) {
 
 | Tier | Monthly Cost | API Calls | Cost per Call |
 |------|--------------|-----------|---------------|
-| Free | $0 | 1,000 | $0 |
-| Starter | $69 | 10,000 | $0.0069 |
-| Pro | $199 | 50,000 | $0.00398 |
+| Free | \$0 | 1,000 | \$0 |
+| Starter | \$69 | 10,000 | \$0.0069 |
+| Pro | \$199 | 50,000 | \$0.00398 |
 
 **Recommendation for Production:**
-- **Start with:** Starter tier ($69/month)
-- **Scale to:** Pro tier ($199/month) if user base grows
+- **Start with:** Starter tier (\$69/month)
+- **Scale to:** Pro tier (\$199/month) if user base grows
 
 ### Infrastructure Costs
 
 | Component | Monthly Cost |
 |-----------|--------------|
-| Redis (AWS ElastiCache) | ~$15 |
-| Additional monitoring | ~$5 |
-| **Total Infrastructure** | **~$20** |
+| Redis (AWS ElastiCache) | ~\$15 |
+| Additional monitoring | ~\$5 |
+| **Total Infrastructure** | **~\$20** |
 
-**Total Monthly Cost:** $89 (Starter) or $219 (Pro)
+**Total Monthly Cost:** \$89 (Starter) or \$219 (Pro)
 
 ---
 
@@ -960,7 +960,7 @@ private String sanitize(String input) {
 |---------|---------------------------|-------------------|--------|
 | **Reliability** | ✅ 99.9% SLA | ⚠️ No guarantee | ✅ High (fallback) |
 | **Documentation** | ✅ Excellent (Fantasy-specific) | ❌ None | ✅ Good |
-| **Cost** | ⚠️ $69-199/month | ✅ Free | ⚠️ $69+/month |
+| **Cost** | ⚠️ \$69-199/month | ✅ Free | ⚠️ \$69+/month |
 | **Real-time Data** | ✅ Yes (30-sec updates) | ✅ Yes | ✅ Yes |
 | **League Setup** | ✅ Not required | ⚠️ N/A | ⚠️ Varies |
 | **Pre-calc Fantasy Points** | ✅ Yes (PPR/Standard/Half) | ❌ No | ⚠️ Partial |
@@ -983,7 +983,7 @@ private String sanitize(String input) {
 2. **Real-time Fantasy Data**: 30-second updates during games, no polling needed
 3. **No League Setup**: Works standalone, direct player/game queries
 4. **Pre-calculated Points**: PPR/Standard/Half-PPR built-in
-5. **Cost-effective**: $69/month is reasonable for reliability
+5. **Cost-effective**: \$69/month is reasonable for reliability
 6. **Fantasy-optimized**: Built specifically for fantasy football use cases
 7. **Scalable**: Easy to upgrade tiers as we grow
 8. **Low risk**: No legal concerns, versioned API
@@ -995,7 +995,7 @@ private String sanitize(String input) {
 - **Week 4**: Production deployment
 
 **Next Steps:**
-1. Approve budget for SportsData.io Fantasy Sports API Starter tier ($69/month)
+1. Approve budget for SportsData.io Fantasy Sports API Starter tier (\$69/month)
 2. Create account at https://sportsdata.io/fantasy-sports-api and obtain API key
 3. Begin Phase 1 implementation with real-time endpoints
 4. Set up Redis for caching (with 30-second TTL for live data)
@@ -1136,7 +1136,7 @@ This section documents the comprehensive evaluation of NFL data sources complete
 | **Reliability** | ✅ 99.9% SLA guaranteed |
 | **Authentication** | API key required (header or query param) |
 | **Terms of Service** | ✅ Clear commercial license |
-| **Cost** | Trial: Free (500 calls/mo), Developer: $0 (1K calls/mo), Starter: $69/mo (10K), Pro: $199/mo (50K) |
+| **Cost** | Trial: Free (500 calls/mo), Developer: \$0 (1K calls/mo), Starter: \$69/mo (10K), Pro: \$199/mo (50K) |
 
 **Key Features:**
 - Pre-calculated fantasy points (PPR, Standard, Half-PPR)
@@ -1155,12 +1155,12 @@ This section documents the comprehensive evaluation of NFL data sources complete
 | Criteria | Assessment |
 |----------|------------|
 | **Data Coverage** | ✅ Good: Leagues, teams, standings, games, odds |
-| **Rate Limits** | 100 requests/day (Free), 7,500/day (Pro $19/mo) |
+| **Rate Limits** | 100 requests/day (Free), 7,500/day (Pro \$19/mo) |
 | **Data Freshness** | ✅ Live updates available |
 | **Reliability** | ✅ Professional service with dashboard |
 | **Authentication** | API key required |
 | **Terms of Service** | ✅ Clear, no credit card for free tier |
-| **Cost** | Free: $0 (100/day), Pro: $19/mo, Ultra: $29/mo, Mega: $39/mo |
+| **Cost** | Free: \$0 (100/day), Pro: \$19/mo, Ultra: \$29/mo, Mega: \$39/mo |
 
 **Features:**
 - No auto-renewal (prepaid model)
@@ -1220,7 +1220,7 @@ This section documents the comprehensive evaluation of NFL data sources complete
 |---------|---------------|-------------------|------------|---------------|
 | **Reliability** | ✅ 99.9% SLA | ⚠️ No guarantee | ✅ Good | ✅ Good |
 | **Documentation** | ✅ Excellent | ❌ None (community) | ✅ Good | ✅ Excellent |
-| **Cost (Entry)** | $0-69/mo | ✅ Free | $0-19/mo | Free (personal) |
+| **Cost (Entry)** | \$0-69/mo | ✅ Free | \$0-19/mo | Free (personal) |
 | **NFL Fantasy Focus** | ✅ Native | ⚠️ Partial | ❌ Limited | ⚠️ Partial |
 | **Pre-calc Points** | ✅ PPR/Std/Half | ❌ No | ❌ No | ⚠️ Limited |
 | **Real-time Data** | ✅ 30-sec | ✅ Yes | ✅ Yes | ✅ ~2-3 sec |
@@ -1240,7 +1240,7 @@ This section documents the comprehensive evaluation of NFL data sources complete
 3. **Production-ready**: 99.9% SLA with dedicated support
 4. **No legal concerns**: Official commercial API with clear licensing
 5. **Comprehensive data**: Players, stats, schedules, scores, injuries all in one API
-6. **Reasonable cost**: $69/month Starter tier covers typical usage
+6. **Reasonable cost**: \$69/month Starter tier covers typical usage
 
 #### Fallback Source: MySportsFeeds ✅
 
@@ -1290,7 +1290,7 @@ Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds
 | On-demand lookups | User-triggered | ~1,000 |
 | **TOTAL** | | **~18,314** |
 
-**Recommended Tier:** SportsData.io Starter ($69/mo, 10K calls) with caching to reduce actual API calls.
+**Recommended Tier:** SportsData.io Starter (\$69/mo, 10K calls) with caching to reduce actual API calls.
 
 ---
 
@@ -1298,16 +1298,16 @@ Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds
 
 | Component | Monthly Cost | Annual Cost |
 |-----------|--------------|-------------|
-| SportsData.io Starter | $69 | $828 |
-| Redis (AWS ElastiCache) | $15 | $180 |
-| MySportsFeeds (fallback) | $0 (free tier)* | $0 |
-| Monitoring/Alerting | $5 | $60 |
-| **TOTAL** | **$89** | **$1,068** |
+| SportsData.io Starter | \$69 | \$828 |
+| Redis (AWS ElastiCache) | \$15 | \$180 |
+| MySportsFeeds (fallback) | \$0 (free tier)* | \$0 |
+| Monitoring/Alerting | \$5 | \$60 |
+| **TOTAL** | **\$89** | **\$1,068** |
 
 *MySportsFeeds free tier for fallback/testing; commercial tier if primary fails.
 
 **Scale-up path:**
-- If usage exceeds 10K calls/mo → SportsData.io Pro ($199/mo)
+- If usage exceeds 10K calls/mo → SportsData.io Pro (\$199/mo)
 - Estimated break-even for Pro tier: ~25K monthly calls
 
 ---
@@ -1335,7 +1335,7 @@ Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds
 
 **Status:** ✅ Spike Complete - Ready for Implementation
 
-**Estimated Budget:** $89-219/month (SportsData.io + Redis)
+**Estimated Budget:** \$89-219/month (SportsData.io + Redis)
 
 **Estimated Implementation Time:** 3-4 weeks
 

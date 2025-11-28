@@ -1,3 +1,6 @@
+# @ref: https://github.com/nflverse/nflreadpy
+# @ref: docs/NFL_DATA_INTEGRATION_PROPOSAL.md
+# @ref: docs/solutions/FFL-34-scheduled-nfl-data-sync-proposal.md
 @backend @nfl-data @scheduled
 Feature: Scheduled NFL Data Sync
   As the FFL Playoffs application

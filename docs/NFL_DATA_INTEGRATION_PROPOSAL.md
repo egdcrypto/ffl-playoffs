@@ -1331,6 +1331,7 @@ Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds
 |---------|------|--------|---------|
 | 1.0 | 2025-10-02 | Project Structure Engineer | Initial proposal |
 | 1.1 | 2025-11-28 | Backend Engineer | FFL-33: Extended evaluation with ESPN, API-Sports, MySportsFeeds |
+| 1.2 | 2025-11-28 | Feature Architect | Added nflverse/nflreadpy evaluation (Appendix B) |
 
 **Status:** ✅ Spike Complete - Ready for Implementation
 
@@ -1347,3 +1348,255 @@ Bandwidth primary = Bandwidth.classic(8, Refill.intervally(8, Duration.ofSeconds
 - [API-Sports NFL Documentation](https://api-sports.io/documentation/nfl/v1)
 - [MySportsFeeds Documentation](https://www.mysportsfeeds.com/data-feeds/api-docs/)
 - [API-Football Pricing](https://www.api-football.com/pricing)
+- [nflverse/nflreadpy GitHub](https://github.com/nflverse/nflreadpy)
+- [nflverse Data Schedule](https://nflreadr.nflverse.com/articles/nflverse_data_schedule.html)
+
+---
+
+## Appendix B: nflverse/nflreadpy Evaluation (Additional Research)
+
+### Overview
+
+**nflreadpy** is a Python package providing free access to comprehensive NFL data from the nflverse ecosystem. It's the Python port of the popular R package `nflreadr`.
+
+**Repository:** https://github.com/nflverse/nflreadpy
+**PyPI:** https://pypi.org/project/nflreadpy/
+**License:** MIT (code), CC-BY 4.0 (data)
+**Python Version:** 3.10+
+**Current Version:** 0.1.5 (beta)
+
+### Installation
+
+```bash
+pip install nflreadpy
+# or
+uv add nflreadpy
+```
+
+### Key Advantages
+
+| Feature | Assessment |
+|---------|------------|
+| **Cost** | ✅ **FREE** - No API keys, no subscription |
+| **Data Coverage** | ✅ Comprehensive: PBP, players, stats, schedules, fantasy rankings |
+| **Historical Data** | ✅ Play-by-play back to 1999 |
+| **Fantasy Data** | ✅ Native fantasy functions with FantasyPros rankings |
+| **Documentation** | ✅ Well-documented with field dictionaries |
+| **Legal Status** | ✅ Open source, properly licensed data |
+
+### Available Data Functions
+
+#### Player & Fantasy Data
+```python
+import nflreadpy as nfl
+
+# Player stats (weekly/season aggregates)
+stats = nfl.load_player_stats([2024, 2025])
+
+# Roster information
+rosters = nfl.load_rosters(2025)
+weekly_rosters = nfl.load_rosters_weekly(2025)
+
+# Fantasy-specific functions
+fantasy_ids = nfl.load_ff_playerids()      # Cross-reference player IDs
+rankings = nfl.load_ff_rankings()          # FantasyPros rankings
+opportunity = nfl.load_ff_opportunity()    # Expected fantasy points
+
+# Injury reports
+injuries = nfl.load_injuries(2024)  # Note: 2025 data unavailable
+```
+
+#### Game & Schedule Data
+```python
+# Schedules and results
+schedules = nfl.load_schedules(2025)
+
+# Play-by-play (detailed game events)
+pbp = nfl.load_pbp([2024, 2025])
+
+# Team statistics
+team_stats = nfl.load_team_stats(2025)
+```
+
+#### Advanced Metrics
+```python
+# NFL Next Gen Stats
+nextgen = nfl.load_nextgen_stats(2025)
+
+# Snap counts
+snaps = nfl.load_snap_counts(2025)
+
+# Depth charts
+depth = nfl.load_depth_charts(2025)
+```
+
+### Fantasy-Relevant Data Fields
+
+#### Passing Stats
+| Field | Description |
+|-------|-------------|
+| `passing_yards` | Total passing yards including laterals |
+| `pass_attempt` | Binary indicator for pass attempts |
+| `complete_pass` | Binary indicator for completions |
+| `pass_touchdown` | Binary indicator for passing TDs |
+| `interception` | Binary indicator for interceptions |
+
+#### Rushing Stats
+| Field | Description |
+|-------|-------------|
+| `rushing_yards` | Total rushing yards |
+| `rush_attempt` | Binary indicator for rush attempts |
+| `rush_touchdown` | Binary indicator for rushing TDs |
+| `tackled_for_loss` | TFL indicator |
+
+#### Receiving Stats
+| Field | Description |
+|-------|-------------|
+| `receiving_yards` | Total receiving yards |
+| `yards_after_catch` | YAC distance |
+| `receptions` | Reception count |
+
+#### Kicking Stats
+| Field | Description |
+|-------|-------------|
+| `field_goal_attempt` | FG attempt indicator |
+| `field_goal_result` | Made/missed/blocked |
+| `extra_point_attempt` | PAT attempt indicator |
+| `extra_point_result` | PAT result |
+
+#### Defense/IDP Stats
+| Field | Description |
+|-------|-------------|
+| `solo_tackle` | Solo tackle indicator |
+| `assist_tackle` | Assist tackle indicator |
+| `sack` | Sack indicator |
+| `interception_player_id` | INT player ID |
+| `fumble_forced` | Forced fumble indicator |
+
+### Data Update Schedule
+
+| Data Type | Update Frequency | Notes |
+|-----------|------------------|-------|
+| **Raw Play-by-Play** | ~15 min after game ends | During season |
+| **Processed PBP** | Nightly (3-5 AM ET) | Cleanest data Thursday AM |
+| **Game/Schedule** | Every 5 minutes | Throughout season |
+| **Rosters** | Daily 7 AM UTC | During season |
+| **Player Stats** | Nightly | Follows PBP schedule |
+| **Depth Charts** | Daily 7 AM UTC | During season |
+| **NextGen Stats** | Nightly (3-5 AM ET) | Weekly player-level |
+| **Snap Counts** | 4x daily (0,6,12,18 UTC) | Depends on PFR |
+
+### ⚠️ Limitations for FFL Playoffs
+
+| Limitation | Impact | Mitigation |
+|------------|--------|------------|
+| **No real-time data** | ~15 min delay after games | Not suitable for live scoring display |
+| **Batch updates only** | No streaming/webhook support | Must poll for updates |
+| **Injury data gap** | No 2025 injury reports available | Need alternate source for injuries |
+| **Python-only** | Must run Python process | Can integrate via subprocess or microservice |
+| **Beta status** | API may change | Pin version, test before upgrades |
+
+### Comparison: nflreadpy vs SportsData.io
+
+| Feature | nflreadpy | SportsData.io |
+|---------|-----------|---------------|
+| **Cost** | ✅ Free | ⚠️ $69-199/mo |
+| **Real-time** | ❌ 15-min delay | ✅ 30-sec updates |
+| **API Keys** | ✅ None needed | ⚠️ Required |
+| **SLA** | ❌ None | ✅ 99.9% |
+| **Fantasy Points** | ⚠️ Must calculate | ✅ Pre-calculated |
+| **Injury Data** | ❌ Limited (no 2025) | ✅ Real-time |
+| **Historical Data** | ✅ Back to 1999 | ⚠️ Limited |
+| **Legal Risk** | ✅ None | ✅ None |
+
+### Recommendation for FFL Playoffs
+
+**nflreadpy is NOT recommended as primary source** for FFL Playoffs due to:
+
+1. **No real-time updates** - 15-minute delay after games is too slow for live fantasy scoring
+2. **Missing injury data** - Critical for roster decisions
+3. **No pre-calculated fantasy points** - Must implement scoring logic ourselves
+
+**However, nflreadpy IS valuable as:**
+
+1. **Historical data source** - Excellent for backfilling historical stats
+2. **Data validation** - Cross-reference with primary source
+3. **Development/testing** - Free data for development environment
+4. **Fallback for non-critical data** - Player profiles, depth charts, historical stats
+
+### Hybrid Integration Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Data Source Strategy                          │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  PRIMARY (Real-time): SportsData.io Fantasy API                 │
+│    └─ Live scoring, injuries, game status                       │
+│                                                                  │
+│  SECONDARY (Batch): nflreadpy                                   │
+│    └─ Historical stats, player profiles, depth charts           │
+│    └─ Development/testing data                                  │
+│    └─ Cost savings on non-critical data                         │
+│                                                                  │
+│  FALLBACK: MySportsFeeds                                        │
+│    └─ When primary is unavailable                               │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Example Integration Code
+
+```python
+# infrastructure/adapter/nflverse/nflreadpy_adapter.py
+import nflreadpy as nfl
+from domain.port import NflDataProvider
+
+class NflReadPyAdapter(NflDataProvider):
+    """
+    Secondary data provider using nflreadpy.
+    Use for historical data, development, and non-real-time needs.
+    """
+
+    def get_player_stats(self, player_id: int, season: int, week: int):
+        """Get player stats from nflverse (batch data, not real-time)."""
+        stats = nfl.load_player_stats([season])
+        player_stats = stats.filter(
+            (nfl.col("player_id") == player_id) &
+            (nfl.col("week") == week)
+        )
+        return self._map_to_domain(player_stats)
+
+    def get_schedule(self, season: int):
+        """Get season schedule."""
+        return nfl.load_schedules(season)
+
+    def get_historical_pbp(self, seasons: list[int]):
+        """Get historical play-by-play for analysis."""
+        return nfl.load_pbp(seasons)
+
+    def get_fantasy_rankings(self):
+        """Get FantasyPros rankings for draft prep."""
+        return nfl.load_ff_rankings()
+```
+
+### Cost Savings Analysis
+
+Using nflreadpy for non-critical data can reduce SportsData.io API calls:
+
+| Use Case | Without nflreadpy | With nflreadpy | Savings |
+|----------|-------------------|----------------|---------|
+| Player profiles | 500 calls/mo | 0 calls/mo | 500 |
+| Historical stats | 200 calls/mo | 0 calls/mo | 200 |
+| Depth charts | 100 calls/mo | 0 calls/mo | 100 |
+| **Total Saved** | | | **800 calls/mo** |
+
+This could allow staying on SportsData.io Starter tier ($69/mo) instead of Pro ($199/mo).
+
+### Conclusion
+
+**nflreadpy** is a valuable **free supplement** to our commercial data sources, but cannot replace them for real-time fantasy football requirements. The recommended approach is:
+
+1. **Use SportsData.io** for live game data, real-time scoring, and injury updates
+2. **Use nflreadpy** for historical data, player profiles, and development/testing
+3. **Calculate potential cost savings** by offloading non-critical queries to nflreadpy

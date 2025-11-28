@@ -1533,36 +1533,33 @@ depth = nfl.load_depth_charts(2025)
 
 ### Recommendation for FFL Playoffs
 
-**nflreadpy is NOT recommended as primary source** for FFL Playoffs due to:
+**✅ nflreadpy IS RECOMMENDED as the primary source** for FFL Playoffs:
 
-1. **No real-time updates** - 15-minute delay after games is too slow for live fantasy scoring
-2. **Missing injury data** - Critical for roster decisions
-3. **No pre-calculated fantasy points** - Must implement scoring logic ourselves
+1. **Completely FREE** - No API costs, no subscription fees
+2. **Near real-time via polling** - Poll every 1 minute during games
+3. **We calculate fantasy points ourselves** - Full control over scoring rules
+4. **Comprehensive data** - Players, stats, schedules, PBP back to 1999
+5. **Legal and reliable** - Open source, properly licensed
 
-**However, nflreadpy IS valuable as:**
+**Trade-offs we accept:**
 
-1. **Historical data source** - Excellent for backfilling historical stats
-2. **Data validation** - Cross-reference with primary source
-3. **Development/testing** - Free data for development environment
-4. **Fallback for non-critical data** - Player profiles, depth charts, historical stats
+1. ~15-minute delay for final stats after games (acceptable for our use case)
+2. Must implement our own fantasy scoring engine (gives us flexibility)
+3. No 2025 injury data currently (monitor for updates)
 
-### Hybrid Integration Strategy
+### Integration Strategy
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Data Source Strategy                          │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                  │
-│  PRIMARY (Real-time): SportsData.io Fantasy API                 │
-│    └─ Live scoring, injuries, game status                       │
+│  PRIMARY: nflreadpy (FREE)                                      │
+│    └─ Poll every 1 minute during active games                   │
+│    └─ Player stats, game scores, schedules                      │
+│    └─ Calculate fantasy points ourselves                        │
 │                                                                  │
-│  SECONDARY (Batch): nflreadpy                                   │
-│    └─ Historical stats, player profiles, depth charts           │
-│    └─ Development/testing data                                  │
-│    └─ Cost savings on non-critical data                         │
-│                                                                  │
-│  FALLBACK: MySportsFeeds                                        │
-│    └─ When primary is unavailable                               │
+│  Cost: \$0/month                                                 │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -1613,12 +1610,11 @@ Using nflreadpy for non-critical data can reduce SportsData.io API calls:
 | Depth charts | 100 calls/mo | 0 calls/mo | 100 |
 | **Total Saved** | | | **800 calls/mo** |
 
-This could allow staying on SportsData.io Starter tier (\$69/mo) instead of Pro (\$199/mo).
-
 ### Conclusion
 
-**nflreadpy** is a valuable **free supplement** to our commercial data sources, but cannot replace them for real-time fantasy football requirements. The recommended approach is:
+**nflreadpy** is the **recommended primary data source** for FFL Playoffs:
 
-1. **Use SportsData.io** for live game data, real-time scoring, and injury updates
-2. **Use nflreadpy** for historical data, player profiles, and development/testing
-3. **Calculate potential cost savings** by offloading non-critical queries to nflreadpy
+1. **Completely FREE** - \$0/month operating cost
+2. **Poll every 1 minute** during active games for near real-time updates
+3. **Calculate fantasy points ourselves** - Full control over PPR/Standard/custom scoring
+4. **Comprehensive coverage** - Players, stats, schedules, historical data back to 1999

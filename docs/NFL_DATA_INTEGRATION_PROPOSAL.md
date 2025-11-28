@@ -1500,7 +1500,7 @@ depth = nfl.load_depth_charts(2025)
 
 | Feature | nflreadpy | SportsData.io |
 |---------|-----------|---------------|
-| **Cost** | ✅ Free | ⚠️ $69-199/mo |
+| **Cost** | ✅ Free | ⚠️ \$69-199/mo |
 | **Real-time** | ❌ 15-min delay | ✅ 30-sec updates |
 | **API Keys** | ✅ None needed | ⚠️ Required |
 | **SLA** | ❌ None | ✅ 99.9% |
@@ -1591,7 +1591,7 @@ Using nflreadpy for non-critical data can reduce SportsData.io API calls:
 | Depth charts | 100 calls/mo | 0 calls/mo | 100 |
 | **Total Saved** | | | **800 calls/mo** |
 
-This could allow staying on SportsData.io Starter tier ($69/mo) instead of Pro ($199/mo).
+This could allow staying on SportsData.io Starter tier (\$69/mo) instead of Pro (\$199/mo).
 
 ### Conclusion
 

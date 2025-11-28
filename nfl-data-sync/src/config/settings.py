@@ -37,7 +37,7 @@ class RedisSettings(BaseSettings):
 
 class MongoSettings(BaseSettings):
     """MongoDB configuration"""
-    url: str = "mongodb://localhost:27017"
+    url: str = "mongodb://localhost:30017"
     database: str = "ffl_playoffs"
 
     class Config:

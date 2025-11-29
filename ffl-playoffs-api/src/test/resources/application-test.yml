@@ -10,6 +10,10 @@ spring:
     embedded:
       version: 4.0.2
 
+google:
+  oauth:
+    client-id: test-client-id-for-testing
+
 logging:
   level:
     com.ffl.playoffs: DEBUG

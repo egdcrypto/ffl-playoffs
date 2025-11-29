@@ -1,7 +1,7 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence.mapper;
 
 import com.ffl.playoffs.domain.model.Role;
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.infrastructure.adapter.persistence.document.UserDocument;
 import org.springframework.stereotype.Component;
 

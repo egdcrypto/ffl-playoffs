@@ -1,6 +1,6 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence;
 
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.domain.port.UserRepository;
 import com.ffl.playoffs.infrastructure.adapter.persistence.document.UserDocument;
 import com.ffl.playoffs.infrastructure.adapter.persistence.mapper.UserMapper;

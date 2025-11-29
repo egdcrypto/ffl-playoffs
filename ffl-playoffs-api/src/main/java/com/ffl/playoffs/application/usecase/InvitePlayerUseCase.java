@@ -1,7 +1,7 @@
 package com.ffl.playoffs.application.usecase;
 
 import com.ffl.playoffs.application.dto.PlayerDTO;
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 import com.ffl.playoffs.domain.model.Player;
 import com.ffl.playoffs.domain.port.GameRepository;
 import com.ffl.playoffs.domain.port.PlayerRepository;

@@ -1,6 +1,6 @@
 package com.ffl.playoffs.domain;
 
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -2,8 +2,8 @@ package com.ffl.playoffs.bdd.steps;
 
 import com.ffl.playoffs.application.service.WeekService;
 import com.ffl.playoffs.bdd.World;
-import com.ffl.playoffs.domain.model.League;
-import com.ffl.playoffs.domain.model.Week;
+import com.ffl.playoffs.domain.aggregate.League;
+import com.ffl.playoffs.domain.aggregate.Week;
 import com.ffl.playoffs.domain.model.WeekStatus;
 import com.ffl.playoffs.domain.port.LeagueRepository;
 import com.ffl.playoffs.domain.port.WeekRepository;

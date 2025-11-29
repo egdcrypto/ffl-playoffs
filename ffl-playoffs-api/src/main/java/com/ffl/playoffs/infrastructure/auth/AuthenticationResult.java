@@ -1,7 +1,7 @@
 package com.ffl.playoffs.infrastructure.auth;
 
 import com.ffl.playoffs.domain.model.PersonalAccessToken;
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 
 /**
  * Result of token authentication

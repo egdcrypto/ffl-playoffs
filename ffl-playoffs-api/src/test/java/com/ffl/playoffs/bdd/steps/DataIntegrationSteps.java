@@ -1,8 +1,8 @@
 package com.ffl.playoffs.bdd.steps;
 
 import com.ffl.playoffs.bdd.World;
-import com.ffl.playoffs.domain.model.League;
-import com.ffl.playoffs.domain.model.NFLGame;
+import com.ffl.playoffs.domain.aggregate.League;
+import com.ffl.playoffs.domain.aggregate.NFLGame;
 import com.ffl.playoffs.domain.model.NFLTeam;
 import com.ffl.playoffs.domain.model.DefensiveStats;
 import com.ffl.playoffs.domain.model.PlayerStats;

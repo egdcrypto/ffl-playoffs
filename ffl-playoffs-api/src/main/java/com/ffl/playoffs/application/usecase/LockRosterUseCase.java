@@ -1,7 +1,7 @@
 package com.ffl.playoffs.application.usecase;
 
 import com.ffl.playoffs.domain.model.Position;
-import com.ffl.playoffs.domain.model.Roster;
+import com.ffl.playoffs.domain.aggregate.Roster;
 import com.ffl.playoffs.domain.port.RosterRepository;
 
 import java.time.LocalDateTime;

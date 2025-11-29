@@ -1,6 +1,6 @@
 package com.ffl.playoffs.infrastructure.adapter.integration.cache;
 
-import com.ffl.playoffs.domain.model.NFLPlayer;
+import com.ffl.playoffs.domain.aggregate.NFLPlayer;
 import com.ffl.playoffs.domain.model.PlayerStats;
 import com.ffl.playoffs.domain.model.Score;
 import com.ffl.playoffs.domain.port.NflDataProvider;

@@ -1,5 +1,7 @@
 package com.ffl.playoffs.infrastructure.adapter.integration.sportsdataio;
 
+import com.ffl.playoffs.domain.aggregate.NFLPlayer;
+import com.ffl.playoffs.domain.aggregate.*;
 import com.ffl.playoffs.domain.model.*;
 import com.ffl.playoffs.infrastructure.adapter.integration.sportsdataio.dto.*;
 import lombok.extern.slf4j.Slf4j;

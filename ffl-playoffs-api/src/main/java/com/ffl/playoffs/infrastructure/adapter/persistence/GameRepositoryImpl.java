@@ -1,6 +1,6 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence;
 
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 import com.ffl.playoffs.domain.port.GameRepository;
 import org.springframework.stereotype.Repository;
 

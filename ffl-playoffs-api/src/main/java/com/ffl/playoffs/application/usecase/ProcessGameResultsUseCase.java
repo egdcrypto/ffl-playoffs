@@ -4,7 +4,7 @@ import com.ffl.playoffs.application.dto.TeamSelectionDTO;
 import com.ffl.playoffs.domain.port.GameRepository;
 import com.ffl.playoffs.domain.port.NflDataProvider;
 import com.ffl.playoffs.domain.port.TeamSelectionRepository;
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 import com.ffl.playoffs.domain.model.Score;
 import com.ffl.playoffs.domain.service.ScoringService;
 

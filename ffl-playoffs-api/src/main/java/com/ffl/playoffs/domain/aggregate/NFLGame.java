@@ -1,4 +1,4 @@
-package com.ffl.playoffs.domain.model;
+package com.ffl.playoffs.domain.aggregate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

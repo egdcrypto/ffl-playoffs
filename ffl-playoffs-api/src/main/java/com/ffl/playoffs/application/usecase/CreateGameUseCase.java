@@ -2,7 +2,7 @@ package com.ffl.playoffs.application.usecase;
 
 import com.ffl.playoffs.application.dto.GameDTO;
 import com.ffl.playoffs.domain.event.GameCreatedEvent;
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 import com.ffl.playoffs.domain.port.GameRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

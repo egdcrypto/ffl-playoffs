@@ -1,6 +1,6 @@
 package com.ffl.playoffs.application.usecase;
 
-import com.ffl.playoffs.domain.model.League;
+import com.ffl.playoffs.domain.aggregate.League;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;
 import com.ffl.playoffs.domain.port.LeagueRepository;

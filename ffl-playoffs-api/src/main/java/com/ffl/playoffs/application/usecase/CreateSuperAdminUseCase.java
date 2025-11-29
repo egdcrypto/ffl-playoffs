@@ -1,7 +1,7 @@
 package com.ffl.playoffs.application.usecase;
 
 import com.ffl.playoffs.domain.model.Role;
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.domain.port.UserRepository;
 
 import java.util.Optional;

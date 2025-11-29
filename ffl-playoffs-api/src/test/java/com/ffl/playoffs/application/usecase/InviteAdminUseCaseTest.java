@@ -2,7 +2,7 @@ package com.ffl.playoffs.application.usecase;
 
 import com.ffl.playoffs.application.IntegrationTestBase;
 import com.ffl.playoffs.domain.model.Role;
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.domain.port.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

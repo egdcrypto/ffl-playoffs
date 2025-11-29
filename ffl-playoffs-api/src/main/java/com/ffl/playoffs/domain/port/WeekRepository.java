@@ -1,6 +1,6 @@
 package com.ffl.playoffs.domain.port;
 
-import com.ffl.playoffs.domain.model.Week;
+import com.ffl.playoffs.domain.aggregate.Week;
 import com.ffl.playoffs.domain.model.WeekStatus;
 
 import java.util.List;

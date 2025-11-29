@@ -6,7 +6,7 @@ import com.ffl.playoffs.bdd.World;
 import com.ffl.playoffs.domain.model.PATScope;
 import com.ffl.playoffs.domain.model.PersonalAccessToken;
 import com.ffl.playoffs.domain.model.Role;
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
 import com.ffl.playoffs.infrastructure.auth.*;

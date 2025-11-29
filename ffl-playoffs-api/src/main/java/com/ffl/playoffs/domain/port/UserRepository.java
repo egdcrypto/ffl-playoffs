@@ -1,6 +1,6 @@
 package com.ffl.playoffs.domain.port;
 
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import java.util.Optional;
 import java.util.UUID;
 

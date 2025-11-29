@@ -474,17 +474,40 @@ Feature: Comprehensive Position-Specific Scoring with Configurable Rules
   # ==================== SPEL IMPLEMENTATION ====================
 
   @spel @implementation
-  Scenario: Scoring formulas stored as SpEL expressions
+  Scenario: Scoring formulas stored as SpEL expressions with configurable multipliers
     Given a league has configurable scoring formulas stored as:
       | position | spel_formula                                                                |
-      | QB       | #passingYards * 0.04 + #passingTDs * 4 - #interceptions * 2 + #rushingYards * 0.1 + #rushingTDs * 6 - #fumblesLost * 2 |
-      | RB       | #rushingYards * 0.1 + #rushingTDs * 6 + #receptions * #pprValue + #receivingYards * 0.1 + #receivingTDs * 6 - #fumblesLost * 2 |
-      | WR       | #receivingYards * 0.1 + #receivingTDs * 6 + #receptions * #pprValue + #rushingYards * 0.1 + #rushingTDs * 6 |
-      | TE       | #receivingYards * 0.1 + #receivingTDs * 6 + #receptions * #tePremium |
-      | K        | #xpMade * 1 - #xpMissed * 1 + #fg0to39Made * 3 + #fg40to49Made * 4 + #fg50PlusMade * 5 |
+      | QB       | #passingYards * #ptsPerPassYard + #passingTDs * #ptsPerPassTD - #interceptions * #ptsPerInt + #rushingYards * #ptsPerRushYard + #rushingTDs * #ptsPerRushTD - #fumblesLost * #ptsPerFumble |
+      | RB       | #rushingYards * #ptsPerRushYard + #rushingTDs * #ptsPerRushTD + #receptions * #pprValue + #receivingYards * #ptsPerRecYard + #receivingTDs * #ptsPerRecTD - #fumblesLost * #ptsPerFumble |
+      | WR       | #receivingYards * #ptsPerRecYard + #receivingTDs * #ptsPerRecTD + #receptions * #pprValue + #rushingYards * #ptsPerRushYard + #rushingTDs * #ptsPerRushTD |
+      | TE       | #receivingYards * #ptsPerRecYard + #receivingTDs * #ptsPerRecTD + #receptions * #tePremium |
+      | K        | #xpMade * #ptsPerXP - #xpMissed * #ptsPerXPMiss + #fg0to39Made * #ptsPerFG0to39 + #fg40to49Made * #ptsPerFG40to49 + #fg50PlusMade * #ptsPerFG50Plus |
     When scoring is calculated using the SpEL engine
     Then formulas are parsed and cached for performance
-    And player stats are injected as SpEL variables
+    And player stats and scoring multipliers are injected as SpEL variables
+
+  @spel @configuration
+  Scenario: Configurable scoring multipliers per league
+    Given a league has scoring multipliers configured as:
+      | multiplier        | default | description                    |
+      | #ptsPerPassYard   | 0.04    | Points per passing yard        |
+      | #ptsPerPassTD     | 4       | Points per passing touchdown   |
+      | #ptsPerInt        | 2       | Points lost per interception   |
+      | #ptsPerRushYard   | 0.1     | Points per rushing yard        |
+      | #ptsPerRushTD     | 6       | Points per rushing touchdown   |
+      | #ptsPerRecYard    | 0.1     | Points per receiving yard      |
+      | #ptsPerRecTD      | 6       | Points per receiving touchdown |
+      | #ptsPerFumble     | 2       | Points lost per fumble         |
+      | #pprValue         | 0-1     | Points per reception (PPR)     |
+      | #tePremium        | 1.5     | TE premium reception multiplier|
+      | #ptsPerXP         | 1       | Points per extra point made    |
+      | #ptsPerXPMiss     | 1       | Points lost per XP missed      |
+      | #ptsPerFG0to39    | 3       | Points per FG 0-39 yards       |
+      | #ptsPerFG40to49   | 4       | Points per FG 40-49 yards      |
+      | #ptsPerFG50Plus   | 5       | Points per FG 50+ yards        |
+    When a league admin modifies a multiplier
+    Then the new value is used in all future scoring calculations
+    And historical scores are not affected
 
   @spel @variables
   Scenario: Available SpEL variables for scoring

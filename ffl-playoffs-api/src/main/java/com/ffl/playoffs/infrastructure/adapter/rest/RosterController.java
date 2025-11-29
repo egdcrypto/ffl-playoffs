@@ -4,7 +4,7 @@ import com.ffl.playoffs.application.dto.RosterDTO;
 import com.ffl.playoffs.application.usecase.BuildRosterUseCase;
 import com.ffl.playoffs.application.usecase.LockRosterUseCase;
 import com.ffl.playoffs.application.usecase.ValidateRosterUseCase;
-import com.ffl.playoffs.domain.model.Roster;
+import com.ffl.playoffs.domain.aggregate.Roster;
 import com.ffl.playoffs.domain.port.RosterRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,7 +1,7 @@
 package com.ffl.playoffs.bdd.steps;
 
 import com.ffl.playoffs.bdd.World;
-import com.ffl.playoffs.domain.model.NFLPlayer;
+import com.ffl.playoffs.domain.aggregate.NFLPlayer;
 import com.ffl.playoffs.domain.model.Position;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;

@@ -1,5 +1,6 @@
 package com.ffl.playoffs.bdd;
 
+import com.ffl.playoffs.domain.aggregate.*;
 import com.ffl.playoffs.domain.model.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;

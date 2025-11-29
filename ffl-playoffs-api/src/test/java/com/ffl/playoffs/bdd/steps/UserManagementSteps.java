@@ -4,7 +4,7 @@ import com.ffl.playoffs.application.usecase.CreateUserAccountUseCase;
 import com.ffl.playoffs.application.usecase.InviteAdminUseCase;
 import com.ffl.playoffs.bdd.World;
 import com.ffl.playoffs.domain.model.Role;
-import com.ffl.playoffs.domain.model.User;
+import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.domain.port.UserRepository;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;

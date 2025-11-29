@@ -3,7 +3,7 @@ package com.ffl.playoffs.infrastructure.adapter.rest;
 import com.ffl.playoffs.application.dto.LeagueDTO;
 import com.ffl.playoffs.application.usecase.ConfigureLeagueUseCase;
 import com.ffl.playoffs.application.usecase.CreateLeagueUseCase;
-import com.ffl.playoffs.domain.model.League;
+import com.ffl.playoffs.domain.aggregate.League;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;
 import com.ffl.playoffs.domain.port.LeagueRepository;

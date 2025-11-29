@@ -1,4 +1,8 @@
-package com.ffl.playoffs.domain.model;
+package com.ffl.playoffs.domain.aggregate;
+
+import com.ffl.playoffs.domain.model.Player;
+import com.ffl.playoffs.domain.model.RosterConfiguration;
+import com.ffl.playoffs.domain.model.ScoringRules;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

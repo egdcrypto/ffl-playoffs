@@ -2,7 +2,7 @@ package com.ffl.playoffs.bdd.steps;
 
 import com.ffl.playoffs.application.usecase.CreateLeagueUseCase;
 import com.ffl.playoffs.bdd.World;
-import com.ffl.playoffs.domain.model.League;
+import com.ffl.playoffs.domain.aggregate.League;
 import com.ffl.playoffs.domain.model.Position;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;

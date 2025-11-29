@@ -1,6 +1,6 @@
 package com.ffl.playoffs.application.service;
 
-import com.ffl.playoffs.domain.model.Week;
+import com.ffl.playoffs.domain.aggregate.Week;
 import com.ffl.playoffs.domain.model.WeekStatus;
 import com.ffl.playoffs.domain.port.WeekRepository;
 import lombok.RequiredArgsConstructor;

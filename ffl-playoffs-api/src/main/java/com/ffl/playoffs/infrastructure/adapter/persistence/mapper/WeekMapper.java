@@ -1,6 +1,6 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence.mapper;
 
-import com.ffl.playoffs.domain.model.Week;
+import com.ffl.playoffs.domain.aggregate.Week;
 import com.ffl.playoffs.domain.model.WeekStatus;
 import com.ffl.playoffs.infrastructure.adapter.persistence.document.WeekDocument;
 import org.springframework.stereotype.Component;

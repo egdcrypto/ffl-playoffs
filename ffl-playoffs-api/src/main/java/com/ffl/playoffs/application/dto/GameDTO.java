@@ -1,6 +1,6 @@
 package com.ffl.playoffs.application.dto;
 
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

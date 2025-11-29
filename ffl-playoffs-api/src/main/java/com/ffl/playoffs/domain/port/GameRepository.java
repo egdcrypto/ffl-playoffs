@@ -1,6 +1,6 @@
 package com.ffl.playoffs.domain.port;
 
-import com.ffl.playoffs.domain.model.Game;
+import com.ffl.playoffs.domain.aggregate.Game;
 
 import java.util.List;
 import java.util.Optional;

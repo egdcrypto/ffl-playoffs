@@ -1,6 +1,6 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence;
 
-import com.ffl.playoffs.domain.model.League;
+import com.ffl.playoffs.domain.aggregate.League;
 import com.ffl.playoffs.domain.port.LeagueRepository;
 import com.ffl.playoffs.infrastructure.adapter.persistence.mapper.LeagueMapper;
 import com.ffl.playoffs.infrastructure.adapter.persistence.repository.LeagueMongoRepository;

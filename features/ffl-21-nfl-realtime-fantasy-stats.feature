@@ -1,11 +1,11 @@
-Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
+Feature: Real-time Fantasy Stats via nflreadpy
   As a fantasy football player
   I want to see live fantasy points updates during NFL games
   So that I can track my roster performance in real-time
 
   Background:
-    Given the system is configured with SportsData.io Fantasy API
-    And the API endpoint is "/stats/json/PlayerGameStatsByWeek/{season}/{week}"
+    Given the system is configured with nflreadpy library
+    And player game stats are sourced from nflreadpy's weekly data module
     And real-time polling is enabled
     And the current NFL season is 2024
 
@@ -15,10 +15,10 @@ Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
     Given NFL week 15 has games in progress
     And the game "KC vs BUF" has status "InProgress"
     And the polling interval is 30 seconds
-    When the system polls GET "/stats/json/PlayerGameStatsByWeek/2024/15"
-    Then the API returns HTTP 200 OK
+    When the system queries nflreadpy for week 15 player stats
+    Then the library returns stats data successfully
     And the response includes live stats for all players in week 15
-    And stats are updated every 20-30 seconds by SportsData.io
+    And stats are refreshed from nflreadpy's data source
     And the system polls every 30 seconds
 
   Scenario: Receive real-time player game stats
@@ -207,7 +207,7 @@ Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
 
   Scenario: Retrieve live defensive stats
     Given "Kansas City Chiefs" defense is playing
-    When the system fetches live DEF stats via "/stats/json/FantasyDefenseByGame/2024/15"
+    When the system fetches live DEF stats from nflreadpy for week 15
     Then the response includes:
       | Team                  | KC  |
       | Sacks                 | 3.0 |
@@ -226,7 +226,7 @@ Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
     Given "Player X" was credited with a touchdown
     And the system recorded 6 fantasy points
     When the NFL reviews the play and reverses the call
-    And SportsData.io updates the stats
+    And nflreadpy reflects the updated stats
     Then the system polls and receives updated stats
     And the touchdown is removed (0 touchdowns)
     And fantasy points are recalculated
@@ -244,11 +244,11 @@ Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
 
   # Performance Optimization
 
-  Scenario: Minimize API calls during high-traffic periods
+  Scenario: Minimize data queries during high-traffic periods
     Given 1,000 users are viewing live stats
     And 10 games are in progress
-    When the system polls SportsData.io
-    Then only 1 API call is made per 30 seconds
+    When the system polls nflreadpy
+    Then only 1 data query is made per 30 seconds
     And the response is shared across all users
     And database is updated once
     And WebSocket pushes updates to all connected clients
@@ -258,7 +258,7 @@ Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
     And the cache TTL for live stats is 30 seconds
     When a user requests live stats
     Then the cached data is returned
-    And no API call is made
+    And no nflreadpy query is made
     And cache hit is recorded
 
   Scenario: Fetch only active week stats
@@ -267,29 +267,29 @@ Feature: Real-time Fantasy Stats via SportsData.io Fantasy API
     When the system polls for live stats
     Then only week 15 stats are fetched
     And weeks 16-18 are not polled (not started yet)
-    And API calls are minimized
+    And data queries are minimized
 
   # Error Handling During Live Polling
 
-  Scenario: Handle API timeout during live game
+  Scenario: Handle timeout during live game
     Given real-time polling is active
-    When the SportsData.io API times out
+    When the nflreadpy data query times out
     Then the system logs the timeout
     And returns the most recent cached stats
     And retries the request after 60 seconds
     And continues polling if retry succeeds
 
-  Scenario: Handle partial API response
-    Given the API returns stats for 50 out of 100 players
+  Scenario: Handle partial data response
+    Given nflreadpy returns stats for 50 out of 100 players
     When the system processes the response
     Then the 50 available stats are updated
     And the 50 missing stats are logged
     And a retry is scheduled for missing players
     And users see partial updates
 
-  Scenario: Handle API rate limit during live polling
+  Scenario: Handle rate limit during live polling
     Given the system is polling every 30 seconds
-    When the API returns HTTP 429 Too Many Requests
+    When nflreadpy encounters rate limiting or data access issues
     Then the system backs off to 60-second intervals
     And logs the rate limit event
     And reduces polling frequency temporarily

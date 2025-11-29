@@ -7,6 +7,7 @@ Feature: Comprehensive Position-Specific Scoring with Configurable Rules
     Given the system calculates fantasy points based on league configuration
     And each position type has different scoring rules
     And all scoring rules are configurable by league admins
+    And scoring formulas are evaluated using Spring Expression Language (SpEL)
 
   # ==================== QUARTERBACK (QB) SCORING ====================
 
@@ -469,3 +470,44 @@ Feature: Comprehensive Position-Specific Scoring with Configurable Rules
       | Fumbles lost   | 3 × -2  | -6.0  |
     And total fantasy points = -14.0
     And the system correctly handles net negative scores
+
+  # ==================== SPEL IMPLEMENTATION ====================
+
+  @spel @implementation
+  Scenario: Scoring formulas stored as SpEL expressions
+    Given a league has configurable scoring formulas stored as:
+      | position | spel_formula                                                                |
+      | QB       | #passingYards * 0.04 + #passingTDs * 4 - #interceptions * 2 + #rushingYards * 0.1 + #rushingTDs * 6 - #fumblesLost * 2 |
+      | RB       | #rushingYards * 0.1 + #rushingTDs * 6 + #receptions * #pprValue + #receivingYards * 0.1 + #receivingTDs * 6 - #fumblesLost * 2 |
+      | WR       | #receivingYards * 0.1 + #receivingTDs * 6 + #receptions * #pprValue + #rushingYards * 0.1 + #rushingTDs * 6 |
+      | TE       | #receivingYards * 0.1 + #receivingTDs * 6 + #receptions * #tePremium |
+      | K        | #xpMade * 1 - #xpMissed * 1 + #fg0to39Made * 3 + #fg40to49Made * 4 + #fg50PlusMade * 5 |
+    When scoring is calculated using the SpEL engine
+    Then formulas are parsed and cached for performance
+    And player stats are injected as SpEL variables
+
+  @spel @variables
+  Scenario: Available SpEL variables for scoring
+    Given the SpEL evaluation context includes:
+      | variable           | description                           |
+      | #passingYards      | Passing yards                         |
+      | #passingTDs        | Passing touchdowns                    |
+      | #interceptions     | Interceptions thrown                  |
+      | #rushingYards      | Rushing yards                         |
+      | #rushingTDs        | Rushing touchdowns                    |
+      | #receptions        | Receptions                            |
+      | #receivingYards    | Receiving yards                       |
+      | #receivingTDs      | Receiving touchdowns                  |
+      | #fumblesLost       | Fumbles lost                          |
+      | #pprValue          | PPR multiplier (0, 0.5, or 1.0)       |
+      | #tePremium         | TE premium multiplier (default 1.5)   |
+      | #xpMade            | Extra points made                     |
+      | #xpMissed          | Extra points missed                   |
+      | #fg0to39Made       | Field goals 0-39 yards made           |
+      | #fg40to49Made      | Field goals 40-49 yards made          |
+      | #fg50PlusMade      | Field goals 50+ yards made            |
+      | #sacks             | Defensive sacks                       |
+      | #defensiveTDs      | Defensive touchdowns                  |
+      | #pointsAllowed     | Points allowed by defense             |
+    When a formula references these variables
+    Then values are injected from player statistics

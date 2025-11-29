@@ -50,4 +50,3 @@ logging:
   level:
     com.ffl.playoffs: INFO
     org.springframework: WARN
-    org.hibernate: WARN

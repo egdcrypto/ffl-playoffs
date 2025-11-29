@@ -41,8 +41,8 @@ infrastructure/  - Framework & external integrations
 
 - **Java 17**
 - **Spring Boot 3.2.x**
-- **Spring Data JPA** - Persistence
-- **PostgreSQL** - Database
+- **Spring Data MongoDB** - Persistence
+- **MongoDB** - Database
 - **Lombok** - Boilerplate reduction
 - **OpenAPI/Swagger** - API documentation
 - **JUnit 5 & Mockito** - Testing
@@ -53,18 +53,18 @@ infrastructure/  - Framework & external integrations
 ### Prerequisites
 
 - Java 17 or higher
-- PostgreSQL 14+
+- MongoDB 7.0+
 - Gradle 8.x
 
 ### Database Setup
 
 ```bash
-# Create database
-createdb ffl_playoffs_dev
+# Start MongoDB (if using Docker)
+docker run -d -p 27017:27017 --name mongodb mongo:7.0
 
 # Set environment variables
-export DB_USERNAME=ffl_user
-export DB_PASSWORD=password
+export MONGODB_URI=mongodb://localhost:27017
+export MONGODB_DATABASE=ffl_playoffs
 ```
 
 ### Build & Run
@@ -150,7 +150,7 @@ This is the initial project structure. Key areas requiring implementation:
 
 ### Infrastructure Layer
 - ✅ REST controllers scaffolded
-- ⏳ JPA entity mappings needed
+- ⏳ MongoDB document mappings needed
 - ⏳ Repository implementations needed
 - ⏳ NFL Data API integration needed
 - ⏳ Authentication/Authorization
@@ -159,8 +159,7 @@ This is the initial project structure. Key areas requiring implementation:
 
 Key configuration in `application.yml`:
 
-- **Database**: PostgreSQL connection settings
-- **JPA**: Hibernate settings
+- **Database**: MongoDB connection settings
 - **Security**: OAuth2/JWT configuration (to be implemented)
 - **Swagger**: API documentation settings
 

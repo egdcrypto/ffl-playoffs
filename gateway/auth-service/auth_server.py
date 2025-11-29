@@ -7,6 +7,7 @@ Validates JWT tokens and Personal Access Tokens (PAT)
 import os
 import jwt
 import hashlib
+import bcrypt
 import logging
 from typing import Optional, Dict, Any
 from datetime import datetime
@@ -26,7 +27,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration from environment variables
-JWT_SECRET = os.getenv('JWT_SECRET', 'your-jwt-secret-key')
+JWT_SECRET = os.getenv('JWT_SECRET')
+if not JWT_SECRET:
+    raise ValueError("JWT_SECRET environment variable must be set")
 JWT_ENABLED = os.getenv('JWT_ENABLED', 'true').lower() == 'true'
 PAT_ENABLED = os.getenv('PAT_ENABLED', 'true').lower() == 'true'
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://mongodb:27017')
@@ -67,6 +70,11 @@ class AuthorizationService(external_auth_pb2_grpc.AuthorizationServicer):
 
             token = auth_header[7:].strip()  # Remove 'Bearer ' prefix
 
+            # Validate token length (max 8192 bytes)
+            if len(token.encode('utf-8')) > 8192:
+                logger.warning("Token exceeds maximum length")
+                return self._deny_response(401, "Token too long")
+
             # Try JWT validation first
             if JWT_ENABLED:
                 user_context = self._validate_jwt(token)
@@ -104,7 +112,7 @@ class AuthorizationService(external_auth_pb2_grpc.AuthorizationServicer):
             payload = jwt.decode(
                 token,
                 JWT_SECRET,
-                algorithms=['HS256', 'RS256'],
+                algorithms=['HS256'],
                 options={'verify_exp': True}
             )
 
@@ -167,17 +175,23 @@ class AuthorizationService(external_auth_pb2_grpc.AuthorizationServicer):
             # Extract token identifier (first 8 chars after prefix)
             token_identifier = token[4:12]
 
-            # Hash the full token for comparison
-            token_hash = hashlib.sha256(token.encode()).hexdigest()
-
-            # Look up PAT in database
+            # Look up PAT in database by identifier
             pat = db.personalAccessTokens.find_one({
-                'tokenIdentifier': token_identifier,
-                'tokenHash': token_hash
+                'tokenIdentifier': token_identifier
             })
 
             if not pat:
                 logger.warning(f"PAT not found for identifier: {token_identifier}")
+                return None
+
+            # Verify token hash using bcrypt
+            stored_hash = pat.get('tokenHash')
+            if not stored_hash or not isinstance(stored_hash, bytes):
+                logger.warning(f"Invalid token hash format for PAT: {token_identifier}")
+                return None
+
+            if not bcrypt.checkpw(token.encode(), stored_hash):
+                logger.warning(f"PAT hash verification failed: {token_identifier}")
                 return None
 
             # Check if expired

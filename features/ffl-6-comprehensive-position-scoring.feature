@@ -534,3 +534,39 @@ Feature: Comprehensive Position-Specific Scoring with Configurable Rules
       | #pointsAllowed     | Points allowed by defense             |
     When a formula references these variables
     Then values are injected from player statistics
+
+  @spel @bonuses
+  Scenario: Configurable milestone bonuses using SpEL conditionals
+    Given a league has configurable bonus rules:
+      | bonus                  | spel_expression                                                                          |
+      | 300-yard passing       | (#passingYards >= #bonus300PassThreshold ? #bonus300PassPts : 0)                        |
+      | 400-yard passing       | (#passingYards >= #bonus400PassThreshold ? #bonus400PassPts : 0)                        |
+      | 100-yard rushing       | (#rushingYards >= #bonus100RushThreshold ? #bonus100RushPts : 0)                        |
+      | 200-yard rushing       | (#rushingYards >= #bonus200RushThreshold ? #bonus200RushPts : 0)                        |
+      | 100-yard receiving     | (#receivingYards >= #bonus100RecThreshold ? #bonus100RecPts : 0)                        |
+      | 200-yard receiving     | (#receivingYards >= #bonus200RecThreshold ? #bonus200RecPts : 0)                        |
+      | 40+ yard TD pass       | (#longTDPass >= #bonus40YdTDThreshold ? #bonus40YdTDPts : 0)                            |
+      | 40+ yard TD rush       | (#longTDRush >= #bonus40YdTDThreshold ? #bonus40YdTDPts : 0)                            |
+      | 40+ yard TD reception  | (#longTDRec >= #bonus40YdTDThreshold ? #bonus40YdTDPts : 0)                             |
+      | Perfect kicker game    | (#fgMissed == 0 && #xpMissed == 0 && (#fgMade + #xpMade) >= #bonusPerfectKickerMin ? #bonusPerfectKickerPts : 0) |
+    And the bonus thresholds and points are configurable:
+      | multiplier                | default | description                      |
+      | #bonus300PassThreshold    | 300     | Threshold for 300-yard bonus     |
+      | #bonus300PassPts          | 3       | Points for 300-yard passing      |
+      | #bonus400PassThreshold    | 400     | Threshold for 400-yard bonus     |
+      | #bonus400PassPts          | 5       | Points for 400-yard passing      |
+      | #bonus100RushThreshold    | 100     | Threshold for 100-yard rushing   |
+      | #bonus100RushPts          | 3       | Points for 100-yard rushing      |
+      | #bonus200RushThreshold    | 200     | Threshold for 200-yard rushing   |
+      | #bonus200RushPts          | 5       | Points for 200-yard rushing      |
+      | #bonus100RecThreshold     | 100     | Threshold for 100-yard receiving |
+      | #bonus100RecPts           | 3       | Points for 100-yard receiving    |
+      | #bonus200RecThreshold     | 200     | Threshold for 200-yard receiving |
+      | #bonus200RecPts           | 5       | Points for 200-yard receiving    |
+      | #bonus40YdTDThreshold     | 40      | Min yards for long TD bonus      |
+      | #bonus40YdTDPts           | 2       | Points for 40+ yard TD           |
+      | #bonusPerfectKickerMin    | 5       | Min kicks for perfect game bonus |
+      | #bonusPerfectKickerPts    | 3       | Points for perfect kicker game   |
+    When bonuses are evaluated using SpEL
+    Then all applicable bonuses are added to base score
+    And league admins can enable/disable individual bonuses

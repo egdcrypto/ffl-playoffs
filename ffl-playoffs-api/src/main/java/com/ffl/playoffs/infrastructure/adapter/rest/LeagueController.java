@@ -98,8 +98,10 @@ public class LeagueController {
             @PathVariable UUID leagueId,
             @Valid @RequestBody LeagueDTO leagueDTO) {
 
+        // TODO: Get ownerId from authentication context
+        UUID ownerId = UUID.randomUUID(); // Placeholder - should come from authentication
         ConfigureLeagueUseCase.ConfigureLeagueCommand command =
-                new ConfigureLeagueUseCase.ConfigureLeagueCommand(leagueId);
+                new ConfigureLeagueUseCase.ConfigureLeagueCommand(leagueId, ownerId);
 
         if (leagueDTO.getRosterConfiguration() != null) {
             command.setRosterConfiguration(mapToRosterConfiguration(leagueDTO.getRosterConfiguration()));

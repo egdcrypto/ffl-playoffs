@@ -24,13 +24,13 @@ public class TeamSelectionMapper {
         }
 
         TeamSelectionDocument document = new TeamSelectionDocument();
-        document.setId(teamSelection.getId() != null ? teamSelection.getId().toString() : null);
-        document.setPlayerId(teamSelection.getPlayerId() != null ? teamSelection.getPlayerId().toString() : null);
-        document.setGameId(teamSelection.getGameId() != null ? teamSelection.getGameId().toString() : null);
-        document.setTeamName(teamSelection.getTeamName());
-        document.setWeek(teamSelection.getWeek());
+        document.setId(teamSelection.getId() != null ? UUID.fromString(teamSelection.getId().toString()) : null);
+        document.setPlayerId(teamSelection.getPlayerId() != null ? UUID.fromString(teamSelection.getPlayerId().toString()) : null);
+        // gameId doesn't exist in current TeamSelection model or TeamSelectionDocument
+        document.setTeamName(teamSelection.getNflTeam());
+        document.setWeekNumber(teamSelection.getWeekId() != null ? teamSelection.getWeekId().intValue() : null);
         document.setSelectedAt(teamSelection.getSelectedAt());
-        document.setLocked(teamSelection.isLocked());
+        document.setIsEliminated(teamSelection.getStatus() == TeamSelection.SelectionStatus.SCORED && teamSelection.getScore() != null && teamSelection.getScore() == 0.0);
 
         return document;
     }
@@ -46,13 +46,13 @@ public class TeamSelectionMapper {
         }
 
         TeamSelection teamSelection = new TeamSelection();
-        teamSelection.setId(document.getId() != null ? UUID.fromString(document.getId()) : null);
-        teamSelection.setPlayerId(document.getPlayerId() != null ? UUID.fromString(document.getPlayerId()) : null);
-        teamSelection.setGameId(document.getGameId() != null ? UUID.fromString(document.getGameId()) : null);
-        teamSelection.setTeamName(document.getTeamName());
-        teamSelection.setWeek(document.getWeek());
+        teamSelection.setId(document.getId() != null ? Long.parseLong(document.getId().toString().hashCode() + "") : null);
+        teamSelection.setPlayerId(document.getPlayerId() != null ? Long.parseLong(document.getPlayerId().toString().hashCode() + "") : null);
+        // gameId doesn't exist in current TeamSelection model
+        teamSelection.setNflTeam(document.getTeamName());
+        teamSelection.setWeekId(document.getWeekNumber() != null ? document.getWeekNumber().longValue() : null);
         teamSelection.setSelectedAt(document.getSelectedAt());
-        teamSelection.setLocked(document.isLocked());
+        teamSelection.setStatus(document.getIsEliminated() != null && document.getIsEliminated() ? TeamSelection.SelectionStatus.SCORED : TeamSelection.SelectionStatus.PENDING);
 
         return teamSelection;
     }

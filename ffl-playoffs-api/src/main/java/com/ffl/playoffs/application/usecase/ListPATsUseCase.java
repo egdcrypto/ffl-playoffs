@@ -103,7 +103,7 @@ public class ListPATsUseCase {
                 pat.getName(),
                 pat.getScope(),
                 pat.getExpiresAt(),
-                pat.getCreatedBy(),
+                pat.getCreatedBy() != null ? UUID.fromString(pat.getCreatedBy()) : null,
                 pat.getCreatedAt(),
                 pat.getLastUsedAt(),
                 pat.isRevoked(),

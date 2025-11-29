@@ -42,106 +42,40 @@ public class CachingNflDataDecorator implements NflDataProvider {
     }
 
     @Override
-    @Cacheable(value = "team-scores", key = "#nflTeam + '-' + #weekNumber")
-    public Score getTeamScore(String nflTeam, Integer weekNumber) {
-        log.debug("Cache miss for team score: {} week {}", nflTeam, weekNumber);
-        return delegate.getTeamScore(nflTeam, weekNumber);
+    @Cacheable(value = "playoff-teams", key = "#season")
+    public List<String> getPlayoffTeams(int season) {
+        log.debug("Cache miss for playoff teams: {}", season);
+        return delegate.getPlayoffTeams(season);
     }
 
     @Override
-    @Cacheable(value = "playoff-teams", key = "#year")
-    public List<String> getPlayoffTeams(Integer year) {
-        log.debug("Cache miss for playoff teams: {}", year);
-        return delegate.getPlayoffTeams(year);
+    @Cacheable(value = "team-player-stats", key = "#teamAbbreviation + '-' + #week + '-' + #season")
+    public java.util.Map<String, Object> getTeamPlayerStats(String teamAbbreviation, int week, int season) {
+        log.debug("Cache miss for team player stats: {} week {} season {}", teamAbbreviation, week, season);
+        return delegate.getTeamPlayerStats(teamAbbreviation, week, season);
     }
 
     @Override
-    @Cacheable(value = "available-teams", key = "#weekNumber")
-    public List<String> getAvailableTeamsForWeek(Integer weekNumber) {
-        log.debug("Cache miss for available teams: week {}", weekNumber);
-        return delegate.getAvailableTeamsForWeek(weekNumber);
+    @Cacheable(value = "week-schedule", key = "#week + '-' + #season")
+    public List<java.util.Map<String, Object>> getWeekSchedule(int week, int season) {
+        log.debug("Cache miss for week schedule: week {} season {}", week, season);
+        return delegate.getWeekSchedule(week, season);
     }
 
     @Override
-    @Cacheable(value = "team-in-playoffs", key = "#nflTeam + '-' + #year")
-    public boolean isTeamInPlayoffs(String nflTeam, Integer year) {
-        log.debug("Cache miss for team in playoffs: {} year {}", nflTeam, year);
-        return delegate.isTeamInPlayoffs(nflTeam, year);
+    @Cacheable(value = "team-playing", key = "#teamAbbreviation + '-' + #week + '-' + #season")
+    public boolean isTeamPlaying(String teamAbbreviation, int week, int season) {
+        log.debug("Cache miss for team playing: {} week {} season {}", teamAbbreviation, week, season);
+        return delegate.isTeamPlaying(teamAbbreviation, week, season);
     }
 
-    /**
-     * Get player by ID with caching
-     * Cache: 1-hour TTL for player profiles
-     *
-     * @param nflPlayerId Player ID
-     * @return Optional NFLPlayer
-     */
-    @Override
-    @Cacheable(value = "nfl-players", key = "#nflPlayerId")
-    public Optional<NFLPlayer> getPlayerById(Long nflPlayerId) {
-        log.debug("Cache miss for player: {}", nflPlayerId);
-        return delegate.getPlayerById(nflPlayerId);
-    }
-
-    /**
-     * Get player weekly stats with caching
-     * Cache: 30-second TTL for live stats (short TTL for real-time updates)
-     *        7-day TTL for final stats (game over)
-     *
-     * Note: Actual TTL configuration in application.yml
-     *
-     * @param nflPlayerId Player ID
-     * @param week Week number
-     * @param season Season year
-     * @return Optional PlayerStats
-     */
-    @Override
-    @Cacheable(value = "player-stats", key = "#nflPlayerId + '-' + #week + '-' + #season")
-    public Optional<PlayerStats> getPlayerWeeklyStats(Long nflPlayerId, Integer week, Integer season) {
-        log.debug("Cache miss for player stats: {} season {} week {}", nflPlayerId, season, week);
-        return delegate.getPlayerWeeklyStats(nflPlayerId, week, season);
-    }
-
-    /**
-     * Get all weekly stats with caching
-     * Cache: 30-second TTL for live data
-     *
-     * @param week Week number
-     * @param season Season year
-     * @return List of PlayerStats
-     */
-    @Override
-    @Cacheable(value = "weekly-stats", key = "#week + '-' + #season")
-    public List<PlayerStats> getWeeklyStats(Integer week, Integer season) {
-        log.debug("Cache miss for weekly stats: season {} week {}", season, week);
-        return delegate.getWeeklyStats(week, season);
-    }
-
-    /**
-     * Get player news with caching
-     * Cache: 5-minute TTL for news/injuries (moderate TTL for recent updates)
-     *
-     * @param nflPlayerId Player ID
-     * @return List of news headlines
-     */
-    @Override
-    @Cacheable(value = "player-news", key = "#nflPlayerId")
-    public List<String> getPlayerNews(Long nflPlayerId) {
-        log.debug("Cache miss for player news: {}", nflPlayerId);
-        return delegate.getPlayerNews(nflPlayerId);
-    }
-
-    /**
-     * Get player injury status with caching
-     * Cache: 5-minute TTL for injury status
-     *
-     * @param nflPlayerId Player ID
-     * @return Injury status string
-     */
-    @Override
-    @Cacheable(value = "player-injury-status", key = "#nflPlayerId")
-    public String getPlayerInjuryStatus(Long nflPlayerId) {
-        log.debug("Cache miss for player injury status: {}", nflPlayerId);
-        return delegate.getPlayerInjuryStatus(nflPlayerId);
-    }
+    // NOTE: The following methods were removed because they don't exist in the current NflDataProvider interface:
+    // - getTeamScore
+    // - getAvailableTeamsForWeek
+    // - isTeamInPlayoffs
+    // - getPlayerById
+    // - getPlayerWeeklyStats
+    // - getWeeklyStats
+    // - getPlayerNews
+    // - getPlayerInjuryStatus
 }

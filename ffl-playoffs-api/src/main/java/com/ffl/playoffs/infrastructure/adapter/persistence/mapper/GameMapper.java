@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -21,22 +22,22 @@ public class GameMapper {
         }
 
         return GameDocument.builder()
-                .id(game.getId())
+                .id(game.getId() != null ? UUID.fromString(game.getId().toString()) : null)
                 .name(game.getName())
-                .code(game.getCode())
-                .creatorId(game.getCreatorId())
+                .code(game.getInviteCode())
+                .creatorId(null) // Not in current Game model
                 .status(game.getStatus() != null ? game.getStatus().name() : null)
-                .startingWeek(game.getStartingWeek())
+                .startingWeek(null) // Not in current Game model
                 .currentWeek(game.getCurrentWeek())
-                .numberOfWeeks(game.getNumberOfWeeks())
-                .eliminationMode(game.getEliminationMode())
+                .numberOfWeeks(null) // Not in current Game model
+                .eliminationMode(null) // Not in current Game model
                 .createdAt(game.getCreatedAt())
-                .updatedAt(game.getUpdatedAt())
-                .configurationLockedAt(game.getConfigurationLockedAt())
-                .lockReason(game.getLockReason())
-                .firstGameStartTime(game.getFirstGameStartTime())
+                .updatedAt(null) // Not in current Game model
+                .configurationLockedAt(null) // Not in current Game model
+                .lockReason(null) // Not in current Game model
+                .firstGameStartTime(null) // Not in current Game model
                 .players(toPlayerDocuments(game.getPlayers()))
-                .scoringRules(toScoringRulesDocument(game.getScoringRules()))
+                .scoringRules(null) // Not in current Game model
                 .build();
     }
 
@@ -46,27 +47,22 @@ public class GameMapper {
         }
 
         Game game = new Game();
-        game.setId(document.getId());
+        game.setId(document.getId() != null ? Long.parseLong(document.getId().toString().hashCode() + "") : null);
         game.setName(document.getName());
-        game.setCode(document.getCode());
-        game.setCreatorId(document.getCreatorId());
-        game.setStatus(document.getStatus() != null ? GameStatus.valueOf(document.getStatus()) : null);
-        game.setStartingWeek(document.getStartingWeek());
+        game.setInviteCode(document.getCode());
+        game.setStatus(document.getStatus() != null ? Game.GameStatus.valueOf(document.getStatus()) : null);
         game.setCurrentWeek(document.getCurrentWeek());
-        game.setNumberOfWeeks(document.getNumberOfWeeks());
-        game.setEliminationMode(document.getEliminationMode());
         game.setCreatedAt(document.getCreatedAt());
-        game.setUpdatedAt(document.getUpdatedAt());
-        game.setConfigurationLockedAt(document.getConfigurationLockedAt());
-        game.setLockReason(document.getLockReason());
-        game.setFirstGameStartTime(document.getFirstGameStartTime());
-        game.setPlayers(toPlayerDomains(document.getPlayers()));
-        game.setScoringRules(toScoringRulesDomain(document.getScoringRules()));
+        // Convert List<PlayerDocument> to Set<Player>
+        if (document.getPlayers() != null) {
+            game.setPlayers(new java.util.HashSet<>(toPlayerDomains(document.getPlayers())));
+        }
+        // weeks are not set from document - would need separate mapping
 
         return game;
     }
 
-    private List<PlayerDocument> toPlayerDocuments(List<Player> players) {
+    private List<PlayerDocument> toPlayerDocuments(java.util.Set<Player> players) {
         if (players == null) {
             return Collections.emptyList();
         }
@@ -80,14 +76,14 @@ public class GameMapper {
             return null;
         }
         return PlayerDocument.builder()
-                .id(player.getId())
-                .gameId(player.getGameId())
-                .name(player.getName())
+                .id(player.getId() != null ? UUID.fromString(player.getId().toString()) : null)
+                .gameId(null) // Not in current Player model
+                .name(player.getDisplayName()) // Using displayName instead of name
                 .email(player.getEmail())
                 .status(player.getStatus() != null ? player.getStatus().name() : null)
                 .joinedAt(player.getJoinedAt())
-                .isEliminated(player.getIsEliminated())
-                .teamSelections(toTeamSelectionDocuments(player.getTeamSelections()))
+                .isEliminated(player.getStatus() == Player.PlayerStatus.ELIMINATED)
+                .teamSelections(Collections.emptyList()) // Not in current Player model
                 .build();
     }
 
@@ -105,14 +101,12 @@ public class GameMapper {
             return null;
         }
         Player player = new Player();
-        player.setId(document.getId());
-        player.setGameId(document.getGameId());
-        player.setName(document.getName());
+        player.setId(document.getId() != null ? Long.parseLong(document.getId().toString().hashCode() + "") : null);
+        player.setDisplayName(document.getName());
         player.setEmail(document.getEmail());
-        player.setStatus(document.getStatus() != null ? PlayerStatus.valueOf(document.getStatus()) : null);
+        player.setStatus(document.getStatus() != null ? Player.PlayerStatus.valueOf(document.getStatus()) : null);
         player.setJoinedAt(document.getJoinedAt());
-        player.setIsEliminated(document.getIsEliminated());
-        player.setTeamSelections(toTeamSelectionDomains(document.getTeamSelections()));
+        // googleId is not in PlayerDocument
         return player;
     }
 
@@ -130,12 +124,12 @@ public class GameMapper {
             return null;
         }
         return TeamSelectionDocument.builder()
-                .id(selection.getId())
-                .playerId(selection.getPlayerId())
-                .teamName(selection.getTeamName())
-                .weekNumber(selection.getWeekNumber())
+                .id(selection.getId() != null ? UUID.fromString(selection.getId().toString()) : null)
+                .playerId(selection.getPlayerId() != null ? UUID.fromString(selection.getPlayerId().toString()) : null)
+                .teamName(selection.getNflTeam())
+                .weekNumber(null) // weekId vs weekNumber mismatch
                 .selectedAt(selection.getSelectedAt())
-                .isEliminated(selection.getIsEliminated())
+                .isEliminated(selection.getStatus() == TeamSelection.SelectionStatus.SCORED && selection.getScore() != null && selection.getScore() == 0.0)
                 .build();
     }
 
@@ -153,58 +147,15 @@ public class GameMapper {
             return null;
         }
         TeamSelection selection = new TeamSelection();
-        selection.setId(document.getId());
-        selection.setPlayerId(document.getPlayerId());
-        selection.setTeamName(document.getTeamName());
-        selection.setWeekNumber(document.getWeekNumber());
+        selection.setId(document.getId() != null ? Long.parseLong(document.getId().toString().hashCode() + "") : null);
+        selection.setPlayerId(document.getPlayerId() != null ? Long.parseLong(document.getPlayerId().toString().hashCode() + "") : null);
+        selection.setNflTeam(document.getTeamName());
+        selection.setWeekId(null); // weekNumber is Integer in document, weekId is Long in domain
         selection.setSelectedAt(document.getSelectedAt());
-        selection.setIsEliminated(document.getIsEliminated());
+        selection.setStatus(document.getIsEliminated() ? TeamSelection.SelectionStatus.SCORED : TeamSelection.SelectionStatus.PENDING);
         return selection;
     }
 
-    private ScoringRulesDocument toScoringRulesDocument(ScoringRules rules) {
-        if (rules == null) {
-            return null;
-        }
-        return ScoringRulesDocument.builder()
-                .pointsPerReception(rules.getPointsPerReception())
-                .pointsPerPassingYard(rules.getPointsPerPassingYard())
-                .pointsPerRushingYard(rules.getPointsPerRushingYard())
-                .pointsPerReceivingYard(rules.getPointsPerReceivingYard())
-                .pointsPerPassingTouchdown(rules.getPointsPerPassingTouchdown())
-                .pointsPerRushingTouchdown(rules.getPointsPerRushingTouchdown())
-                .pointsPerReceivingTouchdown(rules.getPointsPerReceivingTouchdown())
-                .pointsPerInterception(rules.getPointsPerInterception())
-                .pointsPerFumbleLost(rules.getPointsPerFumbleLost())
-                .pointsPerFieldGoalMade(rules.getPointsPerFieldGoalMade())
-                .pointsPerExtraPointMade(rules.getPointsPerExtraPointMade())
-                .pointsPerSack(rules.getPointsPerSack())
-                .pointsPerInterceptionDef(rules.getPointsPerInterceptionDef())
-                .pointsPerFumbleRecovery(rules.getPointsPerFumbleRecovery())
-                .pointsPerDefensiveTouchdown(rules.getPointsPerDefensiveTouchdown())
-                .build();
-    }
-
-    private ScoringRules toScoringRulesDomain(ScoringRulesDocument document) {
-        if (document == null) {
-            return null;
-        }
-        ScoringRules rules = new ScoringRules();
-        rules.setPointsPerReception(document.getPointsPerReception());
-        rules.setPointsPerPassingYard(document.getPointsPerPassingYard());
-        rules.setPointsPerRushingYard(document.getPointsPerRushingYard());
-        rules.setPointsPerReceivingYard(document.getPointsPerReceivingYard());
-        rules.setPointsPerPassingTouchdown(document.getPointsPerPassingTouchdown());
-        rules.setPointsPerRushingTouchdown(document.getPointsPerRushingTouchdown());
-        rules.setPointsPerReceivingTouchdown(document.getPointsPerReceivingTouchdown());
-        rules.setPointsPerInterception(document.getPointsPerInterception());
-        rules.setPointsPerFumbleLost(document.getPointsPerFumbleLost());
-        rules.setPointsPerFieldGoalMade(document.getPointsPerFieldGoalMade());
-        rules.setPointsPerExtraPointMade(document.getPointsPerExtraPointMade());
-        rules.setPointsPerSack(document.getPointsPerSack());
-        rules.setPointsPerInterceptionDef(document.getPointsPerInterceptionDef());
-        rules.setPointsPerFumbleRecovery(document.getPointsPerFumbleRecovery());
-        rules.setPointsPerDefensiveTouchdown(document.getPointsPerDefensiveTouchdown());
-        return rules;
-    }
+    // ScoringRules methods removed - ScoringRules class doesn't exist in current domain model
+    // These would need to be re-implemented when ScoringRules is added to the domain
 }

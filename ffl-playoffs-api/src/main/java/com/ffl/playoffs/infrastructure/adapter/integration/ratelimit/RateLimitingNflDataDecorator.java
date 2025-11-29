@@ -52,111 +52,32 @@ public class RateLimitingNflDataDecorator implements NflDataProvider {
     }
 
     @Override
-    public Score getTeamScore(String nflTeam, Integer weekNumber) {
-        consumeToken("getTeamScore");
-        return delegate.getTeamScore(nflTeam, weekNumber);
-    }
-
-    @Override
-    public List<String> getPlayoffTeams(Integer year) {
+    public List<String> getPlayoffTeams(int season) {
         consumeToken("getPlayoffTeams");
-        return delegate.getPlayoffTeams(year);
+        return delegate.getPlayoffTeams(season);
     }
 
     @Override
-    public List<String> getAvailableTeamsForWeek(Integer weekNumber) {
-        consumeToken("getAvailableTeamsForWeek");
-        return delegate.getAvailableTeamsForWeek(weekNumber);
+    public java.util.Map<String, Object> getTeamPlayerStats(String teamAbbreviation, int week, int season) {
+        consumeToken("getTeamPlayerStats");
+        return delegate.getTeamPlayerStats(teamAbbreviation, week, season);
     }
 
     @Override
-    public boolean isTeamInPlayoffs(String nflTeam, Integer year) {
-        consumeToken("isTeamInPlayoffs");
-        return delegate.isTeamInPlayoffs(nflTeam, year);
+    public List<java.util.Map<String, Object>> getWeekSchedule(int week, int season) {
+        consumeToken("getWeekSchedule");
+        return delegate.getWeekSchedule(week, season);
     }
 
-    /**
-     * Get player by ID with rate limiting
-     *
-     * @param nflPlayerId Player ID
-     * @return Optional NFLPlayer
-     */
-    public Optional<NFLPlayer> getPlayerById(Long nflPlayerId) {
-        consumeToken("getPlayerById");
-
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerById", Long.class);
-            @SuppressWarnings("unchecked")
-            Optional<NFLPlayer> result = (Optional<NFLPlayer>) method.invoke(delegate, nflPlayerId);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerById on delegate: {}", e.getMessage());
-            return Optional.empty();
-        }
+    @Override
+    public boolean isTeamPlaying(String teamAbbreviation, int week, int season) {
+        consumeToken("isTeamPlaying");
+        return delegate.isTeamPlaying(teamAbbreviation, week, season);
     }
 
-    /**
-     * Get player weekly stats with rate limiting
-     *
-     * @param nflPlayerId Player ID
-     * @param week Week number
-     * @param season Season year
-     * @return Optional PlayerStats
-     */
-    public Optional<PlayerStats> getPlayerWeeklyStats(Long nflPlayerId, Integer week, Integer season) {
-        consumeToken("getPlayerWeeklyStats");
-
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerWeeklyStats", Long.class, Integer.class, Integer.class);
-            @SuppressWarnings("unchecked")
-            Optional<PlayerStats> result = (Optional<PlayerStats>) method.invoke(delegate, nflPlayerId, week, season);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerWeeklyStats on delegate: {}", e.getMessage());
-            return Optional.empty();
-        }
-    }
-
-    /**
-     * Get all weekly stats with rate limiting
-     *
-     * @param week Week number
-     * @param season Season year
-     * @return List of PlayerStats
-     */
-    public List<PlayerStats> getWeeklyStats(Integer week, Integer season) {
-        consumeToken("getWeeklyStats");
-
-        try {
-            Method method = delegate.getClass().getMethod("getWeeklyStats", Integer.class, Integer.class);
-            @SuppressWarnings("unchecked")
-            List<PlayerStats> result = (List<PlayerStats>) method.invoke(delegate, week, season);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getWeeklyStats on delegate: {}", e.getMessage());
-            return List.of();
-        }
-    }
-
-    /**
-     * Get player news with rate limiting
-     *
-     * @param nflPlayerId Player ID
-     * @return List of news headlines
-     */
-    public List<String> getPlayerNews(Long nflPlayerId) {
-        consumeToken("getPlayerNews");
-
-        try {
-            Method method = delegate.getClass().getMethod("getPlayerNews", Long.class);
-            @SuppressWarnings("unchecked")
-            List<String> result = (List<String>) method.invoke(delegate, nflPlayerId);
-            return result;
-        } catch (Exception e) {
-            log.error("Error invoking getPlayerNews on delegate: {}", e.getMessage());
-            return List.of();
-        }
-    }
+    // NOTE: The following methods were removed because they don't exist in the current NflDataProvider interface:
+    // - getTeamScore, getAvailableTeamsForWeek, isTeamInPlayoffs
+    // - getPlayerById, getPlayerWeeklyStats, getWeeklyStats, getPlayerNews
 
     /**
      * Consume a token from the bucket

@@ -1,12 +1,17 @@
 spring:
   application:
     name: ffl-playoffs-api
-  
+
   datasource:
     url: jdbc:postgresql://localhost:5432/ffl_playoffs
     username: ${DB_USERNAME:ffl_user}
     password: ${DB_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:30017}
+      database: ${MONGODB_DATABASE:ffl_playoffs}
   
   jpa:
     hibernate:

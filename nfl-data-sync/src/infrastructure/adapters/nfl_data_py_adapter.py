@@ -127,18 +127,23 @@ class NflDataPyAdapter(NflDataProvider):
             games = []
             for _, row in schedules_df.iterrows():
                 try:
-                    # Parse game time
+                    # Parse game time and game date
                     game_time = None
+                    game_date = None
                     gameday = row.get("gameday")
                     gametime = row.get("gametime")
                     if gameday:
                         try:
+                            # Parse game_date (just the date without time)
+                            game_date = datetime.strptime(gameday, "%Y-%m-%d")
+
+                            # Parse game_time (date + time if available)
                             if gametime:
                                 game_time = datetime.strptime(
                                     f"{gameday} {gametime}", "%Y-%m-%d %H:%M"
                                 )
                             else:
-                                game_time = datetime.strptime(gameday, "%Y-%m-%d")
+                                game_time = game_date
                         except ValueError:
                             pass
 
@@ -163,6 +168,7 @@ class NflDataPyAdapter(NflDataProvider):
                         home_score=int(home_score) if home_score is not None else None,
                         away_score=int(away_score) if away_score is not None else None,
                         game_time=game_time,
+                        game_date=game_date,  # FFL-36: Add game_date field
                         status=status,
                         venue=row.get("stadium", None),
                     )

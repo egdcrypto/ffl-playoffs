@@ -126,6 +126,40 @@ class TestNFLGame:
         assert GameStatus.POSTPONED.value == "POSTPONED"
         assert GameStatus.CANCELLED.value == "CANCELLED"
 
+    def test_game_with_game_date(self):
+        """Test FFL-36: NFLGame model includes game_date field."""
+        game_date = datetime(2024, 9, 10, 0, 0, 0)
+        game_time = datetime(2024, 9, 10, 13, 0, 0)
+
+        game = NFLGame(
+            game_id="2024_01_KC_BUF",
+            season=2024,
+            week=1,
+            home_team="KC",
+            away_team="BUF",
+            game_date=game_date,
+            game_time=game_time,
+        )
+
+        assert game.game_date is not None
+        assert game.game_date == game_date
+        assert game.game_time == game_time
+        # game_date should be just the date without time
+        assert game.game_date.hour == 0
+        assert game.game_date.minute == 0
+
+    def test_game_without_game_date(self):
+        """Test that game_date is optional."""
+        game = NFLGame(
+            game_id="2024_01_KC_BUF",
+            season=2024,
+            week=1,
+            home_team="KC",
+            away_team="BUF",
+        )
+
+        assert game.game_date is None
+
 
 class TestNFLPlayer:
     """Test suite for NFLPlayer model."""

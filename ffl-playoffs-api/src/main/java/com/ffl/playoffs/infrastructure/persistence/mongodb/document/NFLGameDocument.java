@@ -56,6 +56,9 @@ public class NFLGameDocument {
     @Field("game_time")
     private LocalDateTime gameTime;
 
+    @Field("game_date")
+    private LocalDateTime gameDate;
+
     @Field("status")
     @Builder.Default
     private String status = "SCHEDULED";

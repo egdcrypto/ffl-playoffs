@@ -41,10 +41,8 @@ infrastructure/  - Framework & external integrations
 
 - **Java 17**
 - **Spring Boot 3.2.x**
-- **Spring Data JPA** - Persistence
-- **PostgreSQL** - Database
-- **MongoDB** - Document storage for game state and events
-- **Redis** - Caching layer
+- **Spring Data MongoDB** - Persistence
+- **MongoDB** - Database
 - **Lombok** - Boilerplate reduction
 - **OpenAPI/Swagger** - API documentation
 - **JUnit 5 & Mockito** - Testing
@@ -54,23 +52,19 @@ infrastructure/  - Framework & external integrations
 
 ### Prerequisites
 
-- **Java 17 or higher** - Required for Spring Boot 3.2.x
-- **Gradle 8.x** - Build tool (wrapper included)
-- **PostgreSQL 14+** - Relational database
-- **MongoDB 4.0+** - Document database for game state
-- **Redis** (Optional) - Caching layer for performance
+- Java 17 or higher
+- MongoDB 7.0+
+- Gradle 8.x
 
 ### Database Setup
 
-#### PostgreSQL Setup
-
 ```bash
-# Create database
-createdb ffl_playoffs
+# Start MongoDB (if using Docker)
+docker run -d -p 27017:27017 --name mongodb mongo:7.0
 
-# Set environment variables (or use defaults)
-export DB_USERNAME=ffl_user
-export DB_PASSWORD=password
+# Set environment variables
+export MONGODB_URI=mongodb://localhost:27017
+export MONGODB_DATABASE=ffl_playoffs
 ```
 
 #### MongoDB Setup
@@ -85,18 +79,6 @@ docker run -d -p 27017:27017 --name ffl-mongodb mongo:7.0
 # Set custom MongoDB connection (optional)
 export MONGODB_URI=mongodb://localhost:27017
 export MONGODB_DATABASE=ffl_playoffs
-```
-
-#### Redis Setup (Optional)
-
-```bash
-# Using Docker (recommended)
-docker run -d -p 6379:6379 --name ffl-redis redis:7
-
-# Or set custom Redis connection
-export REDIS_HOST=localhost
-export REDIS_PORT=6379
-export REDIS_PASSWORD=
 ```
 
 ## Running the API Standalone
@@ -161,13 +143,8 @@ The application uses environment variables for configuration. Here are the key v
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DB_USERNAME` | `ffl_user` | PostgreSQL username |
-| `DB_PASSWORD` | `password` | PostgreSQL password |
 | `MONGODB_URI` | `mongodb://localhost:27017` | MongoDB connection string |
 | `MONGODB_DATABASE` | `ffl_playoffs` | MongoDB database name |
-| `REDIS_HOST` | `localhost` | Redis server host |
-| `REDIS_PORT` | `6379` | Redis server port |
-| `REDIS_PASSWORD` | _(empty)_ | Redis password (if required) |
 | `JWT_ISSUER_URI` | `https://accounts.google.com` | JWT token issuer |
 | `GOOGLE_OAUTH_CLIENT_ID` | _(required for auth profile)_ | Google OAuth client ID |
 
@@ -176,20 +153,16 @@ The application uses environment variables for configuration. Here are the key v
 ```bash
 # Linux/Mac
 export MONGODB_URI=mongodb://localhost:27017
-export DB_USERNAME=myuser
-export DB_PASSWORD=mypassword
+export MONGODB_DATABASE=ffl_playoffs
 
 # Windows (PowerShell)
 $env:MONGODB_URI="mongodb://localhost:27017"
-$env:DB_USERNAME="myuser"
-$env:DB_PASSWORD="mypassword"
+$env:MONGODB_DATABASE="ffl_playoffs"
 
 # Or create a .env file and source it
 cat > .env << 'EOF'
 MONGODB_URI=mongodb://localhost:27017
 MONGODB_DATABASE=ffl_playoffs
-DB_USERNAME=ffl_user
-DB_PASSWORD=secure_password
 EOF
 
 source .env  # Linux/Mac
@@ -254,25 +227,6 @@ echo $MONGODB_URI
 docker restart ffl-mongodb
 ```
 
-#### PostgreSQL Connection Issues
-
-**Error**: `PSQLException: Connection refused`
-
-**Solution**:
-```bash
-# Verify PostgreSQL is running
-pg_isready
-
-# Check if database exists
-psql -l | grep ffl_playoffs
-
-# Create database if missing
-createdb ffl_playoffs
-
-# Verify credentials
-psql -U $DB_USERNAME -d ffl_playoffs -c "SELECT 1;"
-```
-
 #### Port Already in Use
 
 **Error**: `Port 8080 is already in use`
@@ -297,21 +251,6 @@ export GRADLE_OPTS="-Xmx2g -Xms512m"
 
 # Or for JAR execution
 java -Xmx2g -Xms512m -jar build/libs/ffl-playoffs-api-0.0.1-SNAPSHOT.jar
-```
-
-#### Redis Connection Issues (Non-critical)
-
-**Error**: `Unable to connect to Redis`
-
-**Note**: Redis is optional for caching. The application will run without it, but with reduced performance.
-
-**Solution**:
-```bash
-# Start Redis
-docker run -d -p 6379:6379 --name ffl-redis redis:7
-
-# Or disable Redis by setting cache type to none
-./gradlew bootRun --args='--spring.cache.type=none'
 ```
 
 The API will be available at: `http://localhost:8080/api`
@@ -377,7 +316,7 @@ This is the initial project structure. Key areas requiring implementation:
 
 ### Infrastructure Layer
 - ✅ REST controllers scaffolded
-- ⏳ JPA entity mappings needed
+- ⏳ MongoDB document mappings needed
 - ⏳ Repository implementations needed
 - ⏳ NFL Data API integration needed
 - ⏳ Authentication/Authorization
@@ -386,11 +325,8 @@ This is the initial project structure. Key areas requiring implementation:
 
 Key configuration in `application.yml`:
 
-- **Database**: PostgreSQL and MongoDB connection settings
-- **JPA**: Hibernate settings for relational data
-- **MongoDB**: Document storage for game state and events
-- **Redis**: Caching configuration for performance
-- **Security**: OAuth2/JWT configuration with Google authentication
+- **Database**: MongoDB connection settings
+- **Security**: OAuth2/JWT configuration (to be implemented)
 - **Swagger**: API documentation settings
 
 See the [Environment Variables](#environment-variables) section for configuration options.

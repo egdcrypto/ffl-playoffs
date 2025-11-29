@@ -2,7 +2,6 @@ package com.ffl.playoffs.infrastructure.auth;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
@@ -27,7 +26,6 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
         "com.ffl.playoffs.domain"
 })
 @EnableMongoRepositories(basePackages = "com.ffl.playoffs.infrastructure.adapter.persistence.repository")
-@EntityScan(basePackages = "com.ffl.playoffs.infrastructure.adapter.persistence.document")
 public class AuthServiceApplication {
 
     public static void main(String[] args) {

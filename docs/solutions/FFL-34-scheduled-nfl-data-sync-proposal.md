@@ -3,19 +3,65 @@
 **Feature:** `features/ffl-34-scheduled-nfl-data-sync.feature`
 **Author:** AI Engineer
 **Date:** 2025-11-28
-**Status:** Draft Proposal
+**Status:** Approved for Implementation
 
 ---
 
 ## Executive Summary
 
-This proposal outlines the implementation of an automated, scheduled NFL data synchronization system for the FFL Playoffs application. The system will keep player rosters, game schedules, live scores, and player statistics up-to-date by polling **nflreadpy** (FREE) every minute during active games, then pushing deltas to connected clients via **WebSockets** using **Hazelcast** for distributed state management.
+This proposal outlines the implementation of an automated, scheduled NFL data synchronization system as a **standalone Python microservice** that operates independently from the main Java/Spring Boot backend. The service will keep player rosters, game schedules, live scores, and player statistics up-to-date by polling **nflreadpy** (FREE) every minute during active games, then pushing deltas to connected clients via **WebSockets** using **Redis** for distributed state management.
 
 **Key Design Decisions:**
-- **No caching layer** - Small player count, simple in-memory state
-- **nflreadpy** - FREE data source, poll every 1 minute
-- **Hazelcast** - Distributed state for delta detection
+- **Standalone Python Microservice** - Decoupled from Java backend, deployed independently
+- **nflreadpy** - FREE data source (nflverse), poll every 1 minute
+- **Redis** - Lightweight state management for delta detection (simpler than Hazelcast)
 - **WebSockets** - Push deltas to clients in real-time
+- **Shared MongoDB** - Write NFL data to same MongoDB used by Java backend
+
+---
+
+## Microservice Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        FFL Playoffs System Architecture                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                               │
+│   ┌─────────────────────────┐        ┌─────────────────────────────────┐    │
+│   │   Java Spring Boot API  │        │   Python NFL Data Sync Service  │    │
+│   │   (ffl-playoffs-api)    │        │   (nfl-data-sync)               │    │
+│   │                         │        │                                  │    │
+│   │   - League management   │        │   - Poll nflreadpy every 1 min  │    │
+│   │   - Roster operations   │        │   - Detect data changes         │    │
+│   │   - User auth           │        │   - Calculate fantasy points    │    │
+│   │   - REST API            │        │   - WebSocket push to clients   │    │
+│   │                         │        │   - Admin sync endpoints        │    │
+│   │   Port: 8080            │        │   Port: 8001                    │    │
+│   └───────────┬─────────────┘        └───────────┬─────────────────────┘    │
+│               │                                   │                          │
+│               │                                   │                          │
+│               └──────────────┬───────────────────┘                          │
+│                              ▼                                               │
+│                    ┌─────────────────┐                                      │
+│                    │    MongoDB      │                                      │
+│                    │   (shared)      │                                      │
+│                    │                 │                                      │
+│                    │  - NFLPlayer    │                                      │
+│                    │  - NFLGame      │                                      │
+│                    │  - PlayerStats  │                                      │
+│                    │  - League       │                                      │
+│                    │  - Roster       │                                      │
+│                    └─────────────────┘                                      │
+│                              │                                               │
+│                    ┌─────────────────┐                                      │
+│                    │     Redis       │                                      │
+│                    │  (sync state)   │                                      │
+│                    │                 │                                      │
+│                    │  - Delta cache  │                                      │
+│                    │  - Sync locks   │                                      │
+│                    └─────────────────┘                                      │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -36,11 +82,12 @@ Currently, there is no automated synchronization—data fetching is manual. This
 
 ## Proposed Solution
 
-### Architecture Overview
+### Service Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     Python FastAPI Application                       │
+│           nfl-data-sync (Python FastAPI Microservice)               │
+│                         Port: 8001                                  │
 ├─────────────────────────────────────────────────────────────────────┤
 │  ┌─────────────────────────────────────────────────────────────┐   │
 │  │                    Sync Scheduler Service                     │   │
@@ -48,7 +95,7 @@ Currently, there is no automated synchronization—data fetching is manual. This
 │  │  │            NflDataSyncJob (APScheduler)                  │ │   │
 │  │  │            - Runs every 1 minute during games            │ │   │
 │  │  │            - Polls nflreadpy for latest data             │ │   │
-│  │  │            - Detects deltas via Hazelcast                │ │   │
+│  │  │            - Detects deltas via Redis                    │ │   │
 │  │  │            - Pushes changes via WebSocket                │ │   │
 │  │  └──────────────────────────┬──────────────────────────────┘ │   │
 │  └─────────────────────────────┼────────────────────────────────┘   │
@@ -76,7 +123,7 @@ Currently, there is no automated synchronization—data fetching is manual. This
 │  ┌─────────────────────────────────────────────────────────────┐   │
 │  │                  Infrastructure Layer                         │   │
 │  │  ┌───────────────┐  ┌─────────────┐  ┌─────────────────┐    │   │
-│  │  │NflReadPy      │  │  Hazelcast  │  │ WebSocket       │    │   │
+│  │  │NflReadPy      │  │    Redis    │  │ WebSocket       │    │   │
 │  │  │Adapter        │  │  (Deltas)   │  │ Handler         │    │   │
 │  │  └───────┬───────┘  └──────┬──────┘  └────────┬────────┘    │   │
 │  │          │                 │                   │              │   │
@@ -208,25 +255,27 @@ class NflReadPyAdapter(NflDataProvider):
 
 ---
 
-### 3. Delta Detection with Hazelcast
+### 3. Delta Detection with Redis
 
-**Location:** `infrastructure/adapters/hazelcast_delta_service.py`
+**Location:** `infrastructure/adapters/redis_delta_service.py`
 
 ```python
-import hazelcast
+import redis
+import json
 from typing import List, Optional, Dict, Any
 from domain.models import PlayerStats, NFLGame, PlayerStatsDelta, GameScoreDelta
 
 
 class DeltaDetectionService:
     """
-    Detects changes in NFL data using Hazelcast distributed maps.
+    Detects changes in NFL data using Redis for state storage.
+    Simpler and more lightweight than Hazelcast for this use case.
     """
 
-    def __init__(self):
-        self.client = hazelcast.HazelcastClient()
-        self._player_stats_map = self.client.get_map("player-stats").blocking()
-        self._game_scores_map = self.client.get_map("game-scores").blocking()
+    def __init__(self, redis_url: str = "redis://localhost:6379"):
+        self.redis = redis.from_url(redis_url, decode_responses=True)
+        self._player_stats_prefix = "nfl:player-stats:"
+        self._game_scores_prefix = "nfl:game-scores:"
 
     def detect_player_deltas(self, current_stats: List[PlayerStats]) -> List[PlayerStatsDelta]:
         """
@@ -235,8 +284,9 @@ class DeltaDetectionService:
         deltas = []
 
         for current in current_stats:
-            key = f"{current.player_id}-{current.week}"
-            previous = self._player_stats_map.get(key)
+            key = f"{self._player_stats_prefix}{current.player_id}-{current.week}"
+            previous_json = self.redis.get(key)
+            previous = json.loads(previous_json) if previous_json else None
 
             if previous is None or self._has_stats_changed(previous, current):
                 deltas.append(PlayerStatsDelta(
@@ -246,8 +296,8 @@ class DeltaDetectionService:
                     previous_stats=previous,
                     current_stats=current,
                 ))
-                # Update stored state
-                self._player_stats_map.put(key, current.model_dump())
+                # Update stored state with 24-hour TTL
+                self.redis.setex(key, 86400, json.dumps(current.model_dump()))
 
         return deltas
 
@@ -258,8 +308,9 @@ class DeltaDetectionService:
         deltas = []
 
         for current in current_games:
-            key = current.game_id
-            previous = self._game_scores_map.get(key)
+            key = f"{self._game_scores_prefix}{current.game_id}"
+            previous_json = self.redis.get(key)
+            previous = json.loads(previous_json) if previous_json else None
 
             if previous is None or self._has_score_changed(previous, current):
                 deltas.append(GameScoreDelta(
@@ -270,7 +321,8 @@ class DeltaDetectionService:
                     away_score=current.away_score,
                     status=current.status,
                 ))
-                self._game_scores_map.put(key, current.model_dump())
+                # Update stored state with 24-hour TTL
+                self.redis.setex(key, 86400, json.dumps(current.model_dump()))
 
         return deltas
 
@@ -294,8 +346,8 @@ class DeltaDetectionService:
         )
 
     def close(self):
-        """Shutdown Hazelcast client."""
-        self.client.shutdown()
+        """Close Redis connection."""
+        self.redis.close()
 ```
 
 ---
@@ -667,32 +719,85 @@ async def websocket_endpoint(websocket: WebSocket):
 
 ---
 
-## New Files to Create
+## Project Structure
 
-| File | Location | Purpose |
-|------|----------|---------|
-| `settings.py` | `config/` | Configuration with Pydantic |
-| `nflreadpy_adapter.py` | `infrastructure/adapters/` | nflreadpy data fetching |
-| `hazelcast_delta_service.py` | `infrastructure/adapters/` | Delta detection with Hazelcast |
-| `websocket_service.py` | `infrastructure/adapters/` | WebSocket connection manager |
-| `nfl_data_sync_job.py` | `infrastructure/scheduler/` | Main sync job (APScheduler) |
-| `fantasy_scoring_engine.py` | `application/services/` | Calculate fantasy points |
-| `models.py` | `domain/` | Pydantic domain models |
-| `websocket_routes.py` | `api/` | FastAPI WebSocket endpoints |
+The microservice will be created in a new directory: `nfl-data-sync/`
+
+```
+nfl-data-sync/
+├── pyproject.toml                    # Poetry/pip configuration
+├── requirements.txt                   # Dependencies
+├── Dockerfile                         # Container image
+├── docker-compose.yml                 # Local development
+├── .env.example                       # Environment template
+├── README.md                          # Service documentation
+│
+├── src/
+│   ├── __init__.py
+│   ├── main.py                        # FastAPI application entry point
+│   │
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── settings.py                # Pydantic settings
+│   │
+│   ├── domain/
+│   │   ├── __init__.py
+│   │   ├── models.py                  # Pydantic domain models
+│   │   └── ports.py                   # Port interfaces (ABC)
+│   │
+│   ├── application/
+│   │   ├── __init__.py
+│   │   └── services/
+│   │       ├── __init__.py
+│   │       ├── fantasy_scoring_engine.py
+│   │       └── leaderboard_service.py
+│   │
+│   ├── infrastructure/
+│   │   ├── __init__.py
+│   │   ├── adapters/
+│   │   │   ├── __init__.py
+│   │   │   ├── nflreadpy_adapter.py   # nflreadpy data fetching
+│   │   │   ├── redis_delta_service.py # Delta detection with Redis
+│   │   │   ├── websocket_service.py   # WebSocket manager
+│   │   │   └── mongodb_repository.py  # MongoDB persistence
+│   │   └── scheduler/
+│   │       ├── __init__.py
+│   │       └── nfl_data_sync_job.py   # APScheduler job
+│   │
+│   └── api/
+│       ├── __init__.py
+│       ├── admin_routes.py            # Admin sync endpoints
+│       └── websocket_routes.py        # WebSocket endpoint
+│
+└── tests/
+    ├── __init__.py
+    ├── conftest.py                    # Pytest fixtures
+    ├── unit/
+    │   ├── test_fantasy_scoring.py
+    │   └── test_delta_detection.py
+    └── integration/
+        ├── test_nflreadpy_adapter.py
+        └── test_sync_job.py
+```
 
 ---
 
-## Dependencies to Add
+## Dependencies
 
 ```txt
 # requirements.txt
 nflreadpy>=0.1.5
-hazelcast-python-client>=5.3.0
+redis>=5.0.0
 apscheduler>=3.10.4
 fastapi[all]>=0.104.0
 websockets>=12.0
 pydantic-settings>=2.1.0
 polars>=0.19.0
+motor>=3.3.0                           # Async MongoDB driver
+pymongo>=4.6.0
+uvicorn>=0.24.0
+python-dotenv>=1.0.0
+structlog>=23.2.0                      # Structured logging
 ```
 
 ---
@@ -785,11 +890,18 @@ ws.onclose = () => {
 
 ## Why This Architecture
 
-### No Caching Needed
-- Small number of players per league (typical: 8-12 teams × 15 players = 120-180 players)
-- Hazelcast holds current state in memory for delta detection
-- MongoDB is the source of truth for persistence
-- No Redis cache layer required
+### Standalone Python Microservice
+- **Decoupled** from Java backend - can be deployed, scaled, and updated independently
+- **nflreadpy** is a Python library - native integration without JNI or subprocess calls
+- **FastAPI** is optimal for async WebSocket handling and real-time data streaming
+- **Different release cadence** - NFL data sync can be updated during season without touching core app
+
+### Redis for Delta Detection
+- **Lightweight** - simpler than Hazelcast for this use case
+- **Fast** - in-memory key-value lookups with O(1) complexity
+- **TTL support** - automatic expiration of stale data (24-hour TTL)
+- **Already available** - commonly used in production stacks
+- **Pub/Sub ready** - can scale to multiple service instances if needed
 
 ### nflreadpy (FREE)
 - \$0/month operating cost
@@ -797,12 +909,11 @@ ws.onclose = () => {
 - Poll every 1 minute for near real-time updates
 - Calculate fantasy points ourselves
 
-### Hazelcast for Deltas
-- Distributed in-memory data grid
-- Fast comparison for delta detection
-- Scales horizontally if needed
-- Built-in cluster support
-- Python client available
+### Shared MongoDB
+- **Single source of truth** for NFL data
+- Java backend reads NFL data written by Python service
+- No API calls between services - database is the integration point
+- Consistent data model across both services
 
 ### WebSocket Push
 - Real-time updates to clients
@@ -817,35 +928,57 @@ ws.onclose = () => {
 | Component | Cost |
 |-----------|------|
 | nflreadpy | FREE |
-| Hazelcast (embedded) | FREE |
+| Redis | FREE (or $0-15/mo managed) |
 | WebSocket (FastAPI) | FREE |
-| **Total** | **\$0/month** |
+| **Total** | **\$0-15/month** |
 
 ---
 
 ## Implementation Order
 
-1. **Phase 1: nflreadpy Integration**
-   - [ ] Create `NflReadPyAdapter`
-   - [ ] Test data retrieval from nflverse
+1. **Phase 1: Project Setup**
+   - [ ] Create `nfl-data-sync/` directory structure
+   - [ ] Set up `pyproject.toml` and `requirements.txt`
+   - [ ] Create Docker and docker-compose configuration
+   - [ ] Set up basic FastAPI application with health check
 
-2. **Phase 2: Delta Detection**
-   - [ ] Add hazelcast-python-client
-   - [ ] Implement `DeltaDetectionService`
+2. **Phase 2: Domain & nflreadpy Integration**
    - [ ] Create Pydantic domain models
+   - [ ] Implement `NflReadPyAdapter`
+   - [ ] Test data retrieval from nflverse
+   - [ ] Write unit tests for adapter
 
-3. **Phase 3: WebSocket Push**
+3. **Phase 3: Delta Detection with Redis**
+   - [ ] Implement `DeltaDetectionService` with Redis
+   - [ ] Add TTL-based state management
+   - [ ] Write unit tests for delta detection
+
+4. **Phase 4: WebSocket Push**
    - [ ] Implement `WebSocketManager`
    - [ ] Add FastAPI WebSocket endpoint
    - [ ] Test client subscriptions
+   - [ ] Add connection management and error handling
 
-4. **Phase 4: Scoring Engine**
+5. **Phase 5: Scoring Engine**
    - [ ] Implement `FantasyScoringEngine`
-   - [ ] Support PPR/Standard scoring
+   - [ ] Support PPR/Standard/Half-PPR scoring
+   - [ ] Write comprehensive unit tests
 
-5. **Phase 5: Main Sync Job**
+6. **Phase 6: Main Sync Job & Admin API**
    - [ ] Wire everything together in `NflDataSyncJob`
+   - [ ] Implement admin sync endpoints
+   - [ ] Add sync history and metrics
    - [ ] Test 1-minute polling cycle with APScheduler
+
+7. **Phase 7: MongoDB Integration**
+   - [ ] Implement MongoDB repositories
+   - [ ] Ensure data model compatibility with Java backend
+   - [ ] Test data persistence and retrieval
+
+8. **Phase 8: Deployment**
+   - [ ] Create Kubernetes manifests
+   - [ ] Set up CI/CD pipeline
+   - [ ] Integration testing with Java backend
 
 ---
 
@@ -856,9 +989,10 @@ ws.onclose = () => {
 | 1.0 | 2025-11-28 | AI Engineer | Initial proposal (Java/SportsData.io) |
 | 2.0 | 2025-11-28 | Feature Architect | Rewrite for nflreadpy + Hazelcast + WebSocket |
 | 2.1 | 2025-11-28 | Feature Architect | Convert to Python (FastAPI/APScheduler) |
+| 3.0 | 2025-11-28 | Feature Architect | Clarify standalone microservice, replace Hazelcast with Redis |
 
-**Status:** Draft Proposal
+**Status:** Approved for Implementation
 
-**Estimated Budget:** \$0/month
+**Estimated Budget:** \$0-15/month (Redis managed service optional)
 
 **Estimated Implementation Time:** 2-3 weeks

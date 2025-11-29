@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,6 +29,20 @@ public class World {
     private UUID currentLeagueId;
     private final Map<String, League> leagues = new HashMap<>();
 
+    // League Player context
+    private LeaguePlayer currentLeaguePlayer;
+    private final Map<String, LeaguePlayer> leaguePlayers = new HashMap<>();
+
+    // Roster context
+    private Roster currentRoster;
+    private final Map<String, Roster> rosters = new HashMap<>();
+
+    // NFL Player context
+    private final Map<String, NFLPlayer> nflPlayers = new HashMap<>();
+    private NFLPlayer selectedPlayer;
+    private List<NFLPlayer> searchResults;
+    private int nflPlayerCount;
+
     // PAT context
     private PersonalAccessToken currentPAT;
     private String currentPATToken;
@@ -40,6 +55,8 @@ public class World {
 
     // Test data
     private LocalDateTime testTime = LocalDateTime.now();
+    private boolean playerStatsAvailable;
+    private int pageSize;
 
     /**
      * Reset all state - called before each scenario
@@ -54,6 +71,17 @@ public class World {
         currentLeagueId = null;
         leagues.clear();
 
+        currentLeaguePlayer = null;
+        leaguePlayers.clear();
+
+        currentRoster = null;
+        rosters.clear();
+
+        nflPlayers.clear();
+        selectedPlayer = null;
+        searchResults = null;
+        nflPlayerCount = 0;
+
         currentPAT = null;
         currentPATToken = null;
         pats.clear();
@@ -63,6 +91,8 @@ public class World {
         lastStatusCode = 0;
 
         testTime = LocalDateTime.now();
+        playerStatsAvailable = false;
+        pageSize = 0;
     }
 
     // User getters/setters
@@ -175,5 +205,88 @@ public class World {
 
     public void setTestTime(LocalDateTime time) {
         this.testTime = time;
+    }
+
+    // League Player getters/setters
+    public LeaguePlayer getCurrentLeaguePlayer() {
+        return currentLeaguePlayer;
+    }
+
+    public void setCurrentLeaguePlayer(LeaguePlayer leaguePlayer) {
+        this.currentLeaguePlayer = leaguePlayer;
+    }
+
+    public void storeLeaguePlayer(String key, LeaguePlayer leaguePlayer) {
+        leaguePlayers.put(key, leaguePlayer);
+    }
+
+    public LeaguePlayer getLeaguePlayer(String key) {
+        return leaguePlayers.get(key);
+    }
+
+    // Roster getters/setters
+    public Roster getCurrentRoster() {
+        return currentRoster;
+    }
+
+    public void setCurrentRoster(Roster roster) {
+        this.currentRoster = roster;
+    }
+
+    public void storeRoster(String key, Roster roster) {
+        rosters.put(key, roster);
+    }
+
+    public Roster getRoster(String key) {
+        return rosters.get(key);
+    }
+
+    // NFL Player getters/setters
+    public void storeNFLPlayer(String name, NFLPlayer player) {
+        nflPlayers.put(name, player);
+    }
+
+    public NFLPlayer getNFLPlayer(String name) {
+        return nflPlayers.get(name);
+    }
+
+    public NFLPlayer getSelectedPlayer() {
+        return selectedPlayer;
+    }
+
+    public void setSelectedPlayer(NFLPlayer player) {
+        this.selectedPlayer = player;
+    }
+
+    public List<NFLPlayer> getSearchResults() {
+        return searchResults;
+    }
+
+    public void setSearchResults(List<NFLPlayer> results) {
+        this.searchResults = results;
+    }
+
+    public int getNFLPlayerCount() {
+        return nflPlayerCount;
+    }
+
+    public void setNFLPlayerCount(int count) {
+        this.nflPlayerCount = count;
+    }
+
+    public boolean isPlayerStatsAvailable() {
+        return playerStatsAvailable;
+    }
+
+    public void setPlayerStatsAvailable(boolean available) {
+        this.playerStatsAvailable = available;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 }

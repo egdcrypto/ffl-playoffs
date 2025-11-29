@@ -94,6 +94,7 @@ class NFLGame(BaseModel):
     home_score: Optional[int] = None
     away_score: Optional[int] = None
     game_time: Optional[datetime] = None
+    game_date: Optional[datetime] = None  # Date of the actual game (required for FFL-36)
     status: GameStatus = GameStatus.SCHEDULED
     quarter: Optional[str] = None
     time_remaining: Optional[str] = None

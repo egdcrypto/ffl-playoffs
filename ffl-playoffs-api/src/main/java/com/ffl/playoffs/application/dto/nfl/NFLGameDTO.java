@@ -25,6 +25,7 @@ public class NFLGameDTO {
     private Integer homeScore;
     private Integer awayScore;
     private LocalDateTime gameTime;
+    private LocalDateTime gameDate;
     private String status;
     private String quarter;
     private String timeRemaining;
@@ -48,6 +49,7 @@ public class NFLGameDTO {
                 .homeScore(document.getHomeScore())
                 .awayScore(document.getAwayScore())
                 .gameTime(document.getGameTime())
+                .gameDate(document.getGameDate())
                 .status(document.getStatus())
                 .quarter(document.getQuarter())
                 .timeRemaining(document.getTimeRemaining())

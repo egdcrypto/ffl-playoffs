@@ -60,9 +60,12 @@ public class ValidatePATUseCase {
         pat.updateLastUsed();
         tokenRepository.save(pat);
 
-        // Get user who created this PAT
-        User user = userRepository.findById(pat.getCreatedBy())
-                .orElse(null);
+        // Get user who created this PAT (if not SYSTEM)
+        User user = null;
+        if (!"SYSTEM".equals(pat.getCreatedBy())) {
+            user = userRepository.findById(java.util.UUID.fromString(pat.getCreatedBy()))
+                    .orElse(null);
+        }
 
         return new ValidationResult(pat, user, true, "Token is valid", pat.getScope());
     }

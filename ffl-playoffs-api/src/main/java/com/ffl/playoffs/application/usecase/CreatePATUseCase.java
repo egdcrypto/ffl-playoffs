@@ -72,7 +72,7 @@ public class CreatePATUseCase {
                 tokenHash,
                 command.getScope(),
                 command.getExpiresAt(),
-                command.getCreatedBy()
+                command.getCreatedBy().toString()
         );
 
         // Save PAT
@@ -85,7 +85,7 @@ public class CreatePATUseCase {
                 plaintextToken,  // ONLY TIME RETURNED
                 savedPat.getScope(),
                 savedPat.getExpiresAt(),
-                savedPat.getCreatedBy(),
+                UUID.fromString(savedPat.getCreatedBy()),
                 savedPat.getCreatedAt()
         );
     }

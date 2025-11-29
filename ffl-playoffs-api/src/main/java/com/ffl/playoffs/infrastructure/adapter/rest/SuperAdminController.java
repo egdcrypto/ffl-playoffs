@@ -1,6 +1,8 @@
 package com.ffl.playoffs.infrastructure.adapter.rest;
 
+import com.ffl.playoffs.application.usecase.CreateSuperAdminUseCase;
 import com.ffl.playoffs.application.usecase.InviteAdminUseCase;
+import com.ffl.playoffs.domain.model.Role;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class SuperAdminController {
 
     private final InviteAdminUseCase inviteAdminUseCase;
+    private final CreateSuperAdminUseCase createSuperAdminUseCase;
     // TODO: Inject other use cases when implemented:
     // - RevokeAdminUseCase
     // - ListAdminsUseCase
@@ -33,6 +37,46 @@ public class SuperAdminController {
     // - ListPATsUseCase
     // - RevokePATUseCase
     // - RotatePATUseCase
+
+    // ========================
+    // Bootstrap Setup
+    // ========================
+
+    @PostMapping("/bootstrap")
+    @Operation(
+            summary = "Create first super admin",
+            description = "Creates the first super admin account using bootstrap PAT. " +
+                    "This endpoint requires a valid bootstrap PAT with ADMIN scope. " +
+                    "Used for initial system setup only."
+    )
+    public ResponseEntity<CreateSuperAdminResponse> createSuperAdmin(
+            @RequestBody CreateSuperAdminRequest request) {
+
+        // NOTE: Authentication is handled by Envoy using the bootstrap PAT
+        // The request will only reach here if the PAT is valid and has ADMIN scope
+
+        CreateSuperAdminUseCase.CreateSuperAdminCommand command =
+                new CreateSuperAdminUseCase.CreateSuperAdminCommand(
+                        request.getEmail(),
+                        request.getGoogleId(),
+                        request.getName()
+                );
+
+        CreateSuperAdminUseCase.CreateSuperAdminResult result = createSuperAdminUseCase.execute(command);
+
+        CreateSuperAdminResponse response = new CreateSuperAdminResponse(
+                result.getId(),
+                result.getEmail(),
+                result.getName(),
+                result.getGoogleId(),
+                result.getRole().toString(),
+                result.getCreatedAt(),
+                "First super admin account created successfully. " +
+                        "Please revoke the bootstrap PAT and create a new PAT for ongoing operations."
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     // ========================
     // Admin Management
@@ -184,6 +228,86 @@ public class SuperAdminController {
     // ========================
     // Request/Response DTOs
     // ========================
+
+    public static class CreateSuperAdminRequest {
+        private String email;
+        private String googleId;
+        private String name;
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getGoogleId() {
+            return googleId;
+        }
+
+        public void setGoogleId(String googleId) {
+            this.googleId = googleId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    public static class CreateSuperAdminResponse {
+        private final UUID userId;
+        private final String email;
+        private final String name;
+        private final String googleId;
+        private final String role;
+        private final LocalDateTime createdAt;
+        private final String message;
+
+        public CreateSuperAdminResponse(UUID userId, String email, String name,
+                                       String googleId, String role, LocalDateTime createdAt,
+                                       String message) {
+            this.userId = userId;
+            this.email = email;
+            this.name = name;
+            this.googleId = googleId;
+            this.role = role;
+            this.createdAt = createdAt;
+            this.message = message;
+        }
+
+        public UUID getUserId() {
+            return userId;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getGoogleId() {
+            return googleId;
+        }
+
+        public String getRole() {
+            return role;
+        }
+
+        public LocalDateTime getCreatedAt() {
+            return createdAt;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
 
     public static class InviteAdminRequest {
         private String email;

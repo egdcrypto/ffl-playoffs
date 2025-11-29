@@ -14,10 +14,11 @@ public class PersonalAccessToken {
     private String tokenHash;  // BCrypt hashed full token
     private PATScope scope;
     private LocalDateTime expiresAt;
-    private UUID createdBy;  // User ID who created this token
+    private String createdBy;  // User ID who created this token or "SYSTEM" for bootstrap PAT
     private LocalDateTime createdAt;
     private LocalDateTime lastUsedAt;
     private boolean revoked;
+    private LocalDateTime revokedAt;
 
     public PersonalAccessToken() {
         this.id = UUID.randomUUID();
@@ -25,7 +26,7 @@ public class PersonalAccessToken {
         this.revoked = false;
     }
 
-    public PersonalAccessToken(String name, String tokenIdentifier, String tokenHash, PATScope scope, LocalDateTime expiresAt, UUID createdBy) {
+    public PersonalAccessToken(String name, String tokenIdentifier, String tokenHash, PATScope scope, LocalDateTime expiresAt, String createdBy) {
         this();
         this.name = name;
         this.tokenIdentifier = tokenIdentifier;
@@ -74,6 +75,7 @@ public class PersonalAccessToken {
             throw new IllegalStateException("Token is already revoked");
         }
         this.revoked = true;
+        this.revokedAt = LocalDateTime.now();
     }
 
     /**
@@ -154,12 +156,20 @@ public class PersonalAccessToken {
         this.expiresAt = expiresAt;
     }
 
-    public UUID getCreatedBy() {
+    public String getCreatedBy() {
         return createdBy;
     }
 
-    public void setCreatedBy(UUID createdBy) {
+    public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public LocalDateTime getRevokedAt() {
+        return revokedAt;
+    }
+
+    public void setRevokedAt(LocalDateTime revokedAt) {
+        this.revokedAt = revokedAt;
     }
 
     public LocalDateTime getCreatedAt() {

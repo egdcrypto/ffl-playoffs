@@ -1,18 +1,18 @@
-Feature: NFL Player News and Injuries via SportsData.io
+Feature: NFL Player News and Injuries via nflreadpy
   As a fantasy football player
   I want to view real-time player news and injury updates
   So that I can make informed roster decisions
 
   Background:
-    Given the system is configured with SportsData.io API
-    And the API endpoint is "/stats/json/News"
+    Given the system is configured with nflreadpy library
+    And injury data is sourced from nflreadpy's injury module
     And news updates are fetched every 15 minutes
 
   # Player News Retrieval
 
   Scenario: Retrieve latest NFL news
-    When the system requests GET "/stats/json/News"
-    Then the API returns HTTP 200 OK
+    When the system queries nflreadpy for latest news
+    Then the library returns news data successfully
     And the response includes latest NFL news items
     And each news item contains:
       | NewsID         |
@@ -43,8 +43,8 @@ Feature: NFL Player News and Injuries via SportsData.io
   # Injury Status Updates
 
   Scenario: Retrieve current injury report
-    When the system requests GET "/stats/json/Injuries"
-    Then the API returns HTTP 200 OK
+    When the system queries nflreadpy for injury data
+    Then the library returns injury data successfully
     And the response includes all current injuries
     And each injury record contains:
       | PlayerID           |
@@ -265,8 +265,8 @@ Feature: NFL Player News and Injuries via SportsData.io
 
   # Error Handling
 
-  Scenario: Handle API timeout when fetching news
-    Given the SportsData.io API is slow
+  Scenario: Handle timeout when fetching news
+    Given the nflreadpy data fetch is slow
     When the news fetch times out after 10 seconds
     Then the system logs the timeout
     And returns cached news from last successful fetch
@@ -274,7 +274,7 @@ Feature: NFL Player News and Injuries via SportsData.io
     And retries after 5 minutes
 
   Scenario: Handle missing injury data
-    Given the API response is missing InjuryStatus field
+    Given the nflreadpy response is missing InjuryStatus field
     When the system processes the response
     Then the system defaults to "Unknown"
     And logs the missing data
@@ -304,7 +304,7 @@ Feature: NFL Player News and Injuries via SportsData.io
     And the cache TTL is 15 minutes
     When a user requests news
     Then the cache is expired
-    And a new API call is made
+    And nflreadpy is queried for fresh data
     And the cache is updated with fresh news
     And the updated timestamp is shown
 

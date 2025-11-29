@@ -10,8 +10,11 @@ public enum NFLGameStatus {
     IN_PROGRESS("In Progress"),
     HALFTIME("Halftime"),
     FINAL("Final"),
+    FINAL_OVERTIME("Final Overtime"),
+    SUSPENDED("Suspended"),
     POSTPONED("Postponed"),
-    CANCELLED("Cancelled");
+    CANCELLED("Cancelled"),
+    DELAYED("Delayed");
 
     private final String displayName;
 
@@ -36,7 +39,7 @@ public enum NFLGameStatus {
      * @return true if game is final
      */
     public boolean isCompleted() {
-        return this == FINAL;
+        return this == FINAL || this == FINAL_OVERTIME;
     }
 
     /**
@@ -52,7 +55,15 @@ public enum NFLGameStatus {
      * @return true if game was cancelled or postponed
      */
     public boolean isCancelledOrPostponed() {
-        return this == CANCELLED || this == POSTPONED;
+        return this == CANCELLED || this == POSTPONED || this == SUSPENDED;
+    }
+
+    /**
+     * Check if the game is delayed
+     * @return true if game start time is delayed
+     */
+    public boolean isDelayed() {
+        return this == DELAYED;
     }
 
     /**

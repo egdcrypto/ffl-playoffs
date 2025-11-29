@@ -18,13 +18,16 @@ class NFLGameStatusTest {
     @DisplayName("Should have all expected status values")
     void shouldHaveAllExpectedStatusValues() {
         NFLGameStatus[] statuses = NFLGameStatus.values();
-        assertEquals(6, statuses.length);
+        assertEquals(9, statuses.length);
         assertNotNull(NFLGameStatus.SCHEDULED);
         assertNotNull(NFLGameStatus.IN_PROGRESS);
         assertNotNull(NFLGameStatus.HALFTIME);
         assertNotNull(NFLGameStatus.FINAL);
+        assertNotNull(NFLGameStatus.FINAL_OVERTIME);
+        assertNotNull(NFLGameStatus.SUSPENDED);
         assertNotNull(NFLGameStatus.POSTPONED);
         assertNotNull(NFLGameStatus.CANCELLED);
+        assertNotNull(NFLGameStatus.DELAYED);
     }
 
     @Test
@@ -64,13 +67,16 @@ class NFLGameStatusTest {
                 Arguments.of(NFLGameStatus.IN_PROGRESS, true),
                 Arguments.of(NFLGameStatus.HALFTIME, true),
                 Arguments.of(NFLGameStatus.FINAL, false),
+                Arguments.of(NFLGameStatus.FINAL_OVERTIME, false),
+                Arguments.of(NFLGameStatus.SUSPENDED, false),
                 Arguments.of(NFLGameStatus.POSTPONED, false),
-                Arguments.of(NFLGameStatus.CANCELLED, false)
+                Arguments.of(NFLGameStatus.CANCELLED, false),
+                Arguments.of(NFLGameStatus.DELAYED, false)
         );
     }
 
     @ParameterizedTest
-    @DisplayName("isCompleted should return true only for FINAL")
+    @DisplayName("isCompleted should return true only for FINAL and FINAL_OVERTIME")
     @MethodSource("isCompletedTestCases")
     void isCompletedShouldReturnCorrectValue(NFLGameStatus status, boolean expectedIsCompleted) {
         assertEquals(expectedIsCompleted, status.isCompleted());
@@ -82,8 +88,11 @@ class NFLGameStatusTest {
                 Arguments.of(NFLGameStatus.IN_PROGRESS, false),
                 Arguments.of(NFLGameStatus.HALFTIME, false),
                 Arguments.of(NFLGameStatus.FINAL, true),
+                Arguments.of(NFLGameStatus.FINAL_OVERTIME, true),
+                Arguments.of(NFLGameStatus.SUSPENDED, false),
                 Arguments.of(NFLGameStatus.POSTPONED, false),
-                Arguments.of(NFLGameStatus.CANCELLED, false)
+                Arguments.of(NFLGameStatus.CANCELLED, false),
+                Arguments.of(NFLGameStatus.DELAYED, false)
         );
     }
 
@@ -100,13 +109,16 @@ class NFLGameStatusTest {
                 Arguments.of(NFLGameStatus.IN_PROGRESS, false),
                 Arguments.of(NFLGameStatus.HALFTIME, false),
                 Arguments.of(NFLGameStatus.FINAL, false),
+                Arguments.of(NFLGameStatus.FINAL_OVERTIME, false),
+                Arguments.of(NFLGameStatus.SUSPENDED, false),
                 Arguments.of(NFLGameStatus.POSTPONED, false),
-                Arguments.of(NFLGameStatus.CANCELLED, false)
+                Arguments.of(NFLGameStatus.CANCELLED, false),
+                Arguments.of(NFLGameStatus.DELAYED, false)
         );
     }
 
     @ParameterizedTest
-    @DisplayName("isCancelledOrPostponed should return true for CANCELLED and POSTPONED")
+    @DisplayName("isCancelledOrPostponed should return true for CANCELLED, POSTPONED, and SUSPENDED")
     @MethodSource("isCancelledOrPostponedTestCases")
     void isCancelledOrPostponedShouldReturnCorrectValue(NFLGameStatus status, boolean expected) {
         assertEquals(expected, status.isCancelledOrPostponed());
@@ -118,8 +130,11 @@ class NFLGameStatusTest {
                 Arguments.of(NFLGameStatus.IN_PROGRESS, false),
                 Arguments.of(NFLGameStatus.HALFTIME, false),
                 Arguments.of(NFLGameStatus.FINAL, false),
+                Arguments.of(NFLGameStatus.FINAL_OVERTIME, false),
+                Arguments.of(NFLGameStatus.SUSPENDED, true),
                 Arguments.of(NFLGameStatus.POSTPONED, true),
-                Arguments.of(NFLGameStatus.CANCELLED, true)
+                Arguments.of(NFLGameStatus.CANCELLED, true),
+                Arguments.of(NFLGameStatus.DELAYED, false)
         );
     }
 

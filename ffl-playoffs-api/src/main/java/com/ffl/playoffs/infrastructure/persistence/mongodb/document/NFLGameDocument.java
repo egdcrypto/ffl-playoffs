@@ -72,6 +72,9 @@ public class NFLGameDocument {
     @Field("venue")
     private String venue;
 
+    @Field("broadcast_network")
+    private String broadcastNetwork;
+
     @Field("created_at")
     private LocalDateTime createdAt;
 

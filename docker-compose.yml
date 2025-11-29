@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: ffl-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ffl_playoffs
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ffl-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Envoy Gateway
+  envoy:
+    image: envoyproxy/envoy:v1.28-latest
+    container_name: ffl-envoy
+    ports:
+      - "8080:8080"
+      - "9901:9901"  # Admin interface
+    volumes:
+      - ./gateway/envoy.yaml:/etc/envoy/envoy.yaml:ro
+    command: ["/usr/local/bin/envoy", "-c", "/etc/envoy/envoy.yaml"]
+    depends_on:
+      - auth-service
+      - backend-api
+    networks:
+      - ffl-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9901/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # External Authorization Service
+  auth-service:
+    build:
+      context: ./gateway/auth-service
+      dockerfile: Dockerfile
+    container_name: ffl-auth-service
+    ports:
+      - "9000:9000"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-key}
+      JWT_ENABLED: "true"
+      PAT_ENABLED: "true"
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DB: ffl_playoffs
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - ffl-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 9000)); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API (Java Spring Boot)
+  backend-api:
+    build:
+      context: ./ffl-playoffs-api
+      dockerfile: Dockerfile
+    container_name: ffl-backend-api
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://mongodb:27017/ffl_playoffs
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8090
+      JWT_SECRET: ${JWT_SECRET:-your-jwt-secret-key}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - ffl-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8090/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # NFL Data Sync Service
+  nfl-data-sync:
+    build:
+      context: ./nfl-data-sync
+      dockerfile: Dockerfile
+    container_name: ffl-nfl-data-sync
+    ports:
+      - "8001:8001"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/ffl_playoffs
+      PORT: 8001
+      NFL_API_KEY: ${NFL_API_KEY:-}
+      SYNC_INTERVAL: ${SYNC_INTERVAL:-3600}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - ffl-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  ffl-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local

@@ -64,6 +64,12 @@ public class AuthenticationSteps {
     @Before
     public void setUp() {
         // Clean database before each scenario
+        // Safety check: ensure we're running against a test database
+        String dbName = mongoTemplate.getDb().getName();
+        if (!dbName.contains("test")) {
+            throw new IllegalStateException("Cannot run tests against non-test database: " + dbName);
+        }
+
         mongoTemplate.getDb().listCollectionNames()
                 .forEach(collectionName -> mongoTemplate.getCollection(collectionName).drop());
 

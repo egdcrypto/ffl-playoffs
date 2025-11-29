@@ -45,7 +45,7 @@ public class BuildRosterUseCase {
         }
 
         // Check if roster already exists for this player
-        if (rosterRepository.existsByLeaguePlayerId(command.getLeaguePlayerId())) {
+        if (rosterRepository.findByLeaguePlayerId(command.getLeaguePlayerId()).isPresent()) {
             throw new IllegalArgumentException("Roster already exists for this player in this league");
         }
 

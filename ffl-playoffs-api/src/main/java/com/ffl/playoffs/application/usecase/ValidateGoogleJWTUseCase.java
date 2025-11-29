@@ -30,7 +30,11 @@ public class ValidateGoogleJWTUseCase {
      */
     public ValidationResult execute(ValidateJWTCommand command) {
         // Validate JWT and extract claims
-        GoogleJwtClaims claims = jwtValidator.validate(command.getToken());
+        GoogleJwtClaims claims = jwtValidator.validateAndExtractClaims(command.getToken());
+
+        if (claims == null) {
+            throw new IllegalArgumentException("Invalid JWT token");
+        }
 
         // Find or create user
         User user = userRepository.findByGoogleId(claims.getGoogleId())

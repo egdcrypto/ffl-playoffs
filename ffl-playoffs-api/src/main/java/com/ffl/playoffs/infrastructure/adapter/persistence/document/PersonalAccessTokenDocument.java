@@ -29,6 +29,7 @@ public class PersonalAccessTokenDocument {
     private LocalDateTime createdAt;
     private LocalDateTime lastUsedAt;
     private boolean revoked;
+    private LocalDateTime revokedAt;
 
     public PersonalAccessTokenDocument() {
     }
@@ -113,5 +114,13 @@ public class PersonalAccessTokenDocument {
 
     public void setRevoked(boolean revoked) {
         this.revoked = revoked;
+    }
+
+    public LocalDateTime getRevokedAt() {
+        return revokedAt;
+    }
+
+    public void setRevokedAt(LocalDateTime revokedAt) {
+        this.revokedAt = revokedAt;
     }
 }

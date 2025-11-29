@@ -31,10 +31,11 @@ public class PersonalAccessTokenMapper {
         document.setTokenHash(token.getTokenHash());
         document.setScope(token.getScope() != null ? token.getScope().name() : null);
         document.setExpiresAt(token.getExpiresAt());
-        document.setCreatedBy(token.getCreatedBy() != null ? token.getCreatedBy().toString() : null);
+        document.setCreatedBy(token.getCreatedBy());
         document.setCreatedAt(token.getCreatedAt());
         document.setLastUsedAt(token.getLastUsedAt());
         document.setRevoked(token.isRevoked());
+        document.setRevokedAt(token.getRevokedAt());
 
         return document;
     }
@@ -56,10 +57,11 @@ public class PersonalAccessTokenMapper {
         token.setTokenHash(document.getTokenHash());
         token.setScope(document.getScope() != null ? PATScope.valueOf(document.getScope()) : null);
         token.setExpiresAt(document.getExpiresAt());
-        token.setCreatedBy(document.getCreatedBy() != null ? UUID.fromString(document.getCreatedBy()) : null);
+        token.setCreatedBy(document.getCreatedBy());
         token.setCreatedAt(document.getCreatedAt());
         token.setLastUsedAt(document.getLastUsedAt());
         token.setRevoked(document.isRevoked());
+        token.setRevokedAt(document.getRevokedAt());
 
         return token;
     }

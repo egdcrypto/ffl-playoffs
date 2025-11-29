@@ -17,6 +17,8 @@ class SyncJobType(str, Enum):
     SCHEDULES = "SCHEDULES"
     LIVE_SCORES = "LIVE_SCORES"
     PLAYER_STATS = "PLAYER_STATS"
+    PLAYER_NEWS = "PLAYER_NEWS"
+    PLAYER_INJURIES = "PLAYER_INJURIES"
 
 
 class SyncJobStatus(str, Enum):
@@ -182,3 +184,122 @@ class SyncMetrics(BaseModel):
     errors_total: int = 0
     api_requests_total: int = 0
     rate_limit_hits: int = 0
+
+
+class InjuryStatus(str, Enum):
+    """NFL Player Injury Status"""
+    OUT = "Out"
+    DOUBTFUL = "Doubtful"
+    QUESTIONABLE = "Questionable"
+    PROBABLE = "Probable"
+    HEALTHY = "Healthy"
+    UNKNOWN = "Unknown"
+    INJURED_RESERVE = "Injured Reserve"
+    PHYSICALLY_UNABLE_TO_PERFORM = "Physically Unable to Perform"
+    NON_FOOTBALL_INJURY = "Non-Football Injury"
+
+
+class PracticeParticipation(str, Enum):
+    """Practice participation levels"""
+    FULL = "Full"
+    LIMITED = "Limited"
+    DID_NOT_PRACTICE = "Did not practice"
+    NOT_APPLICABLE = "N/A"
+
+
+class NewsCategory(str, Enum):
+    """News article categories"""
+    INJURY = "Injury"
+    TRANSACTION = "Transaction"
+    RUMOR = "Rumor"
+    PERFORMANCE = "Performance"
+    COACHING = "Coaching"
+    TRADE = "Trade"
+    RETIREMENT = "Retirement"
+    GENERAL = "General"
+
+
+class NewsSentiment(str, Enum):
+    """Sentiment classification for news"""
+    POSITIVE = "Positive"
+    NEGATIVE = "Negative"
+    NEUTRAL = "Neutral"
+
+
+class PlayerNews(BaseModel):
+    """NFL Player News from nflreadpy"""
+    news_id: str
+    source: str
+    updated: datetime
+    time_ago: Optional[str] = None
+    title: str
+    content: str
+    url: str
+    player_id: Optional[str] = None
+    team: Optional[str] = None
+    categories: list[str] = Field(default_factory=list)
+    sentiment: Optional[NewsSentiment] = None
+    high_impact: bool = False
+
+    class Config:
+        frozen = False
+
+
+class PlayerInjury(BaseModel):
+    """NFL Player Injury Information from nflreadpy"""
+    player_id: str
+    name: str
+    position: Optional[str] = None
+    team: Optional[str] = None
+    number: Optional[int] = None
+    injury_status: InjuryStatus = InjuryStatus.UNKNOWN
+    injury_body_part: Optional[str] = None
+    injury_start_date: Optional[datetime] = None
+    injury_notes: Optional[str] = None
+    updated: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        frozen = False
+
+
+class PracticeReport(BaseModel):
+    """Practice participation tracking"""
+    player_id: str
+    week: int
+    season: int
+    wednesday: PracticeParticipation = PracticeParticipation.NOT_APPLICABLE
+    thursday: PracticeParticipation = PracticeParticipation.NOT_APPLICABLE
+    friday: PracticeParticipation = PracticeParticipation.NOT_APPLICABLE
+    saturday: PracticeParticipation = PracticeParticipation.NOT_APPLICABLE
+    updated: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        frozen = False
+
+
+class PlayerInjuryStatusChangedEvent(BaseModel):
+    """Event fired when player injury status changes"""
+    player_id: str
+    player_name: str
+    previous_status: InjuryStatus
+    current_status: InjuryStatus
+    injury_body_part: Optional[str] = None
+    injury_notes: Optional[str] = None
+    affected_users: list[str] = Field(default_factory=list)
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    class Config:
+        frozen = False
+
+
+class InjuryHistory(BaseModel):
+    """Historical injury record for a player"""
+    player_id: str
+    injury_date: datetime
+    injury_type: str
+    status: InjuryStatus
+    games_missed: int = 0
+    return_date: Optional[datetime] = None
+
+    class Config:
+        frozen = False

@@ -38,8 +38,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
         useCase = new ValidatePATUseCase(tokenRepository, userRepository);
 
         // Create a test user
-        User user = new User("pat-user@example.com", "PAT User", "google-pat");
-        user.setRole(Role.ADMIN);
+        User user = new User("pat-user@example.com", "PAT User", "google-pat", Role.ADMIN);
         user = userRepository.save(user);
         testUserId = user.getId();
     }
@@ -57,7 +56,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",  // In real scenario, this would be BCrypt hash
                 PATScope.WRITE,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 

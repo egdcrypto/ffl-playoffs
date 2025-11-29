@@ -1,7 +1,7 @@
 package com.ffl.playoffs.infrastructure.adapter.rest;
 
-import com.ffl.playoffs.application.usecase.CreateSuperAdminUseCase;
-import com.ffl.playoffs.application.usecase.InviteAdminUseCase;
+import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.model.PATScope;
 import com.ffl.playoffs.domain.model.Role;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,14 +29,15 @@ public class SuperAdminController {
 
     private final InviteAdminUseCase inviteAdminUseCase;
     private final CreateSuperAdminUseCase createSuperAdminUseCase;
+    private final CreatePATUseCase createPATUseCase;
+    private final ListPATsUseCase listPATsUseCase;
+    private final RevokePATUseCase revokePATUseCase;
+    private final RotatePATUseCase rotatePATUseCase;
+    private final DeletePATUseCase deletePATUseCase;
     // TODO: Inject other use cases when implemented:
     // - RevokeAdminUseCase
     // - ListAdminsUseCase
     // - ListAllLeaguesUseCase
-    // - CreatePATUseCase
-    // - ListPATsUseCase
-    // - RevokePATUseCase
-    // - RotatePATUseCase
 
     // ========================
     // Bootstrap Setup
@@ -158,21 +159,33 @@ public class SuperAdminController {
     public ResponseEntity<CreatePATResponse> createPAT(
             @RequestBody CreatePATRequest request,
             @RequestAttribute("userId") UUID currentUserId) {
-        // TODO: Implement CreatePATUseCase
-        // - Generate unique token: pat_<identifier>_<secret>
-        // - Hash the token with BCrypt
-        // - Store: name, identifier, hash, scope, expiry, created_by
-        // - Return plaintext token (ONLY time it's visible)
 
-        String plaintextToken = "pat_example_secret";  // TODO: Generate actual token
+        // Parse scope from string
+        PATScope scope = PATScope.valueOf(request.getScope().toUpperCase());
 
-        CreatePATResponse response = new CreatePATResponse(
-                UUID.randomUUID(),  // TODO: Use real PAT ID
+        // Parse expiration date (ISO-8601 format)
+        LocalDateTime expiresAt = request.getExpiresAt() != null ?
+                LocalDateTime.parse(request.getExpiresAt()) : null;
+
+        // Create command
+        CreatePATUseCase.CreatePATCommand command = new CreatePATUseCase.CreatePATCommand(
                 request.getName(),
-                plaintextToken,
-                request.getScope(),
-                request.getExpiresAt(),
-                "WARNING: Save this token now - you won't be able to see it again"
+                scope,
+                expiresAt,
+                currentUserId
+        );
+
+        // Execute use case
+        CreatePATUseCase.CreatePATResult result = createPATUseCase.execute(command);
+
+        // Build response
+        CreatePATResponse response = new CreatePATResponse(
+                result.getId(),
+                result.getName(),
+                result.getPlaintextToken(),  // ⚠️ ONLY TIME TOKEN IS VISIBLE
+                result.getScope().name(),
+                result.getExpiresAt() != null ? result.getExpiresAt().toString() : null,
+                "✅ PAT created successfully. Save this token - it will not be shown again."
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -181,13 +194,28 @@ public class SuperAdminController {
     @GetMapping("/pats")
     @Operation(summary = "List PATs", description = "Lists all Personal Access Tokens. Does NOT return token secrets.")
     public ResponseEntity<?> listPATs(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        // TODO: Implement ListPATsUseCase
-        // - Query all PATs
-        // - Return: id, name, scope, created_at, expires_at, last_used_at, revoked
-        // - NEVER return token hash or plaintext
-        return ResponseEntity.ok(Map.of("message", "TODO: Implement ListPATsUseCase"));
+            @RequestParam(defaultValue = "all") String filter,
+            @RequestAttribute("userId") UUID currentUserId) {
+
+        // Parse filter type
+        ListPATsUseCase.FilterType filterType;
+        try {
+            filterType = ListPATsUseCase.FilterType.valueOf(filter.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            filterType = ListPATsUseCase.FilterType.ALL;
+        }
+
+        // Create command
+        ListPATsUseCase.ListPATsCommand command = new ListPATsUseCase.ListPATsCommand(
+                currentUserId,
+                filterType
+        );
+
+        // Execute use case
+        ListPATsUseCase.ListPATsResult result = listPATsUseCase.execute(command);
+
+        // Return PAT summaries (NO plaintext tokens or hashes)
+        return ResponseEntity.ok(result);
     }
 
     @DeleteMapping("/pats/{patId}")
@@ -195,11 +223,21 @@ public class SuperAdminController {
     public ResponseEntity<Map<String, String>> revokePAT(
             @PathVariable UUID patId,
             @RequestAttribute("userId") UUID currentUserId) {
-        // TODO: Implement RevokePATUseCase
-        // - Find PAT by ID
-        // - Mark as revoked
-        // - Return success message
-        return ResponseEntity.ok(Map.of("message", "TODO: Implement RevokePATUseCase"));
+
+        // Create command
+        RevokePATUseCase.RevokePATCommand command = new RevokePATUseCase.RevokePATCommand(
+                patId,
+                currentUserId
+        );
+
+        // Execute use case
+        RevokePATUseCase.RevokePATResult result = revokePATUseCase.execute(command);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "PAT '" + result.getPatName() + "' revoked successfully",
+                "patId", result.getPatId().toString(),
+                "revokedAt", result.getRevokedAt().toString()
+        ));
     }
 
     @PostMapping("/pats/{patId}/rotate")
@@ -210,19 +248,27 @@ public class SuperAdminController {
     public ResponseEntity<CreatePATResponse> rotatePAT(
             @PathVariable UUID patId,
             @RequestAttribute("userId") UUID currentUserId) {
-        // TODO: Implement RotatePATUseCase
-        // - Find existing PAT
-        // - Generate new token secret
-        // - Update token hash
-        // - Return new plaintext token (ONLY time it's visible)
-        return ResponseEntity.ok(new CreatePATResponse(
+
+        // Create command
+        RotatePATUseCase.RotatePATCommand command = new RotatePATUseCase.RotatePATCommand(
                 patId,
-                "rotated-token",
-                "pat_rotated_secret",
-                null,
-                null,
-                "TODO: Implement RotatePATUseCase"
-        ));
+                currentUserId
+        );
+
+        // Execute use case
+        RotatePATUseCase.RotatePATResult result = rotatePATUseCase.execute(command);
+
+        // Build response
+        CreatePATResponse response = new CreatePATResponse(
+                result.getPatId(),
+                result.getPatName(),
+                result.getNewPlaintextToken(),  // ⚠️ ONLY TIME NEW TOKEN IS VISIBLE
+                result.getScope().name(),
+                result.getExpiresAt() != null ? result.getExpiresAt().toString() : null,
+                "✅ PAT rotated successfully. Save the new token - it will not be shown again. Old token is now invalid."
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     // ========================

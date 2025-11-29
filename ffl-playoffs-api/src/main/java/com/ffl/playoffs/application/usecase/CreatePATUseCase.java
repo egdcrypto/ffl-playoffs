@@ -6,6 +6,7 @@ import com.ffl.playoffs.domain.model.Role;
 import com.ffl.playoffs.domain.model.User;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -22,6 +23,7 @@ public class CreatePATUseCase {
     private final PersonalAccessTokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final SecureRandom secureRandom;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public CreatePATUseCase(
             PersonalAccessTokenRepository tokenRepository,
@@ -29,6 +31,7 @@ public class CreatePATUseCase {
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
         this.secureRandom = new SecureRandom();
+        this.passwordEncoder = new BCryptPasswordEncoder(12);  // BCrypt strength 12 for PATs
     }
 
     /**
@@ -136,20 +139,13 @@ public class CreatePATUseCase {
 
     /**
      * Hashes the token using BCrypt
-     * In production, use proper BCrypt library (e.g., Spring Security's BCryptPasswordEncoder)
-     *
-     * NOTE: This is a placeholder. Actual implementation should use BCryptPasswordEncoder
-     * with cost factor 12 as specified in PAT_MANAGEMENT.md
+     * Uses BCrypt with cost factor 12 as specified in PAT_MANAGEMENT.md
      *
      * @param token The plaintext token to hash
      * @return BCrypt hash of the token
      */
     private String hashToken(String token) {
-        // TODO: Replace with actual BCryptPasswordEncoder
-        // Example: return new BCryptPasswordEncoder(12).encode(token);
-
-        // Placeholder for compilation (MUST be replaced with BCrypt in production)
-        return "BCRYPT_HASH_PLACEHOLDER_" + token.hashCode();
+        return passwordEncoder.encode(token);
     }
 
     /**

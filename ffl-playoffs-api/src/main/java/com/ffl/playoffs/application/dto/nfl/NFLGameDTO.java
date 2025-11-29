@@ -30,6 +30,7 @@ public class NFLGameDTO {
     private String quarter;
     private String timeRemaining;
     private String venue;
+    private String broadcastNetwork;
 
     /**
      * Convert from MongoDB document to DTO
@@ -54,6 +55,7 @@ public class NFLGameDTO {
                 .quarter(document.getQuarter())
                 .timeRemaining(document.getTimeRemaining())
                 .venue(document.getVenue())
+                .broadcastNetwork(document.getBroadcastNetwork())
                 .build();
     }
 }

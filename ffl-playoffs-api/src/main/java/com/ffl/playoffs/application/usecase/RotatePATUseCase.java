@@ -4,6 +4,8 @@ import com.ffl.playoffs.domain.model.PersonalAccessToken;
 import com.ffl.playoffs.domain.model.User;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -17,17 +19,21 @@ import java.util.UUID;
  * Returns new plaintext token ONCE
  * Only SUPER_ADMIN users can rotate PATs
  */
+@Service
 public class RotatePATUseCase {
 
     private final PersonalAccessTokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     private final SecureRandom secureRandom;
 
     public RotatePATUseCase(
             PersonalAccessTokenRepository tokenRepository,
-            UserRepository userRepository) {
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder) {
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
         this.secureRandom = new SecureRandom();
     }
 
@@ -115,20 +121,14 @@ public class RotatePATUseCase {
 
     /**
      * Hashes the token using BCrypt
-     * In production, use proper BCrypt library (e.g., Spring Security's BCryptPasswordEncoder)
-     *
-     * NOTE: This is a placeholder. Actual implementation should use BCryptPasswordEncoder
+     * Uses Spring Security's PasswordEncoder (BCryptPasswordEncoder)
      * with cost factor 12 as specified in PAT_MANAGEMENT.md
      *
      * @param token The plaintext token to hash
      * @return BCrypt hash of the token
      */
     private String hashToken(String token) {
-        // TODO: Replace with actual BCryptPasswordEncoder
-        // Example: return new BCryptPasswordEncoder(12).encode(token);
-
-        // Placeholder for compilation (MUST be replaced with BCrypt in production)
-        return "BCRYPT_HASH_PLACEHOLDER_" + token.hashCode();
+        return passwordEncoder.encode(token);
     }
 
     /**

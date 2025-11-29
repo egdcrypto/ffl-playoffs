@@ -1,7 +1,10 @@
 package com.ffl.playoffs.infrastructure.adapter.rest;
 
+import com.ffl.playoffs.application.usecase.CreatePATUseCase;
 import com.ffl.playoffs.application.usecase.CreateSuperAdminUseCase;
 import com.ffl.playoffs.application.usecase.InviteAdminUseCase;
+import com.ffl.playoffs.application.usecase.RotatePATUseCase;
+import com.ffl.playoffs.domain.model.PATScope;
 import com.ffl.playoffs.domain.model.Role;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -29,14 +32,14 @@ public class SuperAdminController {
 
     private final InviteAdminUseCase inviteAdminUseCase;
     private final CreateSuperAdminUseCase createSuperAdminUseCase;
+    private final CreatePATUseCase createPATUseCase;
+    private final RotatePATUseCase rotatePATUseCase;
     // TODO: Inject other use cases when implemented:
     // - RevokeAdminUseCase
     // - ListAdminsUseCase
     // - ListAllLeaguesUseCase
-    // - CreatePATUseCase
     // - ListPATsUseCase
     // - RevokePATUseCase
-    // - RotatePATUseCase
 
     // ========================
     // Bootstrap Setup
@@ -158,20 +161,31 @@ public class SuperAdminController {
     public ResponseEntity<CreatePATResponse> createPAT(
             @RequestBody CreatePATRequest request,
             @RequestAttribute("userId") UUID currentUserId) {
-        // TODO: Implement CreatePATUseCase
-        // - Generate unique token: pat_<identifier>_<secret>
-        // - Hash the token with BCrypt
-        // - Store: name, identifier, hash, scope, expiry, created_by
-        // - Return plaintext token (ONLY time it's visible)
 
-        String plaintextToken = "pat_example_secret";  // TODO: Generate actual token
+        // Parse expiresAt if provided
+        LocalDateTime expiresAt = null;
+        if (request.getExpiresAt() != null && !request.getExpiresAt().isEmpty()) {
+            expiresAt = LocalDateTime.parse(request.getExpiresAt());
+        }
 
-        CreatePATResponse response = new CreatePATResponse(
-                UUID.randomUUID(),  // TODO: Use real PAT ID
+        // Create command
+        CreatePATUseCase.CreatePATCommand command = new CreatePATUseCase.CreatePATCommand(
                 request.getName(),
-                plaintextToken,
-                request.getScope(),
-                request.getExpiresAt(),
+                PATScope.valueOf(request.getScope()),
+                expiresAt,
+                currentUserId
+        );
+
+        // Execute use case
+        CreatePATUseCase.CreatePATResult result = createPATUseCase.execute(command);
+
+        // Build response
+        CreatePATResponse response = new CreatePATResponse(
+                result.getId(),
+                result.getName(),
+                result.getPlaintextToken(),
+                result.getScope().toString(),
+                result.getExpiresAt() != null ? result.getExpiresAt().toString() : null,
                 "WARNING: Save this token now - you won't be able to see it again"
         );
 
@@ -210,19 +224,27 @@ public class SuperAdminController {
     public ResponseEntity<CreatePATResponse> rotatePAT(
             @PathVariable UUID patId,
             @RequestAttribute("userId") UUID currentUserId) {
-        // TODO: Implement RotatePATUseCase
-        // - Find existing PAT
-        // - Generate new token secret
-        // - Update token hash
-        // - Return new plaintext token (ONLY time it's visible)
-        return ResponseEntity.ok(new CreatePATResponse(
+
+        // Create command
+        RotatePATUseCase.RotatePATCommand command = new RotatePATUseCase.RotatePATCommand(
                 patId,
-                "rotated-token",
-                "pat_rotated_secret",
-                null,
-                null,
-                "TODO: Implement RotatePATUseCase"
-        ));
+                currentUserId
+        );
+
+        // Execute use case
+        RotatePATUseCase.RotatePATResult result = rotatePATUseCase.execute(command);
+
+        // Build response
+        CreatePATResponse response = new CreatePATResponse(
+                result.getPatId(),
+                result.getPatName(),
+                result.getNewPlaintextToken(),
+                result.getScope().toString(),
+                result.getExpiresAt() != null ? result.getExpiresAt().toString() : null,
+                "WARNING: Save this new token now - you won't be able to see it again"
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     // ========================

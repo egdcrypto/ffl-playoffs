@@ -11,6 +11,7 @@ hs_err_pid*
 # Gradle
 .gradle/
 build/
+bin/
 !gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/

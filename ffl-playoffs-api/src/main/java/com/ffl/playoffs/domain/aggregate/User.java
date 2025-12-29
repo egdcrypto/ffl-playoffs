@@ -74,6 +74,30 @@ public class User {
     }
 
     /**
+     * Upgrades user role from PLAYER to ADMIN
+     *
+     * @throws IllegalStateException if user is already ADMIN or SUPER_ADMIN
+     */
+    public void upgradeToAdmin() {
+        if (this.role != Role.PLAYER) {
+            throw new IllegalStateException("Can only upgrade PLAYER to ADMIN. Current role: " + this.role);
+        }
+        this.role = Role.ADMIN;
+    }
+
+    /**
+     * Downgrades user role from ADMIN to PLAYER
+     *
+     * @throws IllegalStateException if user is not ADMIN
+     */
+    public void downgradeToPlayer() {
+        if (this.role != Role.ADMIN) {
+            throw new IllegalStateException("Can only downgrade ADMIN to PLAYER. Current role: " + this.role);
+        }
+        this.role = Role.PLAYER;
+    }
+
+    /**
      * Deactivates the user account
      */
     public void deactivate() {

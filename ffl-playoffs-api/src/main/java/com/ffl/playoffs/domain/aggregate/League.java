@@ -1,5 +1,6 @@
 package com.ffl.playoffs.domain.aggregate;
 
+import com.ffl.playoffs.domain.model.LeagueOwnerStatus;
 import com.ffl.playoffs.domain.model.Player;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;
@@ -26,6 +27,7 @@ public class League {
     private String code;
     private UUID ownerId; // Admin who created the league
     private LeagueStatus status;
+    private LeagueOwnerStatus ownerStatus; // Tracks if owner's admin privileges were revoked
 
     // Week configuration
     private Integer startingWeek; // NFL week to start (1-22)
@@ -56,6 +58,7 @@ public class League {
         this.id = UUID.randomUUID();
         this.players = new ArrayList<>();
         this.status = LeagueStatus.CREATED;
+        this.ownerStatus = LeagueOwnerStatus.ACTIVE;
         this.configurationLocked = false;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -353,6 +356,15 @@ public class League {
 
     public void setStatus(LeagueStatus status) {
         this.status = status;
+    }
+
+    public LeagueOwnerStatus getOwnerStatus() {
+        return ownerStatus;
+    }
+
+    public void setOwnerStatus(LeagueOwnerStatus ownerStatus) {
+        this.ownerStatus = ownerStatus;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Integer getStartingWeek() {

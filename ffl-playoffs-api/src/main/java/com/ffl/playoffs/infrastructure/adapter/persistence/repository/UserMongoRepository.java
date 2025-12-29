@@ -4,6 +4,7 @@ import com.ffl.playoffs.infrastructure.adapter.persistence.document.UserDocument
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -33,4 +34,11 @@ public interface UserMongoRepository extends MongoRepository<UserDocument, Strin
      * @return true if user exists
      */
     boolean existsByGoogleId(String googleId);
+
+    /**
+     * Find all users with a specific role
+     * @param role the role to filter by
+     * @return list of user documents with the specified role
+     */
+    List<UserDocument> findByRole(String role);
 }

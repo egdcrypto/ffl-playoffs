@@ -218,9 +218,10 @@ public class ScoringServiceImpl implements ScoringService {
             previousScore = score.getTotalScore();
 
             // Update audit record with rank
+            final int finalRank = currentRank;
             auditRepository.findByPlayerIdAndWeekId(score.getPlayerId(), score.getWeekId())
                     .ifPresent(audit -> {
-                        audit.setRank(currentRank);
+                        audit.setRank(finalRank);
                         auditRepository.save(audit);
                     });
         }

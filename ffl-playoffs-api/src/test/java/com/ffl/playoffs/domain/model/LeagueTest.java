@@ -1,5 +1,6 @@
 package com.ffl.playoffs.domain.model;
 
+import com.ffl.playoffs.domain.aggregate.League;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,7 +33,7 @@ class LeagueTest {
 
             // Then
             assertThat(league.getId()).isNotNull();
-            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.CREATED);
+            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.DRAFT);
             assertThat(league.getConfigurationLocked()).isFalse();
             assertThat(league.getCreatedAt()).isNotNull();
             assertThat(league.getUpdatedAt()).isNotNull();
@@ -93,19 +94,19 @@ class LeagueTest {
             assertThatThrownBy(() ->
                 new League("Test", "TEST", adminId, 0, 4)
             )
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Starting week must be between 1 and 22");
+            .isInstanceOf(League.LeagueValidationException.class)
+            .hasMessageContaining("Starting week must be between 1 and 18");
         }
 
         @Test
-        @DisplayName("should reject starting week greater than 22")
-        void shouldRejectStartingWeekGreaterThan22() {
+        @DisplayName("should reject starting week greater than 18")
+        void shouldRejectStartingWeekGreaterThan18() {
             // When/Then
             assertThatThrownBy(() ->
-                new League("Test", "TEST", adminId, 23, 1)
+                new League("Test", "TEST", adminId, 19, 1)
             )
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Starting week must be between 1 and 22");
+            .isInstanceOf(League.LeagueValidationException.class)
+            .hasMessageContaining("Starting week must be between 1 and 18");
         }
 
         @Test
@@ -115,7 +116,7 @@ class LeagueTest {
             assertThatThrownBy(() ->
                 new League("Test", "TEST", adminId, 10, 0)
             )
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(League.LeagueValidationException.class)
             .hasMessageContaining("Number of weeks must be between 1 and 17");
         }
 
@@ -126,30 +127,29 @@ class LeagueTest {
             assertThatThrownBy(() ->
                 new League("Test", "TEST", adminId, 1, 18)
             )
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(League.LeagueValidationException.class)
             .hasMessageContaining("Number of weeks must be between 1 and 17");
         }
 
         @Test
-        @DisplayName("should reject configuration that exceeds NFL season (week 22)")
+        @DisplayName("should reject configuration that exceeds NFL season (week 18)")
         void shouldRejectConfigurationThatExceedsNFLSeason() {
             // When/Then
             assertThatThrownBy(() ->
-                new League("Test", "TEST", adminId, 18, 6)
+                new League("Test", "TEST", adminId, 15, 5)
             )
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("exceeds NFL calendar")
-            .hasMessageContaining("would end at week 23");
+            .isInstanceOf(League.LeagueValidationException.class)
+            .hasMessageContaining("exceeds NFL week 18");
         }
 
         @Test
-        @DisplayName("should accept league ending exactly at week 22")
-        void shouldAcceptLeagueEndingExactlyAtWeek22() {
+        @DisplayName("should accept league ending exactly at week 18")
+        void shouldAcceptLeagueEndingExactlyAtWeek18() {
             // When
-            League league = new League("Full Season", "FULL", adminId, 6, 17);
+            League league = new League("Full Season", "FULL", adminId, 2, 17);
 
             // Then
-            assertThat(league.getEndingWeek()).isEqualTo(22);
+            assertThat(league.getEndingWeek()).isEqualTo(18);
         }
 
         @Test
@@ -159,7 +159,7 @@ class LeagueTest {
             assertThatThrownBy(() ->
                 new League("Test", "TEST", adminId, null, 4)
             )
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(League.LeagueValidationException.class)
             .hasMessageContaining("cannot be null");
         }
 
@@ -170,7 +170,7 @@ class LeagueTest {
             assertThatThrownBy(() ->
                 new League("Test", "TEST", adminId, 10, null)
             )
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(League.LeagueValidationException.class)
             .hasMessageContaining("cannot be null");
         }
     }
@@ -345,22 +345,22 @@ class LeagueTest {
         }
 
         @Test
-        @DisplayName("should throw exception when adding player to active league")
-        void shouldThrowExceptionWhenAddingPlayerToActiveLeague() {
+        @DisplayName("should throw exception when adding player to archived league")
+        void shouldThrowExceptionWhenAddingPlayerToArchivedLeague() {
             // Given
-            league.setStatus(League.LeagueStatus.ACTIVE);
+            league.setStatus(League.LeagueStatus.ARCHIVED);
 
             // When/Then
             assertThatThrownBy(() -> league.addPlayer(player))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Cannot add players to a league that has started");
+                .hasMessageContaining("Cannot add players to an archived league");
         }
 
         @Test
-        @DisplayName("should allow adding player to WAITING_FOR_PLAYERS league")
-        void shouldAllowAddingPlayerToWaitingForPlayersLeague() {
+        @DisplayName("should allow adding player to ACTIVE league")
+        void shouldAllowAddingPlayerToActiveLeague() {
             // Given
-            league.setStatus(League.LeagueStatus.WAITING_FOR_PLAYERS);
+            league.setStatus(League.LeagueStatus.ACTIVE);
 
             // When/Then
             assertThatCode(() -> league.addPlayer(player))
@@ -382,57 +382,61 @@ class LeagueTest {
         }
 
         @Test
-        @DisplayName("should start league with valid configuration")
-        void shouldStartLeagueWithValidConfiguration() {
+        @DisplayName("should activate league with valid configuration")
+        void shouldActivateLeagueWithValidConfiguration() {
             // Given
             league.addPlayer(new Player());
             league.addPlayer(new Player());
 
             // When
-            league.start();
+            league.activate();
 
             // Then
             assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.ACTIVE);
+            assertThat(league.getConfigurationLocked()).isTrue();
         }
 
         @Test
-        @DisplayName("should reject starting league with less than 2 players")
-        void shouldRejectStartingLeagueWithLessThan2Players() {
+        @DisplayName("should reject activating league with less than 2 players")
+        void shouldRejectActivatingLeagueWithLessThan2Players() {
             // Given
             league.addPlayer(new Player());
 
             // When/Then
-            assertThatThrownBy(() -> league.start())
-                .isInstanceOf(IllegalStateException.class)
+            assertThatThrownBy(() -> league.activate())
+                .isInstanceOf(League.LeagueValidationException.class)
                 .hasMessageContaining("at least 2 players");
         }
 
         @Test
-        @DisplayName("should reject starting league without roster configuration")
-        void shouldRejectStartingLeagueWithoutRosterConfiguration() {
+        @DisplayName("should use default roster configuration if not set")
+        void shouldUseDefaultRosterConfigurationIfNotSet() {
             // Given
             league.addPlayer(new Player());
             league.addPlayer(new Player());
             league.setRosterConfiguration(null);
+            league.setScoringRules(new ScoringRules());
 
-            // When/Then
-            assertThatThrownBy(() -> league.start())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("roster configuration");
+            // When
+            league.activate();
+
+            // Then
+            assertThat(league.getRosterConfiguration()).isNotNull();
         }
 
         @Test
-        @DisplayName("should reject starting league without scoring rules")
-        void shouldRejectStartingLeagueWithoutScoringRules() {
+        @DisplayName("should use default scoring rules if not set")
+        void shouldUseDefaultScoringRulesIfNotSet() {
             // Given
             league.addPlayer(new Player());
             league.addPlayer(new Player());
             league.setScoringRules(null);
 
-            // When/Then
-            assertThatThrownBy(() -> league.start())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("scoring rules");
+            // When
+            league.activate();
+
+            // Then
+            assertThat(league.getScoringRules()).isNotNull();
         }
 
         @Test
@@ -441,7 +445,7 @@ class LeagueTest {
             // Given
             league.addPlayer(new Player());
             league.addPlayer(new Player());
-            league.start();
+            league.activate();
             int initialWeek = league.getCurrentWeek();
 
             // When
@@ -452,19 +456,19 @@ class LeagueTest {
         }
 
         @Test
-        @DisplayName("should complete league when advancing past final week")
-        void shouldCompleteLeagueWhenAdvancingPastFinalWeek() {
+        @DisplayName("should archive league when advancing past final week")
+        void shouldArchiveLeagueWhenAdvancingPastFinalWeek() {
             // Given
             league.addPlayer(new Player());
             league.addPlayer(new Player());
-            league.start();
+            league.activate();
             league.setCurrentWeek(18); // At final week (15 + 4 - 1 = 18)
 
             // When
             league.advanceWeek();
 
             // Then
-            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.COMPLETED);
+            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.ARCHIVED);
         }
 
         @Test
@@ -477,27 +481,42 @@ class LeagueTest {
         }
 
         @Test
-        @DisplayName("should complete active league")
-        void shouldCompleteActiveLeague() {
+        @DisplayName("should deactivate active league")
+        void shouldDeactivateActiveLeague() {
             // Given
             league.addPlayer(new Player());
             league.addPlayer(new Player());
-            league.start();
+            league.activate();
 
             // When
-            league.complete();
+            league.deactivate();
 
             // Then
-            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.COMPLETED);
+            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.INACTIVE);
         }
 
         @Test
-        @DisplayName("should reject completing non-active league")
-        void shouldRejectCompletingNonActiveLeague() {
+        @DisplayName("should archive active league")
+        void shouldArchiveActiveLeague() {
+            // Given
+            league.addPlayer(new Player());
+            league.addPlayer(new Player());
+            league.activate();
+
+            // When
+            league.archive();
+
+            // Then
+            assertThat(league.getStatus()).isEqualTo(League.LeagueStatus.ARCHIVED);
+        }
+
+        @Test
+        @DisplayName("should reject archiving draft league")
+        void shouldRejectArchivingDraftLeague() {
             // When/Then
-            assertThatThrownBy(() -> league.complete())
+            assertThatThrownBy(() -> league.archive())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("active");
+                .hasMessageContaining("DRAFT");
         }
     }
 
@@ -553,24 +572,46 @@ class LeagueTest {
         }
 
         @Test
-        @DisplayName("isCompleted should return true for COMPLETED status")
-        void isCompletedShouldReturnTrueForCompletedStatus() {
+        @DisplayName("isArchived should return true for ARCHIVED status")
+        void isArchivedShouldReturnTrueForArchivedStatus() {
             // Given
             League league = new League("Test", "TEST", adminId, 15, 4);
-            league.setStatus(League.LeagueStatus.COMPLETED);
+            league.setStatus(League.LeagueStatus.ARCHIVED);
 
             // Then
-            assertThat(league.isCompleted()).isTrue();
+            assertThat(league.isArchived()).isTrue();
         }
 
         @Test
-        @DisplayName("isCompleted should return false for non-COMPLETED status")
-        void isCompletedShouldReturnFalseForNonCompletedStatus() {
+        @DisplayName("isArchived should return false for non-ARCHIVED status")
+        void isArchivedShouldReturnFalseForNonArchivedStatus() {
             // Given
             League league = new League("Test", "TEST", adminId, 15, 4);
 
             // Then
-            assertThat(league.isCompleted()).isFalse();
+            assertThat(league.isArchived()).isFalse();
+        }
+
+        @Test
+        @DisplayName("isDraft should return true for DRAFT status")
+        void isDraftShouldReturnTrueForDraftStatus() {
+            // Given
+            League league = new League("Test", "TEST", adminId, 15, 4);
+
+            // Then
+            assertThat(league.isDraft()).isTrue();
+        }
+
+        @Test
+        @DisplayName("getPlayerCount should return correct count")
+        void getPlayerCountShouldReturnCorrectCount() {
+            // Given
+            League league = new League("Test", "TEST", adminId, 15, 4);
+            league.addPlayer(new Player());
+            league.addPlayer(new Player());
+
+            // Then
+            assertThat(league.getPlayerCount()).isEqualTo(2);
         }
     }
 
@@ -592,7 +633,7 @@ class LeagueTest {
                 .contains("Championship")
                 .contains("15")
                 .contains("18")
-                .contains("CREATED");
+                .contains("DRAFT");
         }
     }
 }

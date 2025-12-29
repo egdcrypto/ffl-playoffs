@@ -68,8 +68,7 @@ public class CreateLeagueUseCase {
             league.setFirstGameStartTime(command.getFirstGameStartTime());
         }
 
-        // Set status to waiting for players
-        league.setStatus(League.LeagueStatus.WAITING_FOR_PLAYERS);
+        // Status is DRAFT by default (set in League constructor)
 
         // Persist league
         return leagueRepository.save(league);

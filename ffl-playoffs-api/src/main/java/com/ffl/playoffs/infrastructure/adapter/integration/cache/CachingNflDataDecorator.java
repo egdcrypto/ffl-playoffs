@@ -69,6 +69,13 @@ public class CachingNflDataDecorator implements NflDataProvider {
         return delegate.isTeamPlaying(teamAbbreviation, week, season);
     }
 
+    @Override
+    @Cacheable(value = "player-stats", key = "#playerId + '-' + #week")
+    public java.util.Map<String, Object> getPlayerStats(Long playerId, int week) {
+        log.debug("Cache miss for player stats: player {} week {}", playerId, week);
+        return delegate.getPlayerStats(playerId, week);
+    }
+
     // NOTE: The following methods were removed because they don't exist in the current NflDataProvider interface:
     // - getTeamScore
     // - getAvailableTeamsForWeek

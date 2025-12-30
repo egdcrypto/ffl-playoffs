@@ -25,6 +25,28 @@ public interface NflDataProvider {
     boolean isTeamPlaying(String teamAbbreviation, int week, int season);
 
     /**
+     * Get individual player statistics for a specific week
+     * @param playerId the NFL player ID
+     * @param week the NFL week number
+     * @return map of stat name to value
+     */
+    Map<String, Object> getPlayerStats(Long playerId, int week);
+
+    /**
+     * Get statistics for multiple players in a specific week
+     * @param playerIds list of NFL player IDs
+     * @param week the NFL week number
+     * @return map of player ID to stats map
+     */
+    default Map<Long, Map<String, Object>> getPlayersStats(List<Long> playerIds, int week) {
+        Map<Long, Map<String, Object>> result = new java.util.HashMap<>();
+        for (Long playerId : playerIds) {
+            result.put(playerId, getPlayerStats(playerId, week));
+        }
+        return result;
+    }
+
+    /**
      * Get the current NFL week number
      */
     default Integer getCurrentWeek() {

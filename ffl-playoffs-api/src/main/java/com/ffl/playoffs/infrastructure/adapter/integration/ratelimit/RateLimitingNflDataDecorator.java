@@ -75,6 +75,12 @@ public class RateLimitingNflDataDecorator implements NflDataProvider {
         return delegate.isTeamPlaying(teamAbbreviation, week, season);
     }
 
+    @Override
+    public java.util.Map<String, Object> getPlayerStats(Long playerId, int week) {
+        consumeToken("getPlayerStats");
+        return delegate.getPlayerStats(playerId, week);
+    }
+
     // NOTE: The following methods were removed because they don't exist in the current NflDataProvider interface:
     // - getTeamScore, getAvailableTeamsForWeek, isTeamInPlayoffs
     // - getPlayerById, getPlayerWeeklyStats, getWeeklyStats, getPlayerNews

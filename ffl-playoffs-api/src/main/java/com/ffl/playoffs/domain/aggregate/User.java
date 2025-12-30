@@ -1,8 +1,11 @@
 package com.ffl.playoffs.domain.aggregate;
 
+import com.ffl.playoffs.domain.model.Permission;
 import com.ffl.playoffs.domain.model.Role;
+import com.ffl.playoffs.domain.model.RoleHierarchy;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -43,18 +46,32 @@ public class User {
     }
 
     /**
-     * Checks if user has the required role
+     * Checks if user has the required role (or higher in hierarchy)
      * @param requiredRole the required role
-     * @return true if user has the role
+     * @return true if user has the role or higher
      */
     public boolean hasRole(Role requiredRole) {
-        if (this.role == Role.SUPER_ADMIN) {
-            return true;  // Super admin has all permissions
+        return this.role != null && RoleHierarchy.isAtLeast(this.role, requiredRole);
+    }
+
+    /**
+     * Checks if user has a specific permission
+     * @param permission the required permission
+     * @return true if user has the permission
+     */
+    public boolean hasPermission(Permission permission) {
+        return this.role != null && this.active && RoleHierarchy.hasPermission(this.role, permission);
+    }
+
+    /**
+     * Gets all permissions granted to this user
+     * @return set of permissions
+     */
+    public Set<Permission> getPermissions() {
+        if (this.role == null) {
+            return Set.of();
         }
-        if (this.role == Role.ADMIN && requiredRole != Role.SUPER_ADMIN) {
-            return true;  // Admin can access ADMIN and PLAYER endpoints
-        }
-        return this.role == requiredRole;
+        return RoleHierarchy.getPermissions(this.role);
     }
 
     /**
@@ -71,6 +88,23 @@ public class User {
      */
     public boolean isAdmin() {
         return this.role == Role.ADMIN || this.role == Role.SUPER_ADMIN;
+    }
+
+    /**
+     * Checks if user is a player (basic role)
+     * @return true if user is a player
+     */
+    public boolean isPlayer() {
+        return this.role == Role.PLAYER;
+    }
+
+    /**
+     * Checks if this user can invite users with the specified role
+     * @param inviteeRole the role of the user to invite
+     * @return true if invitation is allowed
+     */
+    public boolean canInvite(Role inviteeRole) {
+        return this.role != null && RoleHierarchy.canInvite(this.role, inviteeRole);
     }
 
     /**

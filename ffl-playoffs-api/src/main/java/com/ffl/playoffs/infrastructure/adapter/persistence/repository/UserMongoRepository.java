@@ -33,4 +33,31 @@ public interface UserMongoRepository extends MongoRepository<UserDocument, Strin
      * @return true if user exists
      */
     boolean existsByGoogleId(String googleId);
+
+    /**
+     * Check if user exists by email
+     * @param email the email
+     * @return true if user exists
+     */
+    boolean existsByEmail(String email);
+
+    /**
+     * Find all users with a specific role
+     * @param role the role string
+     * @return list of users with the specified role
+     */
+    java.util.List<UserDocument> findByRole(String role);
+
+    /**
+     * Find all active users
+     * @return list of active users
+     */
+    java.util.List<UserDocument> findByActiveTrue();
+
+    /**
+     * Count users by role
+     * @param role the role string
+     * @return count of users with the role
+     */
+    long countByRole(String role);
 }

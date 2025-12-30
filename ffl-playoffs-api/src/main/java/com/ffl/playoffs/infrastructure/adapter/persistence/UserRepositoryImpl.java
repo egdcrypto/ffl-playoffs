@@ -1,14 +1,17 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence;
 
 import com.ffl.playoffs.domain.aggregate.User;
+import com.ffl.playoffs.domain.model.Role;
 import com.ffl.playoffs.domain.port.UserRepository;
 import com.ffl.playoffs.infrastructure.adapter.persistence.document.UserDocument;
 import com.ffl.playoffs.infrastructure.adapter.persistence.mapper.UserMapper;
 import com.ffl.playoffs.infrastructure.adapter.persistence.repository.UserMongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * MongoDB implementation of UserRepository port
@@ -44,6 +47,27 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public List<User> findAll() {
+        return mongoRepository.findAll().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> findByRole(Role role) {
+        return mongoRepository.findByRole(role.name()).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> findByActiveTrue() {
+        return mongoRepository.findByActiveTrue().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public User save(User user) {
         UserDocument document = mapper.toDocument(user);
         UserDocument saved = mongoRepository.save(document);
@@ -53,5 +77,20 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByGoogleId(String googleId) {
         return mongoRepository.existsByGoogleId(googleId);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return mongoRepository.existsByEmail(email);
+    }
+
+    @Override
+    public void deleteById(UUID id) {
+        mongoRepository.deleteById(id.toString());
+    }
+
+    @Override
+    public long countByRole(Role role) {
+        return mongoRepository.countByRole(role.name());
     }
 }

@@ -132,6 +132,110 @@ public class SportsDataIoFantasyClient {
     }
 
     /**
+     * Get all players for a specific team
+     * Endpoint: GET /v3/nfl/stats/json/Players/{team}
+     *
+     * @param teamAbbreviation NFL team abbreviation (e.g., "KC", "SF")
+     * @return List of players on the team
+     */
+    public List<SportsDataIoPlayerResponse> getPlayersByTeam(String teamAbbreviation) {
+        String url = buildStatsUrl(String.format("/json/Players/%s", teamAbbreviation));
+
+        try {
+            log.debug("Fetching players for team: {}", teamAbbreviation);
+            SportsDataIoPlayerResponse[] response = restTemplate.getForObject(url, SportsDataIoPlayerResponse[].class);
+            return response != null ? Arrays.asList(response) : Collections.emptyList();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                log.warn("Team not found: {}", teamAbbreviation);
+                return Collections.emptyList();
+            }
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                log.error("Rate limit exceeded for team players request: {}", teamAbbreviation);
+                throw new SportsDataIoRateLimitException("Rate limit exceeded", e);
+            }
+            log.error("Client error fetching team players {}: {}", teamAbbreviation, e.getMessage());
+            throw new SportsDataIoApiException("Failed to fetch team players: " + teamAbbreviation, e);
+        } catch (HttpServerErrorException e) {
+            log.error("Server error fetching team players {}: {}", teamAbbreviation, e.getMessage());
+            throw new SportsDataIoApiException("SportsData.io server error", e);
+        } catch (Exception e) {
+            log.error("Unexpected error fetching team players {}: {}", teamAbbreviation, e.getMessage());
+            throw new SportsDataIoApiException("Unexpected error fetching team players", e);
+        }
+    }
+
+    /**
+     * Get all available (active) players
+     * Endpoint: GET /v3/nfl/stats/json/Players
+     *
+     * @return List of all available players
+     */
+    public List<SportsDataIoPlayerResponse> getAllPlayers() {
+        String url = buildStatsUrl("/json/Players");
+
+        try {
+            log.debug("Fetching all available players");
+            SportsDataIoPlayerResponse[] response = restTemplate.getForObject(url, SportsDataIoPlayerResponse[].class);
+            return response != null ? Arrays.asList(response) : Collections.emptyList();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                log.error("Rate limit exceeded for all players request");
+                throw new SportsDataIoRateLimitException("Rate limit exceeded", e);
+            }
+            log.error("Client error fetching all players: {}", e.getMessage());
+            throw new SportsDataIoApiException("Failed to fetch all players", e);
+        } catch (HttpServerErrorException e) {
+            log.error("Server error fetching all players: {}", e.getMessage());
+            throw new SportsDataIoApiException("SportsData.io server error", e);
+        } catch (Exception e) {
+            log.error("Unexpected error fetching all players: {}", e.getMessage());
+            throw new SportsDataIoApiException("Unexpected error fetching all players", e);
+        }
+    }
+
+    /**
+     * Get free agent players
+     * Endpoint: GET /v3/nfl/stats/json/FreeAgents
+     *
+     * @return List of free agent players
+     */
+    public List<SportsDataIoPlayerResponse> getFreeAgents() {
+        String url = buildStatsUrl("/json/FreeAgents");
+
+        try {
+            log.debug("Fetching free agent players");
+            SportsDataIoPlayerResponse[] response = restTemplate.getForObject(url, SportsDataIoPlayerResponse[].class);
+            return response != null ? Arrays.asList(response) : Collections.emptyList();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
+                log.error("Rate limit exceeded for free agents request");
+                throw new SportsDataIoRateLimitException("Rate limit exceeded", e);
+            }
+            log.error("Client error fetching free agents: {}", e.getMessage());
+            throw new SportsDataIoApiException("Failed to fetch free agents", e);
+        } catch (HttpServerErrorException e) {
+            log.error("Server error fetching free agents: {}", e.getMessage());
+            throw new SportsDataIoApiException("SportsData.io server error", e);
+        } catch (Exception e) {
+            log.error("Unexpected error fetching free agents: {}", e.getMessage());
+            throw new SportsDataIoApiException("Unexpected error fetching free agents", e);
+        }
+    }
+
+    /**
+     * Build full API URL for Stats API with base URL and API key
+     * Uses /v3/nfl/stats instead of /v3/nfl/fantasy
+     *
+     * @param endpoint API endpoint path
+     * @return Full URL with API key parameter
+     */
+    private String buildStatsUrl(String endpoint) {
+        String statsBaseUrl = config.getBaseUrl().replace("/fantasy", "/stats");
+        return String.format("%s%s?key=%s", statsBaseUrl, endpoint, config.getApiKey());
+    }
+
+    /**
      * Get specific player's stats for a week
      * Filters getLiveFantasyStats by playerID
      *

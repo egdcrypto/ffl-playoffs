@@ -48,6 +48,51 @@ public class SportsDataIoMapper {
     }
 
     /**
+     * Map SportsData.io Player Response to NFLPlayerDocument for MongoDB storage
+     *
+     * @param response SportsData.io API response
+     * @return MongoDB NFLPlayerDocument
+     */
+    public com.ffl.playoffs.infrastructure.persistence.mongodb.document.NFLPlayerDocument toDocument(SportsDataIoPlayerResponse response) {
+        if (response == null) {
+            return null;
+        }
+
+        return com.ffl.playoffs.infrastructure.persistence.mongodb.document.NFLPlayerDocument.builder()
+                .playerId(String.valueOf(response.getPlayerID()))
+                .name(response.getName())
+                .firstName(response.getFirstName())
+                .lastName(response.getLastName())
+                .position(response.getPosition())
+                .team(response.getTeam())
+                .jerseyNumber(response.getNumber())
+                .status(mapPlayerStatus(response.getStatus(), response.getInjuryStatus()))
+                .height(response.getHeightInInches())
+                .weight(response.getWeight())
+                .birthDate(response.getBirthDate())
+                .college(response.getCollege())
+                .experience(response.getExperience())
+                .injuryStatus(response.getInjuryStatus())
+                .injuryBodyPart(response.getInjuryBodyPart())
+                .injuryStartDate(response.getInjuryStartDate())
+                .injuryNotes(response.getInjuryNotes())
+                .byeWeek(response.getByeWeek())
+                .fantasyPosition(response.getFantasyPosition())
+                .depthChartOrder(response.getDepthOrder())
+                .photoUrl(response.getPhotoUrl())
+                .draftYear(response.getDraftYear())
+                .draftRound(response.getDraftRound())
+                .draftPick(response.getDraftPick())
+                .draftTeam(response.getDraftTeam())
+                .gamesPlayed(response.getGamesPlayed())
+                .fantasyPoints(response.getFantasyPoints())
+                .fantasyPointsPPR(response.getFantasyPointsPPR())
+                .createdAt(java.time.LocalDateTime.now())
+                .updatedAt(java.time.LocalDateTime.now())
+                .build();
+    }
+
+    /**
      * Map SportsData.io Fantasy Stats Response to Domain PlayerStats
      *
      * @param response SportsData.io fantasy stats response

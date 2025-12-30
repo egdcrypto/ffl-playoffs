@@ -53,6 +53,74 @@ public class NFLPlayerDocument {
     @Builder.Default
     private String status = "ACTIVE";
 
+    // Physical attributes
+    @Field("height")
+    private Integer height; // in inches
+
+    @Field("weight")
+    private Integer weight; // in pounds
+
+    @Field("birth_date")
+    private String birthDate;
+
+    @Field("college")
+    private String college;
+
+    @Field("experience")
+    private Integer experience; // years in NFL
+
+    // Injury information
+    @Field("injury_status")
+    private String injuryStatus; // Healthy, Questionable, Doubtful, Out, IR
+
+    @Field("injury_body_part")
+    private String injuryBodyPart;
+
+    @Field("injury_start_date")
+    private String injuryStartDate;
+
+    @Field("injury_notes")
+    private String injuryNotes;
+
+    // Fantasy-specific fields
+    @Field("bye_week")
+    private Integer byeWeek;
+
+    @Field("fantasy_position")
+    private String fantasyPosition;
+
+    @Field("depth_chart_order")
+    private Integer depthChartOrder;
+
+    @Field("photo_url")
+    private String photoUrl;
+
+    // Draft information
+    @Field("draft_year")
+    private Integer draftYear;
+
+    @Field("draft_round")
+    private Integer draftRound;
+
+    @Field("draft_pick")
+    private Integer draftPick;
+
+    @Field("draft_team")
+    private String draftTeam;
+
+    // Season stats
+    @Field("games_played")
+    private Integer gamesPlayed;
+
+    @Field("fantasy_points")
+    private Double fantasyPoints;
+
+    @Field("fantasy_points_ppr")
+    private Double fantasyPointsPPR;
+
+    @Field("average_points_per_game")
+    private Double averagePointsPerGame;
+
     @Field("created_at")
     private LocalDateTime createdAt;
 

@@ -1,6 +1,8 @@
 spring:
   application:
     name: ffl-playoffs-api
+  main:
+    allow-bean-definition-overriding: true
 
   data:
     mongodb:
@@ -33,6 +35,10 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${JWT_ISSUER_URI:https://accounts.google.com}
+
+google:
+  oauth:
+    client-id: ${GOOGLE_CLIENT_ID:placeholder-client-id}
 
 server:
   port: 8080

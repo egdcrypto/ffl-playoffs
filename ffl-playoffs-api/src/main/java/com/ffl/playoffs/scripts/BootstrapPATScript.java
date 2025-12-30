@@ -57,9 +57,9 @@ public class BootstrapPATScript implements CommandLineRunner {
 
         // Check if bootstrap token already exists
         if (tokenRepository.existsByName("bootstrap-admin-token")) {
-            System.err.println("ERROR: Bootstrap token already exists!");
-            System.err.println("If you need to regenerate, manually delete the existing token from the database first.");
-            System.exit(1);
+            System.out.println("Bootstrap token already exists - skipping generation.");
+            System.out.println("========================================");
+            return;
         }
 
         // Generate secure random token
@@ -114,8 +114,6 @@ public class BootstrapPATScript implements CommandLineRunner {
         System.out.println("  Authorization: Bearer " + plaintextToken);
         System.out.println();
         System.out.println("========================================");
-
-        System.exit(0);
     }
 
     /**

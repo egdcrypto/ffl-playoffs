@@ -5,15 +5,19 @@ import com.ffl.playoffs.domain.event.GameCreatedEvent;
 import com.ffl.playoffs.domain.aggregate.Game;
 import com.ffl.playoffs.domain.port.GameRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CreateGameUseCase {
     private final GameRepository gameRepository;
+    private final ApplicationEventPublisher eventPublisher;
     
     public GameDTO execute(String gameName, String creatorEmail) {
         String inviteCode = generateInviteCode();
@@ -46,6 +50,9 @@ public class CreateGameUseCase {
                 .creatorEmail(creatorEmail)
                 .createdAt(game.getCreatedAt())
                 .build();
-        // TODO: Publish event to event bus
+
+        eventPublisher.publishEvent(event);
+        log.info("Published GameCreatedEvent for game '{}' with invite code '{}'",
+                game.getName(), game.getInviteCode());
     }
 }

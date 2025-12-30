@@ -1,7 +1,9 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.LeagueRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
+import com.ffl.playoffs.domain.port.RosterRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,5 +72,26 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // Roster Management Use Cases
+    // ===================
+
+    @Bean
+    public BuildRosterUseCase buildRosterUseCase(
+            LeagueRepository leagueRepository,
+            RosterRepository rosterRepository) {
+        return new BuildRosterUseCase(leagueRepository, rosterRepository);
+    }
+
+    @Bean
+    public LockRosterUseCase lockRosterUseCase(RosterRepository rosterRepository) {
+        return new LockRosterUseCase(rosterRepository);
+    }
+
+    @Bean
+    public ValidateRosterUseCase validateRosterUseCase(RosterRepository rosterRepository) {
+        return new ValidateRosterUseCase(rosterRepository);
     }
 }

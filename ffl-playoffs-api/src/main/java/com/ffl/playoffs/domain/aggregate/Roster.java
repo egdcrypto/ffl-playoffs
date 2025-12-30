@@ -2,6 +2,7 @@ package com.ffl.playoffs.domain.aggregate;
 
 import com.ffl.playoffs.domain.model.Position;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
+import com.ffl.playoffs.domain.model.RosterLockStatus;
 import com.ffl.playoffs.domain.model.RosterSlot;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ public class Roster {
     private UUID gameId;
     private List<RosterSlot> slots;
     private boolean isLocked;
+    private RosterLockStatus lockStatus;
     private LocalDateTime lockedAt;
     private LocalDateTime rosterDeadline;
     private LocalDateTime createdAt;
@@ -31,6 +33,7 @@ public class Roster {
         this.id = UUID.randomUUID();
         this.slots = new ArrayList<>();
         this.isLocked = false;
+        this.lockStatus = RosterLockStatus.UNLOCKED;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -128,21 +131,61 @@ public class Roster {
             .anyMatch(slot -> slot.isFilled() && slot.getNflPlayerId().equals(nflPlayerId));
     }
 
+    /**
+     * Locks the roster with LOCKED status (for complete rosters).
+     * Once locked, no changes are allowed for the entire season.
+     *
+     * @param lockTime the time of locking
+     * @throws IllegalStateException if roster is incomplete
+     */
     public void lockRoster(LocalDateTime lockTime) {
+        if (!isComplete()) {
+            throw new IllegalStateException("Cannot lock incomplete roster. Use lockRosterIncomplete() instead.");
+        }
         this.isLocked = true;
+        this.lockStatus = RosterLockStatus.LOCKED;
         this.lockedAt = lockTime;
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Locks an incomplete roster with LOCKED_INCOMPLETE status.
+     * The player will score 0 points for unfilled positions throughout the season.
+     *
+     * @param lockTime the time of locking
+     */
+    public void lockRosterIncomplete(LocalDateTime lockTime) {
+        this.isLocked = true;
+        this.lockStatus = isComplete() ? RosterLockStatus.LOCKED : RosterLockStatus.LOCKED_INCOMPLETE;
+        this.lockedAt = lockTime;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Locks the roster at the deadline, automatically determining the appropriate status
+     * based on whether the roster is complete or incomplete.
+     *
+     * @param lockTime the time of locking
+     * @return the resulting lock status
+     */
+    public RosterLockStatus lockAtDeadline(LocalDateTime lockTime) {
+        this.isLocked = true;
+        this.lockStatus = isComplete() ? RosterLockStatus.LOCKED : RosterLockStatus.LOCKED_INCOMPLETE;
+        this.lockedAt = lockTime;
+        this.updatedAt = LocalDateTime.now();
+        return this.lockStatus;
+    }
+
     public void unlockRoster() {
         this.isLocked = false;
+        this.lockStatus = RosterLockStatus.UNLOCKED;
         this.lockedAt = null;
         this.updatedAt = LocalDateTime.now();
     }
 
     private void validateNotLocked() {
-        if (isLocked) {
-            throw new RosterLockedException("Roster is locked - no changes allowed");
+        if (isLocked || (lockStatus != null && lockStatus.isLocked())) {
+            throw new RosterLockedException("Rosters are locked for the season - no changes allowed");
         }
         if (rosterDeadline != null && LocalDateTime.now().isAfter(rosterDeadline)) {
             throw new RosterLockedException("Roster deadline has passed");
@@ -202,6 +245,14 @@ public class Roster {
 
     public void setLocked(boolean locked) {
         isLocked = locked;
+    }
+
+    public RosterLockStatus getLockStatus() {
+        return lockStatus;
+    }
+
+    public void setLockStatus(RosterLockStatus lockStatus) {
+        this.lockStatus = lockStatus;
     }
 
     public LocalDateTime getLockedAt() {

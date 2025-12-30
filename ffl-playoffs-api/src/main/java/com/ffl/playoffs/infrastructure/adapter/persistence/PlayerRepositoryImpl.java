@@ -2,53 +2,72 @@ package com.ffl.playoffs.infrastructure.adapter.persistence;
 
 import com.ffl.playoffs.domain.model.Player;
 import com.ffl.playoffs.domain.port.PlayerRepository;
+import com.ffl.playoffs.infrastructure.adapter.persistence.document.StandalonePlayerDocument;
+import com.ffl.playoffs.infrastructure.adapter.persistence.mapper.PlayerMapper;
+import com.ffl.playoffs.infrastructure.adapter.persistence.repository.PlayerMongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+/**
+ * MongoDB implementation of PlayerRepository port
+ * Infrastructure layer adapter
+ */
 @Repository
 public class PlayerRepositoryImpl implements PlayerRepository {
-    // TODO: Implement JPA repository integration
-    
+
+    private final PlayerMongoRepository mongoRepository;
+    private final PlayerMapper mapper;
+
+    public PlayerRepositoryImpl(PlayerMongoRepository mongoRepository, PlayerMapper mapper) {
+        this.mongoRepository = mongoRepository;
+        this.mapper = mapper;
+    }
+
     @Override
     public Player save(Player player) {
-        // TODO: Map domain model to JPA entity and save
-        return player;
+        StandalonePlayerDocument document = mapper.toDocument(player);
+        StandalonePlayerDocument saved = mongoRepository.save(document);
+        return mapper.toDomain(saved);
     }
-    
+
     @Override
     public Optional<Player> findById(Long id) {
-        // TODO: Implement
-        return Optional.empty();
+        return mongoRepository.findById(id.toString())
+                .map(mapper::toDomain);
     }
-    
+
     @Override
     public Optional<Player> findByEmail(String email) {
-        // TODO: Implement
-        return Optional.empty();
+        return mongoRepository.findByEmail(email)
+                .map(mapper::toDomain);
     }
-    
+
     @Override
     public Optional<Player> findByGoogleId(String googleId) {
-        // TODO: Implement
-        return Optional.empty();
+        return mongoRepository.findByGoogleId(googleId)
+                .map(mapper::toDomain);
     }
-    
+
     @Override
     public List<Player> findAll() {
-        // TODO: Implement
-        return List.of();
+        return mongoRepository.findAll().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Player> findByGameId(Long gameId) {
-        // TODO: Implement
+        // Note: The standalone Player model doesn't have gameId.
+        // For game-specific player queries, use LeaguePlayerRepository instead.
+        // This method returns empty list as standalone players aren't game-scoped.
         return List.of();
     }
-    
+
     @Override
     public void delete(Long id) {
-        // TODO: Implement
+        mongoRepository.deleteById(id.toString());
     }
 }

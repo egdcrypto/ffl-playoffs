@@ -57,4 +57,10 @@ public interface LeagueRepository {
      * @param id the league ID
      */
     void deleteById(UUID id);
+
+    /**
+     * Find all active leagues (status = ACTIVE)
+     * @return list of active leagues
+     */
+    List<League> findActiveLeagues();
 }

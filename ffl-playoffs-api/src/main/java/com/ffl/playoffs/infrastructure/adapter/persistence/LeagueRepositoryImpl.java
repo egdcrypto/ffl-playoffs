@@ -70,4 +70,12 @@ public class LeagueRepositoryImpl implements LeagueRepository {
     public void deleteById(UUID id) {
         mongoRepository.deleteById(id.toString());
     }
+
+    @Override
+    public List<League> findActiveLeagues() {
+        return mongoRepository.findByStatus("ACTIVE")
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

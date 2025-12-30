@@ -5,6 +5,8 @@ import com.ffl.playoffs.domain.port.LeagueRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.RosterRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.port.VectorSearchRepository;
+import com.ffl.playoffs.domain.service.EmbeddingService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -93,5 +95,29 @@ public class UseCaseConfiguration {
     @Bean
     public ValidateRosterUseCase validateRosterUseCase(RosterRepository rosterRepository) {
         return new ValidateRosterUseCase(rosterRepository);
+    }
+
+    // ===================
+    // Vector Search Use Cases
+    // ===================
+
+    @Bean
+    public IndexDocumentUseCase indexDocumentUseCase(
+            VectorSearchRepository vectorSearchRepository,
+            EmbeddingService embeddingService) {
+        return new IndexDocumentUseCase(vectorSearchRepository, embeddingService);
+    }
+
+    @Bean
+    public VectorSearchUseCase vectorSearchUseCase(
+            VectorSearchRepository vectorSearchRepository,
+            EmbeddingService embeddingService) {
+        return new VectorSearchUseCase(vectorSearchRepository, embeddingService);
+    }
+
+    @Bean
+    public DeleteVectorIndexUseCase deleteVectorIndexUseCase(
+            VectorSearchRepository vectorSearchRepository) {
+        return new DeleteVectorIndexUseCase(vectorSearchRepository);
     }
 }

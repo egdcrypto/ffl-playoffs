@@ -1,6 +1,7 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.AuthSessionRepository;
 import com.ffl.playoffs.domain.port.LeagueRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.RosterRepository;
@@ -119,5 +120,42 @@ public class UseCaseConfiguration {
     public DeleteVectorIndexUseCase deleteVectorIndexUseCase(
             VectorSearchRepository vectorSearchRepository) {
         return new DeleteVectorIndexUseCase(vectorSearchRepository);
+    }
+
+    // ===================
+    // Authentication & Authorization Use Cases
+    // ===================
+
+    @Bean
+    public CreateAuthSessionUseCase createAuthSessionUseCase(
+            AuthSessionRepository sessionRepository,
+            UserRepository userRepository) {
+        return new CreateAuthSessionUseCase(sessionRepository, userRepository);
+    }
+
+    @Bean
+    public ValidateAuthSessionUseCase validateAuthSessionUseCase(
+            AuthSessionRepository sessionRepository,
+            UserRepository userRepository) {
+        return new ValidateAuthSessionUseCase(sessionRepository, userRepository);
+    }
+
+    @Bean
+    public RefreshAuthSessionUseCase refreshAuthSessionUseCase(
+            AuthSessionRepository sessionRepository) {
+        return new RefreshAuthSessionUseCase(sessionRepository);
+    }
+
+    @Bean
+    public InvalidateAuthSessionUseCase invalidateAuthSessionUseCase(
+            AuthSessionRepository sessionRepository) {
+        return new InvalidateAuthSessionUseCase(sessionRepository);
+    }
+
+    @Bean
+    public CheckPermissionUseCase checkPermissionUseCase(
+            AuthSessionRepository sessionRepository,
+            UserRepository userRepository) {
+        return new CheckPermissionUseCase(sessionRepository, userRepository);
     }
 }

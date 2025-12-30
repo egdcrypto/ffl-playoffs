@@ -1,8 +1,10 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.AuthSessionRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.service.AuthenticationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,5 +72,35 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // Authentication Use Cases
+    // ===================
+
+    @Bean
+    public AuthenticateUserUseCase authenticateUserUseCase(
+            AuthenticationService authenticationService,
+            AuthSessionRepository authSessionRepository) {
+        return new AuthenticateUserUseCase(authenticationService, authSessionRepository);
+    }
+
+    @Bean
+    public AuthenticatePATUseCase authenticatePATUseCase(
+            AuthenticationService authenticationService,
+            AuthSessionRepository authSessionRepository) {
+        return new AuthenticatePATUseCase(authenticationService, authSessionRepository);
+    }
+
+    @Bean
+    public TerminateSessionUseCase terminateSessionUseCase(
+            AuthSessionRepository authSessionRepository) {
+        return new TerminateSessionUseCase(authSessionRepository);
+    }
+
+    @Bean
+    public GetActiveSessionsUseCase getActiveSessionsUseCase(
+            AuthSessionRepository authSessionRepository) {
+        return new GetActiveSessionsUseCase(authSessionRepository);
     }
 }

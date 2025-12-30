@@ -163,3 +163,328 @@ Feature: Bootstrap PAT Setup for Initial System Configuration
       | successful  | true                       |
     And all bootstrap PAT usage is tracked
     And administrators can audit bootstrap activities
+
+  # Token Format Validation Scenarios
+
+  Scenario: Bootstrap PAT format follows security standards
+    When the bootstrap PAT is generated
+    Then the token has format: "pat_<identifier>_<random>"
+    And the identifier is 32 hexadecimal characters (UUID without hyphens)
+    And the random part is 64+ URL-safe Base64 characters
+    And the total token length is at least 100 characters
+    And the token contains sufficient entropy for security
+
+  Scenario: Validate PAT prefix during authentication
+    Given the auth service receives an authorization header
+    When the token starts with "pat_"
+    Then the auth service treats it as a Personal Access Token
+    When the token starts with "eyJ" (JWT prefix)
+    Then the auth service treats it as a Google JWT
+    When the token has no recognized prefix
+    Then the auth service rejects with 401 Unauthorized
+    And the error is "INVALID_TOKEN_FORMAT"
+
+  Scenario: Malformed PAT token rejected
+    Given the auth service receives token "pat_invalid"
+    When the token format is validated
+    Then the request is rejected with 401 Unauthorized
+    And the error is "MALFORMED_PAT_TOKEN"
+    And the token is not queried in database
+    And no database lookup is performed for invalid formats
+
+  Scenario: PAT with missing parts rejected
+    Given the auth service receives token "pat_abc123"
+    When the token format is validated
+    Then the request is rejected with 401 Unauthorized
+    And the error is "INCOMPLETE_PAT_TOKEN"
+    And the error message is "PAT token must have format: pat_<identifier>_<random>"
+
+  # Token Hash Verification Scenarios
+
+  Scenario: BCrypt hash verification for valid token
+    Given the bootstrap PAT "pat_abc123_xyz789" is stored with BCrypt hash
+    When a request uses "pat_abc123_xyz789"
+    Then the auth service extracts the full token
+    And BCrypt.checkpw(token, storedHash) returns true
+    And the PAT is validated successfully
+    And the request is authorized
+
+  Scenario: BCrypt hash verification rejects tampered token
+    Given the bootstrap PAT "pat_abc123_xyz789" is stored with BCrypt hash
+    When a request uses "pat_abc123_xyz790" (modified last character)
+    Then BCrypt.checkpw(token, storedHash) returns false
+    And the request is rejected with 401 Unauthorized
+    And the error is "INVALID_PAT_TOKEN"
+    And failed authentication is logged
+
+  Scenario: Token lookup uses identifier for efficient query
+    Given multiple PATs exist in the database
+    When a request uses token "pat_abc123def456_randompart"
+    Then the auth service extracts identifier "abc123def456"
+    And queries PersonalAccessToken by tokenIdentifier
+    And the database uses indexed lookup (not full table scan)
+    And then verifies BCrypt hash of full token
+
+  # Super Admin Creation Scenarios
+
+  Scenario: Create first super admin with valid Google account
+    Given the bootstrap PAT is valid
+    And no super admin accounts exist
+    When a request creates super admin with:
+      | email     | admin@example.com   |
+      | googleId  | google-oauth-id-123 |
+    Then a new User is created with:
+      | Field     | Value                |
+      | email     | admin@example.com    |
+      | googleId  | google-oauth-id-123  |
+      | role      | SUPER_ADMIN          |
+      | active    | true                 |
+    And the super admin can log in with Google OAuth
+    And the super admin can create admin users
+
+  Scenario: Prevent duplicate super admin creation
+    Given a super admin already exists with email "admin@example.com"
+    When a request attempts to create another super admin with same email
+    Then the request is rejected with error "SUPER_ADMIN_EXISTS"
+    And the existing super admin is not modified
+    And only one super admin per email is allowed
+
+  Scenario: Multiple super admins can be created with different emails
+    Given a super admin exists with email "admin1@example.com"
+    And the bootstrap PAT is still valid
+    When a request creates super admin with email "admin2@example.com"
+    Then the second super admin is created successfully
+    And both super admins can manage the system
+
+  # Rate Limiting and Security Scenarios
+
+  Scenario: Rate limit bootstrap PAT creation attempts
+    Given the bootstrap setup script has been attempted 5 times
+    When the script runs again within 1 minute
+    Then the attempt is rate limited
+    And the error is "BOOTSTRAP_RATE_LIMIT_EXCEEDED"
+    And the administrator must wait before retrying
+    And suspicious activity is logged
+
+  Scenario: Rate limit authentication attempts with invalid PAT
+    Given 10 failed authentication attempts with invalid PATs occur
+    When the 11th attempt is made within 1 minute
+    Then the request is temporarily blocked
+    And the error is "TOO_MANY_FAILED_ATTEMPTS"
+    And the IP address is logged for security review
+    And normal operation resumes after cooldown period
+
+  Scenario: Bootstrap PAT creation is idempotent after first creation
+    Given the bootstrap PAT was successfully created
+    When the bootstrap script is run multiple times
+    Then subsequent runs detect existing PAT
+    And no new PAT is created
+    And the existing PAT metadata is displayed
+    And the system state remains consistent
+
+  # Emergency Revocation Scenarios
+
+  Scenario: Emergency revoke bootstrap PAT
+    Given the bootstrap PAT is suspected of being compromised
+    When a super admin revokes the bootstrap PAT
+    Then the revoked flag is set to true immediately
+    And the revokedAt timestamp is set
+    And all subsequent requests with the PAT fail
+    And the revocation is logged as security event
+
+  Scenario: Revoked bootstrap PAT cannot be used
+    Given the bootstrap PAT was revoked 5 minutes ago
+    When a request attempts to use the revoked PAT
+    Then the auth service detects revoked status
+    And the request fails with 401 Unauthorized
+    And the error is "PAT_REVOKED"
+    And the error message includes revocation timestamp
+
+  Scenario: Cannot un-revoke a bootstrap PAT
+    Given the bootstrap PAT has been revoked
+    When a super admin attempts to un-revoke the PAT
+    Then the request is rejected
+    And the error is "REVOCATION_PERMANENT"
+    And a new bootstrap PAT must be created through proper channels
+
+  # Token Lifecycle Scenarios
+
+  Scenario: Track PAT usage with lastUsedAt timestamp
+    Given the bootstrap PAT was last used "2024-01-15T10:00:00Z"
+    When the PAT is used for authentication at "2024-01-16T14:30:00Z"
+    Then the lastUsedAt is updated to "2024-01-16T14:30:00Z"
+    And the update is atomic
+    And the usage history is available for audit
+
+  Scenario: View bootstrap PAT remaining validity
+    Given the bootstrap PAT was created on "2024-01-01"
+    And the PAT expires on "2025-01-01"
+    And the current date is "2024-07-01"
+    When a super admin views bootstrap PAT details
+    Then the system shows:
+      | Field           | Value       |
+      | expiresAt       | 2025-01-01  |
+      | daysRemaining   | 184         |
+      | status          | ACTIVE      |
+
+  Scenario: Warning when bootstrap PAT nears expiration
+    Given the bootstrap PAT expires in 30 days
+    When a super admin logs in
+    Then the system displays a warning:
+      """
+      ⚠️ Bootstrap PAT expires in 30 days.
+      Please rotate to a new PAT to maintain system access.
+      """
+    And the warning is logged
+    And email notification is sent to super admins
+
+  # Multi-Environment Scenarios
+
+  Scenario: Separate bootstrap PAT per environment
+    Given the application runs in "production" environment
+    When the bootstrap PAT is created
+    Then the PAT name includes environment: "bootstrap-production"
+    And the PAT is only valid for production environment
+    And development/staging environments have separate PATs
+
+  Scenario: Bootstrap PAT environment validation
+    Given a bootstrap PAT was created for "staging" environment
+    When the PAT is used in "production" environment
+    Then the auth service detects environment mismatch
+    And the request is rejected with "ENVIRONMENT_MISMATCH"
+    And cross-environment PAT usage is prevented
+
+  # Concurrent Access Scenarios
+
+  Scenario: Handle concurrent bootstrap PAT creation attempts
+    Given two bootstrap script instances start simultaneously
+    When both attempt to create the bootstrap PAT
+    Then only one PAT is created (optimistic locking)
+    And the second attempt receives "BOOTSTRAP_PAT_ALREADY_EXISTS"
+    And no duplicate PATs are created
+    And database integrity is maintained
+
+  Scenario: Handle concurrent authentication with same PAT
+    Given multiple services use the bootstrap PAT simultaneously
+    When 10 concurrent requests are authenticated
+    Then all requests are authenticated independently
+    And lastUsedAt is updated atomically
+    And no race conditions occur
+    And all requests complete successfully
+
+  # Token Rotation Scenarios
+
+  Scenario: Rotate to new PAT before bootstrap expires
+    Given the bootstrap PAT expires in 60 days
+    And a super admin account exists
+    When the super admin creates a new service PAT:
+      | name        | service-access-prod |
+      | scope       | ADMIN               |
+      | expiresIn   | 1 year              |
+    Then the new PAT is created successfully
+    And the super admin revokes the bootstrap PAT
+    And all services migrate to the new PAT
+    And the system continues operating with new PAT
+
+  Scenario: Audit trail for PAT rotation
+    Given the bootstrap PAT is being replaced
+    When a super admin creates new PAT and revokes bootstrap
+    Then audit log records:
+      | Timestamp           | Action                    | Actor          |
+      | 2024-06-01T10:00:00 | CREATE_PAT               | super-admin-id |
+      | 2024-06-01T10:01:00 | REVOKE_BOOTSTRAP_PAT     | super-admin-id |
+    And the rotation is fully auditable
+    And compliance requirements are met
+
+  # Error Handling Scenarios
+
+  Scenario: Handle token generation failure gracefully
+    Given the secure random generator fails
+    When the bootstrap script attempts to create PAT
+    Then the error is logged securely (no token data)
+    And the script exits with error "TOKEN_GENERATION_FAILED"
+    And no partial PAT data is stored
+    And the administrator is advised to retry
+
+  Scenario: Handle database write failure during PAT creation
+    Given the token is generated successfully
+    When the database write fails
+    Then the plaintext token is NOT displayed
+    And the error is "DATABASE_WRITE_FAILED"
+    And no orphan PAT data exists
+    And the operation is fully rolled back
+
+  Scenario: Handle hash computation failure
+    Given the token is generated successfully
+    When BCrypt hashing fails (e.g., insufficient resources)
+    Then the plaintext token is securely discarded
+    And the error is "HASH_COMPUTATION_FAILED"
+    And no unhashed token is stored
+    And the administrator is notified
+
+  # Security Headers Scenarios
+
+  Scenario: Auth service returns security headers
+    Given the bootstrap PAT is valid
+    When the auth service validates the PAT
+    Then the response includes security headers:
+      | Header                | Value                |
+      | X-Service-Id          | SYSTEM               |
+      | X-PAT-Scope           | ADMIN                |
+      | X-PAT-Id              | <pat-uuid>           |
+      | X-Auth-Type           | PAT                  |
+      | X-Token-Expires       | 2025-01-01T00:00:00Z |
+    And Envoy forwards these headers to upstream services
+
+  Scenario: Sensitive data not exposed in auth response
+    Given the bootstrap PAT is validated
+    When the auth service returns response to Envoy
+    Then the response does NOT include:
+      | Field          |
+      | tokenHash      |
+      | plaintextToken |
+      | createdBy      |
+    And only necessary metadata is exposed
+    And security-sensitive fields are filtered
+
+  # Scope Hierarchy Scenarios
+
+  Scenario Outline: PAT scope hierarchy validation
+    Given a PAT with scope <PAT Scope>
+    When accessing an endpoint requiring <Required Scope>
+    Then the access is <Result>
+
+    Examples:
+      | PAT Scope   | Required Scope | Result  |
+      | ADMIN       | ADMIN          | ALLOWED |
+      | ADMIN       | WRITE          | ALLOWED |
+      | ADMIN       | READ_ONLY      | ALLOWED |
+      | WRITE       | ADMIN          | DENIED  |
+      | WRITE       | WRITE          | ALLOWED |
+      | WRITE       | READ_ONLY      | ALLOWED |
+      | READ_ONLY   | ADMIN          | DENIED  |
+      | READ_ONLY   | WRITE          | DENIED  |
+      | READ_ONLY   | READ_ONLY      | ALLOWED |
+
+  # Bootstrap Recovery Scenarios
+
+  Scenario: Recovery when bootstrap PAT is lost
+    Given the bootstrap PAT plaintext was not saved
+    And the super admin account was not yet created
+    When the administrator needs to regain access
+    Then the administrator must:
+      | Step | Action                                           |
+      | 1    | Delete bootstrap PAT from database directly      |
+      | 2    | Run bootstrap script to create new PAT           |
+      | 3    | Save the new plaintext PAT securely              |
+      | 4    | Create super admin account with new PAT          |
+    And the recovery is documented in runbooks
+    And database access is required for recovery
+
+  Scenario: Reset bootstrap state for clean installation
+    Given a corrupted or test bootstrap state exists
+    When an administrator with database access runs cleanup
+    Then all bootstrap PATs are removed
+    And all SYSTEM-created records are purged
+    And the system returns to initial state
+    And a new bootstrap can be performed

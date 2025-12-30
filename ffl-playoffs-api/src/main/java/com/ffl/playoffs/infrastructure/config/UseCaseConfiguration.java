@@ -3,6 +3,7 @@ package com.ffl.playoffs.infrastructure.config;
 import com.ffl.playoffs.application.usecase.*;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.port.WorldOwnerPlayerRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,5 +71,45 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // World Owner Player Management Use Cases
+    // ===================
+
+    @Bean
+    public InviteWorldOwnerUseCase inviteWorldOwnerUseCase(
+            WorldOwnerPlayerRepository repository) {
+        return new InviteWorldOwnerUseCase(repository);
+    }
+
+    @Bean
+    public AcceptWorldOwnerInvitationUseCase acceptWorldOwnerInvitationUseCase(
+            WorldOwnerPlayerRepository repository) {
+        return new AcceptWorldOwnerInvitationUseCase(repository);
+    }
+
+    @Bean
+    public RevokeWorldOwnerUseCase revokeWorldOwnerUseCase(
+            WorldOwnerPlayerRepository repository) {
+        return new RevokeWorldOwnerUseCase(repository);
+    }
+
+    @Bean
+    public UpdateWorldOwnerRoleUseCase updateWorldOwnerRoleUseCase(
+            WorldOwnerPlayerRepository repository) {
+        return new UpdateWorldOwnerRoleUseCase(repository);
+    }
+
+    @Bean
+    public TransferWorldPrimaryOwnershipUseCase transferWorldPrimaryOwnershipUseCase(
+            WorldOwnerPlayerRepository repository) {
+        return new TransferWorldPrimaryOwnershipUseCase(repository);
+    }
+
+    @Bean
+    public GetWorldOwnersUseCase getWorldOwnersUseCase(
+            WorldOwnerPlayerRepository repository) {
+        return new GetWorldOwnersUseCase(repository);
     }
 }

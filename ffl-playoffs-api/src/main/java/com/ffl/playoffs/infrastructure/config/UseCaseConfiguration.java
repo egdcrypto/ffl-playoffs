@@ -1,8 +1,7 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
-import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
-import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.port.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,5 +69,46 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // AI Director Use Cases
+    // ===================
+
+    @Bean
+    public InitializeAIDirectorUseCase initializeAIDirectorUseCase(
+            AIDirectorRepository directorRepository,
+            StoryArcRepository storyArcRepository,
+            StoryBeatRepository storyBeatRepository) {
+        return new InitializeAIDirectorUseCase(directorRepository, storyArcRepository, storyBeatRepository);
+    }
+
+    @Bean
+    public UpdateTensionUseCase updateTensionUseCase(
+            AIDirectorRepository directorRepository) {
+        return new UpdateTensionUseCase(directorRepository);
+    }
+
+    @Bean
+    public DetectStallsUseCase detectStallsUseCase(
+            AIDirectorRepository directorRepository,
+            StallConditionRepository stallConditionRepository,
+            StoryBeatRepository storyBeatRepository) {
+        return new DetectStallsUseCase(directorRepository, stallConditionRepository, storyBeatRepository);
+    }
+
+    @Bean
+    public CreateStoryBeatUseCase createStoryBeatUseCase(
+            AIDirectorRepository directorRepository,
+            StoryBeatRepository storyBeatRepository,
+            StoryArcRepository storyArcRepository) {
+        return new CreateStoryBeatUseCase(directorRepository, storyBeatRepository, storyArcRepository);
+    }
+
+    @Bean
+    public ExecuteCuratorActionUseCase executeCuratorActionUseCase(
+            AIDirectorRepository directorRepository,
+            CuratorActionRepository curatorActionRepository) {
+        return new ExecuteCuratorActionUseCase(directorRepository, curatorActionRepository);
     }
 }

@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class ApplicationService {
         return invitePlayerUseCase.execute(inviteCode, email, displayName, googleId);
     }
     
-    public TeamSelectionDTO selectTeam(Long playerId, Long weekId, String nflTeam) {
+    public TeamSelectionDTO selectTeam(UUID playerId, UUID weekId, String nflTeam) {
         return selectTeamUseCase.execute(playerId, weekId, nflTeam);
     }
     

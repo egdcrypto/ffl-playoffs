@@ -9,9 +9,9 @@ spring:
       uri: ${MONGODB_URI:mongodb://localhost:27017}
       database: ${MONGODB_DATABASE:ffl_playoffs}
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+      host: ${APP_REDIS_HOST:localhost}
+      port: ${APP_REDIS_PORT:6379}
+      password: ${APP_REDIS_PASSWORD:}
       timeout: 2000ms
       jedis:
         pool:
@@ -51,6 +51,15 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
 
 logging:
   level:

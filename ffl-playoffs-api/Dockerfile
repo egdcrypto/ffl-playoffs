@@ -14,13 +14,14 @@ COPY src ./src
 RUN gradle build -x test --no-daemon
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre
 
 # Set working directory
 WORKDIR /app
 
-# Copy the built jar from build stage
-COPY --from=build /app/build/libs/*.jar app.jar
+# Copy all jars then select the fat jar (non-plain)
+COPY --from=build /app/build/libs/*.jar /tmp/
+RUN jar=$(ls /tmp/*.jar | grep -v plain) && cp "$jar" app.jar && rm -rf /tmp/*.jar
 
 # Expose port
 EXPOSE 8090

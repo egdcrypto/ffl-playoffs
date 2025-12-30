@@ -8,13 +8,22 @@ spring:
       database: ${MONGODB_DATABASE:ffl_playoffs}
 
 server:
-  address: 127.0.0.1  # CRITICAL: Localhost only in production
+  address: ${SERVER_ADDRESS:127.0.0.1}
   port: 8080
 
 management:
   server:
-    address: 127.0.0.1  # CRITICAL: Localhost only in production
+    address: ${MANAGEMENT_SERVER_ADDRESS:127.0.0.1}
     port: 8081
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
 
 logging:
   level:

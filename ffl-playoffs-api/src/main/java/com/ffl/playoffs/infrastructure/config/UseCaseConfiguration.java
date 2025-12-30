@@ -3,6 +3,7 @@ package com.ffl.playoffs.infrastructure.config;
 import com.ffl.playoffs.application.usecase.*;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.port.WorldRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,5 +71,39 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // World Management Use Cases
+    // ===================
+
+    @Bean
+    public CreateWorldUseCase createWorldUseCase(WorldRepository worldRepository) {
+        return new CreateWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public ActivateWorldUseCase activateWorldUseCase(WorldRepository worldRepository) {
+        return new ActivateWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public AdvanceWorldWeekUseCase advanceWorldWeekUseCase(WorldRepository worldRepository) {
+        return new AdvanceWorldWeekUseCase(worldRepository);
+    }
+
+    @Bean
+    public CompleteWorldUseCase completeWorldUseCase(WorldRepository worldRepository) {
+        return new CompleteWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public GetWorldUseCase getWorldUseCase(WorldRepository worldRepository) {
+        return new GetWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public RegisterLeagueToWorldUseCase registerLeagueToWorldUseCase(WorldRepository worldRepository) {
+        return new RegisterLeagueToWorldUseCase(worldRepository);
     }
 }

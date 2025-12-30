@@ -1,6 +1,8 @@
 package com.ffl.playoffs.domain.port;
 
 import com.ffl.playoffs.domain.aggregate.User;
+import com.ffl.playoffs.domain.model.Role;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,4 +46,18 @@ public interface UserRepository {
      * @return true if user exists
      */
     boolean existsByGoogleId(String googleId);
+
+    /**
+     * Find all users by role
+     * @param role the role to filter by
+     * @return list of users with the specified role
+     */
+    List<User> findByRole(Role role);
+
+    /**
+     * Find all users with any of the specified roles
+     * @param roles the roles to filter by
+     * @return list of users with any of the specified roles
+     */
+    List<User> findByRoles(List<Role> roles);
 }

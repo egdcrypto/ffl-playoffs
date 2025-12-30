@@ -1,14 +1,17 @@
 package com.ffl.playoffs.infrastructure.adapter.persistence;
 
 import com.ffl.playoffs.domain.aggregate.User;
+import com.ffl.playoffs.domain.model.Role;
 import com.ffl.playoffs.domain.port.UserRepository;
 import com.ffl.playoffs.infrastructure.adapter.persistence.document.UserDocument;
 import com.ffl.playoffs.infrastructure.adapter.persistence.mapper.UserMapper;
 import com.ffl.playoffs.infrastructure.adapter.persistence.repository.UserMongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * MongoDB implementation of UserRepository port
@@ -53,5 +56,24 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByGoogleId(String googleId) {
         return mongoRepository.existsByGoogleId(googleId);
+    }
+
+    @Override
+    public List<User> findByRole(Role role) {
+        return mongoRepository.findByRole(role.name())
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<User> findByRoles(List<Role> roles) {
+        List<String> roleNames = roles.stream()
+                .map(Role::name)
+                .collect(Collectors.toList());
+        return mongoRepository.findByRoleIn(roleNames)
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

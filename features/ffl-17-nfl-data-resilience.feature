@@ -472,3 +472,542 @@ Feature: NFL Data Integration Resilience (Circuit Breaker, Error Handling, Fallb
       4. Check rate limiting
       5. Manually reset circuit breaker if API is healthy
     And enables rapid incident resolution
+
+  # ============================================
+  # ADVANCED CIRCUIT BREAKER PATTERNS
+  # ============================================
+
+  Scenario: Slow call circuit breaker
+    Given the circuit breaker monitors response times
+    And slow call threshold is 5 seconds
+    When 50% of calls exceed 5 seconds (slow call rate)
+    Then the circuit breaker opens based on slowness
+    And prevents degraded performance from affecting users
+    And metrics track slow call percentage
+
+  Scenario: Half-open state with limited probe requests
+    Given the circuit breaker is in HALF_OPEN state
+    And permits 3 test requests
+    When the first 2 test requests succeed
+    Then the circuit remains HALF_OPEN
+    When the 3rd test request succeeds
+    Then the circuit transitions to CLOSED
+    And gradual recovery is validated
+
+  Scenario: Half-open failure immediately reopens circuit
+    Given the circuit breaker is in HALF_OPEN state
+    When the first test request fails
+    Then the circuit immediately returns to OPEN
+    And the timeout period is doubled (exponential backoff)
+    And no more test requests are allowed this period
+
+  Scenario: Sliding window failure rate calculation
+    Given the circuit breaker uses a sliding window of 100 calls
+    When 10 failures occur in the last 100 calls
+    Then the failure rate is 10%
+    And if threshold is 50%, circuit remains CLOSED
+    When 60 failures occur in the last 100 calls
+    Then the failure rate is 60%
+    And circuit opens (exceeds 50% threshold)
+
+  Scenario: Count-based sliding window
+    Given the circuit breaker uses count-based window of 10 calls
+    When the last 10 calls are: success, success, fail, fail, fail, fail, fail, success, success, fail
+    Then failure count is 6 out of 10
+    And failure rate is 60%
+    And circuit opens if threshold exceeded
+
+  Scenario: Time-based sliding window
+    Given the circuit breaker uses time-based window of 60 seconds
+    When 5 failures occur in the last 60 seconds
+    And 100 total requests in the last 60 seconds
+    Then failure rate is 5%
+    And circuit remains closed
+
+  Scenario: Configure different thresholds per endpoint criticality
+    Given endpoints have different failure thresholds:
+      | endpoint           | failureThreshold | slowCallThreshold |
+      | /live-stats        | 30%              | 2 seconds         |
+      | /player-profile    | 50%              | 5 seconds         |
+      | /news              | 70%              | 10 seconds        |
+    When evaluating circuit breaker state
+    Then each endpoint uses its configured thresholds
+    And critical endpoints have stricter thresholds
+
+  Scenario: Circuit breaker with minimum call threshold
+    Given the circuit breaker requires minimum 10 calls before evaluation
+    When only 5 calls have been made (all failures)
+    Then the circuit remains CLOSED (not enough samples)
+    When 10 calls have been made (all failures)
+    Then the circuit opens (enough samples to evaluate)
+
+  # ============================================
+  # ADVANCED FALLBACK STRATEGIES
+  # ============================================
+
+  Scenario: Multi-level fallback cascade
+    Given fallback levels are configured:
+      | Level 1 | Redis cache (hot)        |
+      | Level 2 | ESPN API (alternate)     |
+      | Level 3 | MongoDB cache (warm)     |
+      | Level 4 | Static default values    |
+    When SportsData.io fails
+    Then Level 1 is attempted first
+    If Level 1 misses, Level 2 is attempted
+    And cascade continues until success or exhaustion
+    And metrics track which level served the request
+
+  Scenario: Fallback with data freshness validation
+    Given cached data has a freshness threshold of 4 hours
+    When fallback to cache is triggered
+    Then the cache is checked for data age
+    If data is older than 4 hours
+    Then a warning is attached to the response
+    And data is still returned (stale better than nothing)
+
+  Scenario: Hybrid fallback combining sources
+    Given SportsData.io is partially available
+    When player stats endpoint fails but schedule endpoint works
+    Then player stats come from cache
+    And schedule comes from live API
+    And response combines both sources
+    And source metadata indicates hybrid response
+
+  Scenario: Fallback with automatic refresh attempt
+    Given cached data is served as fallback
+    And background refresh is enabled
+    When a cache hit occurs during fallback
+    Then a background job attempts to refresh from API
+    And user gets immediate cache response
+    And cache is updated if background refresh succeeds
+
+  Scenario: Fallback data transformation
+    Given ESPN API response format differs from SportsData.io
+    When fallback to ESPN is activated
+    Then the ESPN response is transformed to match domain model
+    And field mappings are applied:
+      | ESPN Field    | Domain Field      |
+      | playerId      | externalPlayerId  |
+      | stats.rushing | rushingYards      |
+      | stats.passing | passingYards      |
+    And response is consistent regardless of source
+
+  Scenario: Conditional fallback based on request type
+    Given different request types have different fallback strategies
+    When request type is "live-score"
+    Then fallback returns cached data with 30-second max age
+    When request type is "historical-stats"
+    Then fallback returns cached data with 24-hour max age
+    And fallback strategy matches data volatility
+
+  Scenario: Circuit breaker per fallback source
+    Given each fallback source has its own circuit breaker
+    When ESPN API (fallback) also fails repeatedly
+    Then ESPN's circuit breaker opens
+    And system skips to next fallback level
+    And prevents wasting time on broken fallback
+
+  # ============================================
+  # RETRY WITH CONTEXT PRESERVATION
+  # ============================================
+
+  Scenario: Preserve request context across retries
+    Given a request includes context:
+      | requestId       | req-123-abc       |
+      | correlationId   | corr-456-def      |
+      | userId          | user-789          |
+    When the request is retried
+    Then all context is preserved in retry
+    And logs show same requestId across attempts
+    And distributed tracing links all attempts
+
+  Scenario: Retry with modified parameters
+    Given a request for page size 100 times out
+    When the request is retried
+    Then page size is reduced to 50
+    And smaller payloads are more likely to succeed
+    And adaptive retry improves success rate
+
+  Scenario: Retry budget per request
+    Given each request has a retry budget of 3 attempts
+    When 3 retries are exhausted
+    Then no more retries occur for this request
+    And final failure is reported
+    And retry budget prevents infinite loops
+
+  Scenario: Retry budget per time window
+    Given the system has a global retry budget of 100 per minute
+    When 100 retries occur in 1 minute
+    Then additional retries are rejected with "RETRY_BUDGET_EXHAUSTED"
+    And prevents retry storms from overwhelming API
+
+  Scenario: Selective retry based on error analysis
+    Given an error response is received
+    When error contains "invalid_api_key"
+    Then retry is skipped (error is permanent)
+    When error contains "rate_limit_exceeded"
+    Then retry is scheduled after Retry-After delay
+    When error contains "internal_server_error"
+    Then immediate retry with backoff is attempted
+
+  # ============================================
+  # RATE LIMITING INTEGRATION
+  # ============================================
+
+  Scenario: Integrate rate limiter with circuit breaker
+    Given the API rate limit is 100 requests per minute
+    And current usage is 95 requests
+    When 10 new requests arrive
+    Then 5 requests are processed
+    And 5 requests are queued for next minute
+    And rate limiter prevents 429 errors proactively
+
+  Scenario: Adaptive rate limiting based on API response
+    Given the API returns X-RateLimit-Remaining: 10
+    When the system parses rate limit headers
+    Then request rate is reduced to preserve quota
+    And rate limiter adapts to API feedback
+    And 429 errors are minimized
+
+  Scenario: Rate limit sharing across instances
+    Given 3 application instances share API quota
+    When rate limit state is stored in Redis
+    Then all instances see current usage
+    And rate limit is enforced globally
+    And no single instance exhausts quota
+
+  Scenario: Priority-based rate limit allocation
+    Given 100 requests per minute quota
+    When allocating across request types:
+      | Type         | Allocation |
+      | Live stats   | 50%        |
+      | Player data  | 30%        |
+      | News         | 15%        |
+      | Search       | 5%         |
+    Then critical requests get priority allocation
+    And low-priority requests are throttled first
+
+  # ============================================
+  # OBSERVABILITY AND DISTRIBUTED TRACING
+  # ============================================
+
+  Scenario: Distributed tracing for API calls
+    Given distributed tracing is enabled
+    When an API call is made
+    Then a span is created with:
+      | spanName      | sportsdata.getPlayerStats |
+      | attributes    | playerId, week, endpoint  |
+      | status        | OK or ERROR               |
+      | duration      | measured in ms            |
+    And traces are exported to observability platform
+
+  Scenario: Trace context propagation to external API
+    Given a trace context exists
+    When calling SportsData.io API
+    Then trace headers are included:
+      | traceparent   | 00-traceId-spanId-01 |
+      | tracestate    | vendor=ffl           |
+    And enables end-to-end tracing if API supports it
+
+  Scenario: Correlation ID for request tracking
+    Given a user request has correlationId "corr-abc-123"
+    When the request triggers multiple API calls
+    Then all API calls include X-Correlation-Id: corr-abc-123
+    And all logs include the correlation ID
+    And debugging across services is simplified
+
+  Scenario: Metrics for circuit breaker state changes
+    Given Prometheus metrics are configured
+    When circuit breaker state changes
+    Then metrics are emitted:
+      | circuit_breaker_state        | gauge   | 0=CLOSED, 1=OPEN, 2=HALF_OPEN |
+      | circuit_breaker_calls_total  | counter | success/failure labels        |
+      | circuit_breaker_failures     | counter | by error type                 |
+      | circuit_breaker_opens_total  | counter | number of times opened        |
+    And dashboards visualize circuit breaker health
+
+  Scenario: Custom metrics for fallback usage
+    Given fallback is activated
+    Then the following metrics are recorded:
+      | fallback_activations_total   | counter | by source              |
+      | fallback_latency_seconds     | histogram | time to fallback     |
+      | fallback_data_age_seconds    | gauge   | staleness of data      |
+      | fallback_success_rate        | gauge   | fallback effectiveness |
+
+  Scenario: Log aggregation with structured logging
+    Given structured logging is enabled
+    When an API error occurs
+    Then log entry includes structured fields:
+      | level         | ERROR                    |
+      | message       | API call failed          |
+      | endpoint      | /PlayerGameStatsByWeek   |
+      | statusCode    | 500                      |
+      | latencyMs     | 5234                     |
+      | circuitState  | OPEN                     |
+      | retryAttempt  | 3                        |
+      | correlationId | corr-abc-123             |
+    And logs are searchable and aggregatable
+
+  # ============================================
+  # CONFIGURATION AND TUNING
+  # ============================================
+
+  Scenario: Dynamic circuit breaker configuration
+    Given circuit breaker settings are in config store
+    When an admin updates failure threshold from 50% to 30%
+    Then the change takes effect without restart
+    And new thresholds apply to new requests
+    And existing circuit states are preserved
+
+  Scenario: Feature flag for fallback strategies
+    Given fallback strategies are controlled by feature flags
+    When flag "espn_fallback_enabled" is disabled
+    Then ESPN fallback is skipped
+    And system falls back to cache directly
+    And feature flags enable A/B testing of strategies
+
+  Scenario: Environment-specific resilience settings
+    Given different environments have different needs
+    When configuring resilience:
+      | Environment | Failure Threshold | Timeout | Retries |
+      | dev         | 80%               | 30s     | 1       |
+      | staging     | 60%               | 15s     | 2       |
+      | prod        | 40%               | 10s     | 3       |
+    Then each environment has appropriate settings
+    And production has strictest thresholds
+
+  Scenario: Auto-tuning based on historical data
+    Given the system collects performance metrics
+    When analyzing the last 7 days of data
+    Then optimal thresholds are suggested:
+      | metric              | current | suggested | reason                |
+      | failureThreshold    | 50%     | 35%       | P95 failure rate: 25% |
+      | timeoutMs           | 10000   | 8000      | P99 latency: 6500ms   |
+      | retryCount          | 3       | 2         | 3rd retry success: 5% |
+    And operators can accept or reject suggestions
+
+  # ============================================
+  # MULTI-REGION FAILOVER
+  # ============================================
+
+  Scenario: Geographic failover to backup region
+    Given primary API endpoint is in us-east-1
+    And backup endpoint is in us-west-2
+    When primary endpoint circuit breaker opens
+    Then traffic is routed to us-west-2
+    And latency may increase slightly
+    And availability is maintained
+
+  Scenario: DNS-based failover
+    Given DNS health checks monitor API endpoint
+    When primary endpoint fails health checks
+    Then DNS automatically routes to backup
+    And clients are directed to healthy endpoint
+    And failover is transparent to application
+
+  Scenario: Active-active multi-region
+    Given both regions handle traffic simultaneously
+    When one region degrades
+    Then traffic is shifted to healthy region
+    And load balancer detects health issues
+    And no complete outage occurs
+
+  # ============================================
+  # CHAOS ENGINEERING
+  # ============================================
+
+  Scenario: Chaos testing with controlled failure injection
+    Given chaos testing is enabled in staging
+    When failure injection is configured:
+      | type        | rate | duration |
+      | latency     | 30%  | 5s       |
+      | error       | 10%  | HTTP 500 |
+      | timeout     | 5%   | 15s      |
+    Then failures are randomly injected
+    And resilience mechanisms are exercised
+    And system behavior under failure is validated
+
+  Scenario: Chaos monkey kills random services
+    Given chaos monkey is enabled
+    When a random service instance is terminated
+    Then other instances handle the load
+    And auto-scaling provisions replacement
+    And no user impact occurs
+
+  Scenario: Simulate network partition
+    Given network partition simulation is enabled
+    When partition between app and API is simulated
+    Then circuit breaker detects failures
+    And fallback is activated
+    And system handles partition gracefully
+    When partition is resolved
+    Then system recovers automatically
+
+  Scenario: Gradual degradation testing
+    Given load testing with increasing failure rate
+    When failure rate increases from 0% to 50% over 30 minutes
+    Then system gracefully degrades
+    And critical features remain available longer
+    And degradation thresholds are validated
+
+  # ============================================
+  # RECOVERY ORCHESTRATION
+  # ============================================
+
+  Scenario: Automated recovery verification
+    Given the circuit breaker transitions from OPEN to HALF_OPEN
+    When test requests are sent
+    Then success rate is measured
+    And if > 80% success, circuit closes
+    And if < 50% success, circuit reopens
+    And partial recovery is handled appropriately
+
+  Scenario: Gradual traffic ramp-up after recovery
+    Given the circuit breaker closes after recovery
+    When normal traffic resumes
+    Then traffic is ramped up gradually:
+      | Time     | Traffic % |
+      | 0-30s    | 10%       |
+      | 30-60s   | 25%       |
+      | 60-90s   | 50%       |
+      | 90-120s  | 100%      |
+    And prevents overwhelming recovering service
+
+  Scenario: Recovery with warm-up period
+    Given the circuit breaker transitions to CLOSED
+    When warm-up period is enabled
+    Then call rate is limited for 60 seconds
+    And allows service to warm up (caches, connections)
+    And prevents immediate overload after recovery
+
+  Scenario: Automatic rollback on recovery failure
+    Given traffic ramp-up is in progress
+    When error rate spikes during ramp-up
+    Then ramp-up is paused
+    And circuit breaker may reopen
+    And traffic is reduced to previous stable level
+    And failed recovery is detected early
+
+  # ============================================
+  # SLA MANAGEMENT
+  # ============================================
+
+  Scenario: SLA monitoring for API availability
+    Given SLA target is 99.9% availability
+    When the system tracks uptime
+    Then availability is calculated:
+      | Period    | Uptime     | Status    |
+      | Last hour | 100%       | Meeting   |
+      | Last day  | 99.95%     | Meeting   |
+      | Last week | 99.87%     | At risk   |
+    And alerts fire when SLA is at risk
+
+  Scenario: Error budget consumption tracking
+    Given monthly error budget is 0.1% (43 minutes downtime)
+    When 30 minutes of downtime occur
+    Then error budget consumed is 70%
+    And remaining budget is 13 minutes
+    And alerts fire at 50%, 80%, 100% consumption
+
+  Scenario: SLA credit calculation for outages
+    Given an outage lasts 2 hours
+    When calculating SLA credits
+    Then impact is assessed:
+      | Affected users | 10,000        |
+      | Impact level   | Partial (P1)  |
+      | Duration       | 120 minutes   |
+    And credit calculation follows policy
+    And incident report is generated
+
+  # ============================================
+  # EDGE CASES AND SPECIAL HANDLING
+  # ============================================
+
+  Scenario: Handle partial response from API
+    Given the API returns partial data (some fields missing)
+    When processing the response
+    Then missing fields are handled gracefully
+    And defaults are applied where appropriate
+    And partial data is served with warning
+    And full refresh is scheduled
+
+  Scenario: Handle corrupted API response
+    Given the API returns malformed JSON
+    When parsing the response
+    Then parse error is caught
+    And error is classified as server error (not client)
+    And circuit breaker failure count is incremented
+    And fallback is activated
+
+  Scenario: Handle unexpected response structure
+    Given the API changes response schema without notice
+    When new fields are encountered
+    Then unknown fields are ignored
+    When expected fields are missing
+    Then error is logged and fallback activated
+    And schema validation protects against changes
+
+  Scenario: Handle extremely slow degradation
+    Given response times increase gradually
+    When average latency exceeds threshold
+    Then slow call circuit breaker activates
+    And prevents gradual degradation from going unnoticed
+    And early warning enables proactive response
+
+  Scenario: Handle intermittent failures
+    Given failures occur randomly (10% failure rate)
+    When circuit breaker evaluates
+    Then sliding window averages the failure rate
+    And single failures don't trigger circuit open
+    And sustained failure pattern is detected
+
+  Scenario Outline: Error classification and handling
+    Given an error with HTTP status <status> occurs
+    When classifying the error
+    Then it is classified as <classification>
+    And retry behavior is <retryBehavior>
+    And circuit breaker impact is <circuitImpact>
+
+    Examples:
+      | status | classification   | retryBehavior     | circuitImpact    |
+      | 400    | CLIENT_ERROR     | no retry          | no impact        |
+      | 401    | AUTH_ERROR       | no retry          | no impact        |
+      | 403    | AUTH_ERROR       | no retry          | no impact        |
+      | 404    | NOT_FOUND        | no retry          | no impact        |
+      | 429    | RATE_LIMITED     | retry after delay | no impact        |
+      | 500    | SERVER_ERROR     | retry with backoff| increment failure|
+      | 502    | GATEWAY_ERROR    | retry with backoff| increment failure|
+      | 503    | UNAVAILABLE      | retry with backoff| increment failure|
+      | 504    | TIMEOUT          | retry with backoff| increment failure|
+
+  # ============================================
+  # DEPENDENCY HEALTH AGGREGATION
+  # ============================================
+
+  Scenario: Aggregate health of all dependencies
+    Given the system depends on multiple services
+    When health check endpoint is called
+    Then aggregated health is returned:
+      | dependency     | status   | latency | details           |
+      | SportsData.io  | healthy  | 120ms   | circuit: CLOSED   |
+      | ESPN API       | healthy  | 250ms   | circuit: CLOSED   |
+      | Redis Cache    | healthy  | 5ms     | connected         |
+      | MongoDB        | degraded | 500ms   | replica lag       |
+      | Overall        | degraded |         | 1 degraded dep    |
+    And overall status reflects worst dependency
+
+  Scenario: Kubernetes readiness based on dependencies
+    Given readiness probe checks critical dependencies
+    When SportsData.io circuit is OPEN
+    And ESPN fallback is healthy
+    Then readiness probe returns healthy (fallback available)
+    When all data sources are unavailable
+    Then readiness probe returns unhealthy
+    And Kubernetes stops routing traffic to pod
+
+  Scenario: Liveness probe independent of dependencies
+    Given liveness probe checks application health
+    When SportsData.io is completely down
+    Then liveness probe still returns healthy
+    And application is not restarted due to external failure
+    And external failures don't cause restart loops

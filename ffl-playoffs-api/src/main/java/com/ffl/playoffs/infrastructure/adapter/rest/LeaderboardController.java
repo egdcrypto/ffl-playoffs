@@ -1,5 +1,11 @@
 package com.ffl.playoffs.infrastructure.adapter.rest;
 
+import com.ffl.playoffs.application.usecase.GetLeagueHistoryUseCase;
+import com.ffl.playoffs.application.usecase.GetLeagueStandingsUseCase;
+import com.ffl.playoffs.application.usecase.GetLeagueStatsUseCase;
+import com.ffl.playoffs.application.usecase.GetMatchupsUseCase;
+import com.ffl.playoffs.application.usecase.GetPlayerScoreBreakdownUseCase;
+import com.ffl.playoffs.application.usecase.GetWeeklyRankingsUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,11 +27,12 @@ import java.util.UUID;
 @Tag(name = "Leaderboards", description = "League standings and rankings")
 public class LeaderboardController {
 
-    // TODO: Inject use cases when implemented:
-    // - GetLeagueStandingsUseCase
-    // - GetWeeklyRankingsUseCase
-    // - GetPlayerScoreBreakdownUseCase
-    // - GetLeagueStatsUseCase
+    private final GetLeagueStandingsUseCase getLeagueStandingsUseCase;
+    private final GetWeeklyRankingsUseCase getWeeklyRankingsUseCase;
+    private final GetPlayerScoreBreakdownUseCase getPlayerScoreBreakdownUseCase;
+    private final GetLeagueStatsUseCase getLeagueStatsUseCase;
+    private final GetLeagueHistoryUseCase getLeagueHistoryUseCase;
+    private final GetMatchupsUseCase getMatchupsUseCase;
 
     @GetMapping("/leagues/{leagueId}")
     @Operation(
@@ -38,18 +45,9 @@ public class LeaderboardController {
             @Parameter(description = "Include eliminated players")
             @RequestParam(defaultValue = "true") boolean includeEliminated) {
 
-        // TODO: Implement GetLeagueStandingsUseCase
-        // - Query all league players with their rosters
-        // - Calculate total fantasy points for each player
-        // - Sort by total points descending
-        // - Mark eliminated players
-        // - Return standings with: rank, playerId, playerName, totalPoints,
-        //   weeklyPoints[], eliminatedWeek, isEliminated
-
-        return ResponseEntity.ok(Map.of(
-                "message", "TODO: Implement GetLeagueStandingsUseCase",
-                "leagueId", leagueId.toString()
-        ));
+        var command = new GetLeagueStandingsUseCase.GetStandingsCommand(leagueId, includeEliminated);
+        var result = getLeagueStandingsUseCase.execute(command);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/leagues/{leagueId}/week/{week}")
@@ -61,18 +59,9 @@ public class LeaderboardController {
             @PathVariable UUID leagueId,
             @PathVariable Integer week) {
 
-        // TODO: Implement GetWeeklyRankingsUseCase
-        // - Query all rosters for the specified league and week
-        // - Calculate fantasy points for each roster in that week
-        // - Sort by week points descending
-        // - Return weekly rankings with: rank, playerId, playerName, weekPoints,
-        //   rosterPlayers[], totalPoints, movement (up/down from previous week)
-
-        return ResponseEntity.ok(Map.of(
-                "message", "TODO: Implement GetWeeklyRankingsUseCase",
-                "leagueId", leagueId.toString(),
-                "week", week
-        ));
+        var command = new GetWeeklyRankingsUseCase.GetWeeklyRankingsCommand(leagueId, week);
+        var result = getWeeklyRankingsUseCase.execute(command);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/leagues/{leagueId}/players/{playerId}/breakdown")
@@ -87,22 +76,9 @@ public class LeaderboardController {
             @Parameter(description = "Filter by week")
             @RequestParam(required = false) Integer week) {
 
-        // TODO: Implement GetPlayerScoreBreakdownUseCase
-        // - Find player's rosters for all weeks (or specific week)
-        // - For each roster slot, show:
-        //   - NFL player name, position, team
-        //   - Week opponent
-        //   - Individual stats (yards, TDs, etc.)
-        //   - Fantasy points earned
-        // - Calculate total points per week
-        // - Return detailed breakdown
-
-        return ResponseEntity.ok(Map.of(
-                "message", "TODO: Implement GetPlayerScoreBreakdownUseCase",
-                "leagueId", leagueId.toString(),
-                "playerId", playerId.toString(),
-                "week", week != null ? week : "all"
-        ));
+        var command = new GetPlayerScoreBreakdownUseCase.GetScoreBreakdownCommand(leagueId, playerId, week);
+        var result = getPlayerScoreBreakdownUseCase.execute(command);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/leagues/{leagueId}/stats")
@@ -113,23 +89,9 @@ public class LeaderboardController {
     public ResponseEntity<?> getLeagueStats(
             @PathVariable UUID leagueId) {
 
-        // TODO: Implement GetLeagueStatsUseCase
-        // - Calculate league-wide statistics:
-        //   - Total players
-        //   - Active players
-        //   - Eliminated players
-        //   - Highest single-week score
-        //   - Lowest single-week score
-        //   - Average weekly score
-        //   - Most popular NFL player (selected most often)
-        //   - Current leader
-        //   - Week standings history
-        // - Return aggregate stats
-
-        return ResponseEntity.ok(Map.of(
-                "message", "TODO: Implement GetLeagueStatsUseCase",
-                "leagueId", leagueId.toString()
-        ));
+        var command = new GetLeagueStatsUseCase.GetLeagueStatsCommand(leagueId);
+        var result = getLeagueStatsUseCase.execute(command);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/leagues/{leagueId}/history")
@@ -140,19 +102,12 @@ public class LeaderboardController {
     public ResponseEntity<?> getLeagueHistory(
             @PathVariable UUID leagueId) {
 
-        // TODO: Implement GetLeagueHistoryUseCase
-        // - Query standings for each week
-        // - Show rank changes over time for each player
-        // - Include elimination events
-        // - Return week-by-week standings progression
-
-        return ResponseEntity.ok(Map.of(
-                "message", "TODO: Implement GetLeagueHistoryUseCase",
-                "leagueId", leagueId.toString()
-        ));
+        var command = new GetLeagueHistoryUseCase.GetLeagueHistoryCommand(leagueId);
+        var result = getLeagueHistoryUseCase.execute(command);
+        return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/leagues/{leagueId}/matchups")
+    @GetMapping("/leagues/{leagueId}/matchups/{week}")
     @Operation(
             summary = "Get head-to-head matchups",
             description = "Shows head-to-head comparisons between players in the league"
@@ -161,17 +116,9 @@ public class LeaderboardController {
             @PathVariable UUID leagueId,
             @PathVariable Integer week) {
 
-        // TODO: Implement GetMatchupsUseCase
-        // - Generate head-to-head matchups for the week
-        // - Compare each player's score against others
-        // - Show win/loss records
-        // - Return matchup grid with scores
-
-        return ResponseEntity.ok(Map.of(
-                "message", "TODO: Implement GetMatchupsUseCase",
-                "leagueId", leagueId.toString(),
-                "week", week
-        ));
+        var command = new GetMatchupsUseCase.GetMatchupsCommand(leagueId, week);
+        var result = getMatchupsUseCase.execute(command);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/games/{gameId}")

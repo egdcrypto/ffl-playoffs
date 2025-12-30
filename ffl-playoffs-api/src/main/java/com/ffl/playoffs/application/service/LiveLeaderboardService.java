@@ -4,8 +4,12 @@ import com.ffl.playoffs.application.dto.LiveLeaderboardDTO;
 import com.ffl.playoffs.application.dto.LiveLeaderboardDTO.LiveLeaderboardEntryDTO;
 import com.ffl.playoffs.domain.model.LiveScoreStatus;
 import com.ffl.playoffs.domain.model.RankChange;
+import com.ffl.playoffs.domain.aggregate.Roster;
 import com.ffl.playoffs.domain.port.LeaguePlayerRepository;
+import com.ffl.playoffs.domain.port.LeagueRepository;
 import com.ffl.playoffs.domain.port.LiveScoreRepository;
+import com.ffl.playoffs.domain.port.NflLiveDataPort;
+import com.ffl.playoffs.domain.port.RosterRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,8 +19,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -31,6 +38,9 @@ public class LiveLeaderboardService {
 
     private final LiveScoreRepository liveScoreRepository;
     private final LeaguePlayerRepository leaguePlayerRepository;
+    private final RosterRepository rosterRepository;
+    private final NflLiveDataPort nflLiveDataPort;
+    private final LeagueRepository leagueRepository;
 
     // Cache for previous rankings
     private final Map<String, Map<String, Integer>> previousRankings = new ConcurrentHashMap<>();
@@ -141,10 +151,75 @@ public class LiveLeaderboardService {
 
     /**
      * Get players with live games (for LIVE indicator)
+     * Returns league player IDs who have at least one NFL player currently in an in-progress game
      */
     public List<String> getPlayersWithLiveGames(String leagueId) {
-        // TODO: Implement by checking roster slots against in-progress games
-        return List.of();
+        // Get league to determine current week/season
+        var league = leagueRepository.findById(UUID.fromString(leagueId));
+        if (league.isEmpty()) {
+            log.warn("League not found: {}", leagueId);
+            return List.of();
+        }
+
+        int week = league.get().getCurrentWeek() != null ? league.get().getCurrentWeek() : 0;
+        int season = java.time.LocalDate.now().getYear();
+
+        // Get games currently in progress
+        List<UUID> gamesInProgress = nflLiveDataPort.getGamesInProgress(week, season);
+        if (gamesInProgress.isEmpty()) {
+            return List.of();
+        }
+
+        // Get all rosters for this league
+        List<Roster> rosters = rosterRepository.findByLeagueId(leagueId);
+        if (rosters.isEmpty()) {
+            return List.of();
+        }
+
+        // Collect all NFL player IDs from all rosters
+        List<Long> allNflPlayerIds = rosters.stream()
+                .flatMap(roster -> roster.getSlots().stream())
+                .filter(slot -> slot.isFilled() && slot.getNflPlayerId() != null)
+                .map(slot -> slot.getNflPlayerId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (allNflPlayerIds.isEmpty()) {
+            return List.of();
+        }
+
+        // Fetch stats to determine which players are in which games
+        Map<Long, com.ffl.playoffs.domain.model.PlayerStats> playerStatsMap =
+                nflLiveDataPort.fetchPlayerStats(allNflPlayerIds, week, season);
+
+        // Create set of NFL player IDs who are in games in progress
+        Set<UUID> gamesInProgressSet = new HashSet<>(gamesInProgress);
+        Set<Long> nflPlayersInLiveGames = playerStatsMap.entrySet().stream()
+                .filter(entry -> entry.getValue().getNflGameId() != null
+                        && gamesInProgressSet.contains(entry.getValue().getNflGameId()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        if (nflPlayersInLiveGames.isEmpty()) {
+            return List.of();
+        }
+
+        // Find league players who have at least one NFL player in a live game
+        List<String> playersWithLiveGames = new ArrayList<>();
+        for (Roster roster : rosters) {
+            boolean hasLivePlayer = roster.getSlots().stream()
+                    .anyMatch(slot -> slot.isFilled()
+                            && slot.getNflPlayerId() != null
+                            && nflPlayersInLiveGames.contains(slot.getNflPlayerId()));
+
+            if (hasLivePlayer) {
+                playersWithLiveGames.add(roster.getLeaguePlayerId().toString());
+            }
+        }
+
+        log.debug("Found {} league players with live games in league {}",
+                playersWithLiveGames.size(), leagueId);
+        return playersWithLiveGames;
     }
 
     /**

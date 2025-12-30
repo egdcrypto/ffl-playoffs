@@ -148,14 +148,36 @@ public class LiveScoringService {
     /**
      * Calculate total roster score from current stats
      */
-    private BigDecimal calculateRosterScore(Object roster, List<PlayerStats> stats, int week, int season) {
-        // Use the scoring service to calculate scores
-        // This is a simplified implementation - actual would use roster slots
+    private BigDecimal calculateRosterScore(Object rosterObj, List<PlayerStats> stats, int week, int season) {
+        if (!(rosterObj instanceof com.ffl.playoffs.domain.aggregate.Roster roster)) {
+            log.warn("Invalid roster object type: {}", rosterObj.getClass().getName());
+            return BigDecimal.ZERO;
+        }
+
+        // Create a map for quick lookup of stats by NFL player ID
+        Map<Long, PlayerStats> statsMap = stats.stream()
+                .filter(s -> s.getNflPlayerId() != null)
+                .collect(java.util.stream.Collectors.toMap(
+                        PlayerStats::getNflPlayerId,
+                        s -> s,
+                        (existing, replacement) -> replacement
+                ));
+
         BigDecimal total = BigDecimal.ZERO;
 
-        // Get roster slots and calculate each position's score
-        // For now, return a placeholder
-        // TODO: Integrate with actual roster structure
+        // Iterate through all filled roster slots and sum up points
+        for (var slot : roster.getSlots()) {
+            if (slot.isFilled() && slot.getNflPlayerId() != null) {
+                PlayerStats playerStats = statsMap.get(slot.getNflPlayerId());
+                if (playerStats != null) {
+                    // Use PPR scoring by default (most common)
+                    double points = playerStats.calculatePPRPoints();
+                    total = total.add(BigDecimal.valueOf(points));
+                    log.debug("Player {} scored {} points for roster {}",
+                            slot.getNflPlayerId(), points, roster.getLeaguePlayerId());
+                }
+            }
+        }
 
         return total;
     }
@@ -268,8 +290,88 @@ public class LiveScoringService {
 
         broadcastPort.broadcastGameCompleted(event);
 
-        // TODO: Finalize player scores for this game
-        // TODO: Update score status to FINAL for affected players
+        // Finalize player scores for this game
+        finalizeScoresForGame(gameId, leagueId);
+    }
+
+    /**
+     * Finalize scores for all players who had roster slots in the completed game
+     */
+    private void finalizeScoresForGame(UUID gameId, String leagueId) {
+        // Get final stats for the completed game
+        List<PlayerStats> finalStats = nflDataPort.fetchGamePlayerStats(gameId);
+
+        // Create a set of NFL player IDs who were in this game
+        var gamePlayerIds = finalStats.stream()
+                .map(PlayerStats::getNflPlayerId)
+                .filter(id -> id != null)
+                .collect(java.util.stream.Collectors.toSet());
+
+        // Get all rosters for this league
+        var rosters = rosterRepository.findByLeagueId(leagueId);
+
+        for (var roster : rosters) {
+            String leaguePlayerId = roster.getLeaguePlayerId().toString();
+            boolean hasPlayerInGame = false;
+
+            // Check if any roster slot has a player from the completed game
+            for (var slot : roster.getSlots()) {
+                if (slot.isFilled() && slot.getNflPlayerId() != null
+                        && gamePlayerIds.contains(slot.getNflPlayerId())) {
+                    hasPlayerInGame = true;
+                    break;
+                }
+            }
+
+            // If this roster had players in the completed game, check if all their players
+            // are now in final status (all their games are complete)
+            if (hasPlayerInGame) {
+                boolean allGamesComplete = checkAllRosterGamesComplete(roster, leagueId);
+                if (allGamesComplete) {
+                    // Update score status to FINAL for this player
+                    liveScoreRepository.updateScoreStatus(leaguePlayerId, LiveScoreStatus.FINAL);
+                    log.info("Finalized score for league player {} - all games complete", leaguePlayerId);
+                }
+            }
+        }
+    }
+
+    /**
+     * Check if all games for players on a roster are complete
+     */
+    private boolean checkAllRosterGamesComplete(com.ffl.playoffs.domain.aggregate.Roster roster, String leagueId) {
+        // Get current game statuses
+        // Note: Using 0,0 for week/season as placeholder - in production, get from league context
+        var league = leagueRepository.findById(UUID.fromString(leagueId));
+        if (league.isEmpty()) {
+            return false;
+        }
+
+        int week = league.get().getCurrentWeek() != null ? league.get().getCurrentWeek() : 0;
+        int season = java.time.LocalDate.now().getYear();
+
+        Map<UUID, NFLGameStatus> gameStatuses = nflDataPort.getAllGameStatuses(week, season);
+
+        // Get all NFL player IDs on this roster
+        var nflPlayerIds = roster.getSlots().stream()
+                .filter(slot -> slot.isFilled() && slot.getNflPlayerId() != null)
+                .map(slot -> slot.getNflPlayerId())
+                .collect(java.util.stream.Collectors.toList());
+
+        // Fetch stats to get game IDs for each player
+        Map<Long, PlayerStats> playerStatsMap = nflDataPort.fetchPlayerStats(nflPlayerIds, week, season);
+
+        // Check if all games are complete
+        for (PlayerStats stats : playerStatsMap.values()) {
+            if (stats.getNflGameId() != null) {
+                NFLGameStatus gameStatus = gameStatuses.get(stats.getNflGameId());
+                if (gameStatus != null && !gameStatus.isCompleted()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**

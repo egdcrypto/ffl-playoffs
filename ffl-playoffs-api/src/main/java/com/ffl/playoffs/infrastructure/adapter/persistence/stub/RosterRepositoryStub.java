@@ -29,8 +29,10 @@ public class RosterRepositoryStub implements RosterRepository {
 
     @Override
     public List<Roster> findByLeagueId(String leagueId) {
-        // Roster doesn't have leagueId - return all rosters (stub behavior)
-        return new ArrayList<>(storage.values());
+        UUID leagueUuid = UUID.fromString(leagueId);
+        return storage.values().stream()
+                .filter(r -> leagueUuid.equals(r.getGameId()))
+                .toList();
     }
 
     @Override

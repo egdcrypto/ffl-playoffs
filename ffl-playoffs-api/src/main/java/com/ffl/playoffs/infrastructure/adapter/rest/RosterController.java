@@ -1,6 +1,7 @@
 package com.ffl.playoffs.infrastructure.adapter.rest;
 
 import com.ffl.playoffs.application.dto.RosterDTO;
+import com.ffl.playoffs.application.dto.RosterSlotDTO;
 import com.ffl.playoffs.application.usecase.BuildRosterUseCase;
 import com.ffl.playoffs.application.usecase.LockRosterUseCase;
 import com.ffl.playoffs.application.usecase.ValidateRosterUseCase;
@@ -68,8 +69,7 @@ public class RosterController {
     @GetMapping("/league/{leagueId}")
     @Operation(summary = "List rosters for a league", description = "Retrieves all rosters in a league")
     public ResponseEntity<List<RosterDTO>> getRostersByLeague(@PathVariable UUID leagueId) {
-        // TODO: RosterRepository doesn't have findByLeagueId - need to add this method
-        List<Roster> rosters = new java.util.ArrayList<>();
+        List<Roster> rosters = rosterRepository.findByLeagueId(leagueId.toString());
         List<RosterDTO> rosterDTOs = rosters.stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -81,7 +81,6 @@ public class RosterController {
     public ResponseEntity<RosterDTO> lockRoster(@PathVariable UUID rosterId) {
         LockRosterUseCase.LockRosterCommand command = new LockRosterUseCase.LockRosterCommand(rosterId);
         LockRosterUseCase.LockRosterResult result = lockRosterUseCase.execute(command);
-        // TODO: LockRosterResult doesn't contain the full Roster, need to fetch it separately
         Roster roster = rosterRepository.findById(result.getRosterId()).orElseThrow();
         return ResponseEntity.ok(mapToDTO(roster));
     }
@@ -101,7 +100,7 @@ public class RosterController {
         }
     }
 
-    // Mapping method
+    // Mapping methods
     private RosterDTO mapToDTO(Roster roster) {
         RosterDTO dto = new RosterDTO();
         dto.setId(roster.getId());
@@ -112,7 +111,31 @@ public class RosterController {
         dto.setRosterDeadline(roster.getRosterDeadline());
         dto.setCreatedAt(roster.getCreatedAt());
         dto.setUpdatedAt(roster.getUpdatedAt());
-        // TODO: Map roster slots
+
+        // Map roster slots
+        if (roster.getSlots() != null) {
+            List<RosterSlotDTO> slotDTOs = roster.getSlots().stream()
+                    .map(this::mapSlotToDTO)
+                    .collect(Collectors.toList());
+            dto.setSlots(slotDTOs);
+        }
+
+        return dto;
+    }
+
+    private RosterSlotDTO mapSlotToDTO(com.ffl.playoffs.domain.model.RosterSlot slot) {
+        RosterSlotDTO dto = new RosterSlotDTO();
+        dto.setId(slot.getId());
+        dto.setPosition(slot.getSlotLabel());
+        dto.setIsStarting(true); // All roster slots are starting positions
+
+        // Map nflPlayerId (Long to UUID is not direct - use null for now, player name lookup needed)
+        if (slot.getNflPlayerId() != null) {
+            // Note: Full player name lookup would require NFLPlayerRepository
+            // For now, set playerName to null - can be enhanced later
+            dto.setPlayerName(null);
+        }
+
         return dto;
     }
 }

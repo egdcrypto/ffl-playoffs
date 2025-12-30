@@ -1,8 +1,10 @@
 package com.ffl.playoffs.domain.aggregate;
 
+import com.ffl.playoffs.domain.exception.RosterOperationException;
 import com.ffl.playoffs.domain.model.Position;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.RosterSlot;
+import com.ffl.playoffs.domain.model.RosterStatus;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ public class Roster {
     private UUID gameId;
     private List<RosterSlot> slots;
     private boolean isLocked;
+    private RosterStatus status;
     private LocalDateTime lockedAt;
     private LocalDateTime rosterDeadline;
     private LocalDateTime createdAt;
@@ -31,6 +34,7 @@ public class Roster {
         this.id = UUID.randomUUID();
         this.slots = new ArrayList<>();
         this.isLocked = false;
+        this.status = RosterStatus.UNLOCKED;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -128,24 +132,50 @@ public class Roster {
             .anyMatch(slot -> slot.isFilled() && slot.getNflPlayerId().equals(nflPlayerId));
     }
 
+    /**
+     * Permanently lock the roster.
+     * In the one-time draft model, this is irreversible.
+     * Supports locking incomplete rosters (LOCKED_INCOMPLETE status).
+     *
+     * @param lockTime the time of the lock
+     */
     public void lockRoster(LocalDateTime lockTime) {
+        if (this.isLocked) {
+            throw RosterOperationException.rosterAlreadyLocked();
+        }
         this.isLocked = true;
+        this.status = isComplete() ? RosterStatus.LOCKED : RosterStatus.LOCKED_INCOMPLETE;
         this.lockedAt = lockTime;
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * INTENTIONALLY NOT PROVIDED: unlockRoster()
+     *
+     * In the one-time draft model, rosters are PERMANENTLY locked.
+     * No unlock functionality exists - this is strictly enforced.
+     * Players must live with their draft decisions for the entire season.
+     *
+     * From the feature requirements:
+     * - "Emergency roster unlock by admin is not allowed"
+     * - "The system does not provide unlock functionality"
+     * - "The one-time draft model is strictly enforced"
+     *
+     * @throws RosterOperationException always - unlock is not allowed
+     */
     public void unlockRoster() {
-        this.isLocked = false;
-        this.lockedAt = null;
-        this.updatedAt = LocalDateTime.now();
+        throw RosterOperationException.unlockNotAllowed();
     }
 
     private void validateNotLocked() {
         if (isLocked) {
-            throw new RosterLockedException("Roster is locked - no changes allowed");
+            throw RosterOperationException.rosterPermanentlyLocked();
         }
         if (rosterDeadline != null && LocalDateTime.now().isAfter(rosterDeadline)) {
-            throw new RosterLockedException("Roster deadline has passed");
+            throw new RosterOperationException(
+                    RosterOperationException.ErrorCode.ROSTER_DEADLINE_PASSED,
+                    "Roster deadline has passed - no changes allowed"
+            );
         }
     }
 
@@ -202,6 +232,14 @@ public class Roster {
 
     public void setLocked(boolean locked) {
         isLocked = locked;
+    }
+
+    public RosterStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RosterStatus status) {
+        this.status = status;
     }
 
     public LocalDateTime getLockedAt() {

@@ -1,6 +1,7 @@
 package com.ffl.playoffs.domain.port;
 
 import com.ffl.playoffs.domain.aggregate.Roster;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +24,21 @@ public interface RosterRepository {
      * @return Optional containing the roster if found
      */
     Optional<Roster> findByLeaguePlayerId(UUID leaguePlayerId);
+
+    /**
+     * Find all rosters for a game
+     * @param gameId the game ID
+     * @return list of rosters for the game
+     */
+    List<Roster> findByGameId(UUID gameId);
+
+    /**
+     * Find all unlocked rosters for a game
+     * Used for batch locking at deadline
+     * @param gameId the game ID
+     * @return list of unlocked rosters
+     */
+    List<Roster> findByGameIdAndIsLockedFalse(UUID gameId);
 
     /**
      * Save a roster

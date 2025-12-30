@@ -2,7 +2,9 @@ package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
+import com.ffl.playoffs.domain.port.ResourcePoolRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.port.WorldResourcesRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,5 +72,74 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // World Resource Management Use Cases
+    // ===================
+
+    @Bean
+    public CreateWorldResourcesUseCase createWorldResourcesUseCase(
+            WorldResourcesRepository worldResourcesRepository) {
+        return new CreateWorldResourcesUseCase(worldResourcesRepository);
+    }
+
+    @Bean
+    public AllocateResourcesUseCase allocateResourcesUseCase(
+            WorldResourcesRepository worldResourcesRepository,
+            ResourcePoolRepository resourcePoolRepository) {
+        return new AllocateResourcesUseCase(worldResourcesRepository, resourcePoolRepository);
+    }
+
+    @Bean
+    public SetResourcePriorityUseCase setResourcePriorityUseCase(
+            WorldResourcesRepository worldResourcesRepository) {
+        return new SetResourcePriorityUseCase(worldResourcesRepository);
+    }
+
+    @Bean
+    public ConfigureAutoScalingUseCase configureAutoScalingUseCase(
+            WorldResourcesRepository worldResourcesRepository) {
+        return new ConfigureAutoScalingUseCase(worldResourcesRepository);
+    }
+
+    @Bean
+    public ConfigureResourceSharingUseCase configureResourceSharingUseCase(
+            WorldResourcesRepository worldResourcesRepository) {
+        return new ConfigureResourceSharingUseCase(worldResourcesRepository);
+    }
+
+    @Bean
+    public SetResourceQuotaUseCase setResourceQuotaUseCase(
+            WorldResourcesRepository worldResourcesRepository) {
+        return new SetResourceQuotaUseCase(worldResourcesRepository);
+    }
+
+    @Bean
+    public GetWorldResourcesUseCase getWorldResourcesUseCase(
+            WorldResourcesRepository worldResourcesRepository) {
+        return new GetWorldResourcesUseCase(worldResourcesRepository);
+    }
+
+    // ===================
+    // Resource Pool Management Use Cases
+    // ===================
+
+    @Bean
+    public CreateResourcePoolUseCase createResourcePoolUseCase(
+            ResourcePoolRepository resourcePoolRepository) {
+        return new CreateResourcePoolUseCase(resourcePoolRepository);
+    }
+
+    @Bean
+    public UpdateResourcePoolUseCase updateResourcePoolUseCase(
+            ResourcePoolRepository resourcePoolRepository) {
+        return new UpdateResourcePoolUseCase(resourcePoolRepository);
+    }
+
+    @Bean
+    public GetResourcePoolUseCase getResourcePoolUseCase(
+            ResourcePoolRepository resourcePoolRepository) {
+        return new GetResourcePoolUseCase(resourcePoolRepository);
     }
 }

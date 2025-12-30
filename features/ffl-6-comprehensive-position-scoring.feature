@@ -570,3 +570,612 @@ Feature: Comprehensive Position-Specific Scoring with Configurable Rules
     When bonuses are evaluated using SpEL
     Then all applicable bonuses are added to base score
     And league admins can enable/disable individual bonuses
+
+  # ============================================================================
+  # SPEL ENGINE ERROR HANDLING
+  # ============================================================================
+
+  @spel @error-handling
+  Scenario: Handle invalid SpEL formula syntax
+    Given an admin configures a custom SpEL formula with syntax error
+      | formula | #passingYards * #ptsPerPassYard + (unclosed parenthesis |
+    When the formula is validated
+    Then the system rejects the formula with error "Invalid SpEL syntax"
+    And the error message includes the position of the syntax error
+    And the previous valid formula remains in effect
+
+  @spel @error-handling
+  Scenario: Handle missing variable in SpEL formula
+    Given a scoring formula references an undefined variable
+      | formula | #passingYards * #ptsPerPassYard + #nonExistentVar |
+    When the formula is evaluated
+    Then the system logs a warning about undefined variable "#nonExistentVar"
+    And the undefined variable is treated as 0
+    And the remaining formula is evaluated correctly
+
+  @spel @error-handling
+  Scenario: Handle null stat values in SpEL evaluation
+    Given a player has null values for some stats
+      | stat           | value |
+      | passingYards   | 250   |
+      | passingTDs     | 2     |
+      | interceptions  | null  |
+      | rushingYards   | null  |
+    When the scoring formula is evaluated
+    Then null values are treated as 0
+    And the formula evaluates without errors
+    And only non-null stats contribute to the score
+
+  @spel @error-handling
+  Scenario: Handle division by zero in custom formula
+    Given an admin configures a formula with potential division
+      | formula | #passingYards / #gamesPlayed |
+    And #gamesPlayed is 0
+    When the formula is evaluated
+    Then the system returns 0.0 for the division result
+    And the error is logged for investigation
+    And the player's score defaults to 0
+
+  @spel @error-handling
+  Scenario: Handle numeric overflow in scoring calculation
+    Given a player has extremely high stat values
+      | passingYards   | 2147483647 |
+      | passingTDs     | 100        |
+    When the scoring formula is evaluated
+    Then the system detects potential overflow
+    And the score is capped at a maximum value
+    And an alert is raised for manual review
+
+  @spel @validation
+  Scenario: Validate SpEL formula before saving
+    Given an admin creates a new scoring formula
+    When the formula is submitted for saving
+    Then the system validates SpEL syntax
+    And the system verifies all referenced variables exist
+    And the system performs a test evaluation with sample data
+    And only valid formulas are saved to configuration
+
+  # ============================================================================
+  # SCORING AUDIT AND HISTORY
+  # ============================================================================
+
+  @audit
+  Scenario: Record scoring calculation audit trail
+    Given "Patrick Mahomes" scores fantasy points in Week 10
+    When the scoring calculation completes
+    Then an audit record is created with
+      | field              | value                                    |
+      | playerId           | mahomes-id                               |
+      | weekId             | 10                                       |
+      | position           | QB                                       |
+      | formulaUsed        | [SpEL formula]                           |
+      | inputStats         | [JSON of all stat values]                |
+      | scoringMultipliers | [JSON of all multiplier values]          |
+      | baseScore          | 24.8                                     |
+      | bonuses            | [JSON of applied bonuses]                |
+      | totalScore         | 27.8                                     |
+      | calculatedAt       | [timestamp]                              |
+      | configVersion      | [scoring config version]                 |
+
+  @audit
+  Scenario: Query historical scoring calculations
+    Given scoring audits exist for "Patrick Mahomes" for weeks 1-10
+    When an admin queries scoring history for player "mahomes-id"
+    Then the system returns all audit records chronologically
+    And each record includes the formula and multipliers used at that time
+    And the admin can compare how scoring rules changed over time
+
+  @audit
+  Scenario: Track scoring configuration changes
+    Given a league modifies scoring rules
+      | change                    | old_value | new_value |
+      | Points per passing TD     | 4         | 6         |
+      | Points per interception   | -2        | -1        |
+    When the configuration is saved
+    Then an audit record captures the change
+      | field           | value                          |
+      | changedBy       | admin-user-id                  |
+      | changedAt       | [timestamp]                    |
+      | configVersion   | [incremented version]          |
+      | changes         | [JSON diff of old vs new]      |
+    And future scores use the new configuration
+    And historical scores remain unchanged
+
+  @audit
+  Scenario: Explain scoring breakdown to users
+    Given a user views their fantasy score for Week 5
+    When they request a scoring breakdown
+    Then the system displays
+      | Category         | Stats Used         | Points Earned |
+      | Passing          | 350 yds, 3 TDs     | 26.0          |
+      | Rushing          | 25 yds, 0 TDs      | 2.5           |
+      | Turnovers        | 1 INT              | -2.0          |
+      | Bonuses          | 300-yard passing   | 3.0           |
+      | Total            |                    | 29.5          |
+    And each line item shows the formula applied
+
+  # ============================================================================
+  # LEAGUE SCORING TEMPLATES
+  # ============================================================================
+
+  @templates
+  Scenario: Create league from Standard scoring template
+    Given the system has a "Standard" scoring template
+      | stat                | value |
+      | Passing yards       | 0.04  |
+      | Passing TD          | 4     |
+      | Rushing yards       | 0.1   |
+      | Rushing TD          | 6     |
+      | Reception           | 0     |
+      | Receiving yards     | 0.1   |
+      | Receiving TD        | 6     |
+    When a new league selects the Standard template
+    Then all scoring rules are copied from the template
+    And the league admin can customize any rule
+    And the template remains unchanged
+
+  @templates
+  Scenario: Create league from PPR scoring template
+    Given the system has a "PPR" scoring template
+      | stat                | value |
+      | Reception           | 1.0   |
+    When a new league selects the PPR template
+    Then receptions earn 1 point each
+    And all other rules follow the template defaults
+
+  @templates
+  Scenario: Create league from Half-PPR scoring template
+    Given the system has a "Half-PPR" scoring template
+      | stat                | value |
+      | Reception           | 0.5   |
+    When a new league selects the Half-PPR template
+    Then receptions earn 0.5 points each
+
+  @templates
+  Scenario: Create league from TE Premium template
+    Given the system has a "TE Premium" scoring template
+      | stat                     | value |
+      | TE Reception             | 1.5   |
+      | WR/RB Reception          | 1.0   |
+    When a new league selects the TE Premium template
+    Then tight ends earn 1.5 points per reception
+    And wide receivers and running backs earn 1.0 points per reception
+
+  @templates
+  Scenario: Create league from custom template
+    Given a league admin has created a custom template "High Scoring"
+      | stat                | value |
+      | Passing TD          | 6     |
+      | Rushing TD          | 8     |
+      | Receiving TD        | 8     |
+      | Reception           | 1.5   |
+    When another league copies this template
+    Then all custom rules are applied
+    And the source template is attributed
+
+  # ============================================================================
+  # INDIVIDUAL DEFENSIVE PLAYER (IDP) SCORING
+  # ============================================================================
+
+  @idp
+  Scenario: Calculate IDP scoring for linebacker
+    Given a league has IDP scoring enabled
+    And IDP scoring is configured as:
+      | Stat               | Points |
+      | Solo tackle        | 1      |
+      | Assisted tackle    | 0.5    |
+      | Sack               | 2      |
+      | Tackle for loss    | 1      |
+      | Pass defended      | 1      |
+      | Interception       | 3      |
+      | Forced fumble      | 2      |
+      | Fumble recovery    | 2      |
+      | Defensive TD       | 6      |
+      | Safety             | 4      |
+    And "Fred Warner" (LB) has stats:
+      | Solo tackles       | 8      |
+      | Assisted tackles   | 4      |
+      | Sacks              | 1.5    |
+      | Tackles for loss   | 2      |
+      | Pass defended      | 1      |
+    When fantasy points are calculated
+    Then the scoring breakdown is:
+      | Solo tackles     | 8 × 1    | 8.0   |
+      | Assisted tackles | 4 × 0.5  | 2.0   |
+      | Sacks            | 1.5 × 2  | 3.0   |
+      | TFL              | 2 × 1    | 2.0   |
+      | Pass defended    | 1 × 1    | 1.0   |
+    And total fantasy points = 16.0
+
+  @idp
+  Scenario: Calculate IDP scoring for defensive back
+    Given a league has IDP scoring enabled
+    And "Jalen Ramsey" (CB) has stats:
+      | Solo tackles       | 4      |
+      | Interceptions      | 2      |
+      | Pass defended      | 5      |
+      | Fumble recovery    | 1      |
+    When fantasy points are calculated
+    Then the scoring breakdown is:
+      | Solo tackles     | 4 × 1   | 4.0   |
+      | Interceptions    | 2 × 3   | 6.0   |
+      | Pass defended    | 5 × 1   | 5.0   |
+      | Fumble recovery  | 1 × 2   | 2.0   |
+    And total fantasy points = 17.0
+
+  @idp
+  Scenario: Calculate IDP scoring for defensive lineman
+    Given a league has IDP scoring enabled
+    And "Nick Bosa" (DE) has stats:
+      | Solo tackles       | 3      |
+      | Sacks              | 2.5    |
+      | Tackles for loss   | 3      |
+      | Forced fumble      | 1      |
+    When fantasy points are calculated
+    Then the scoring breakdown is:
+      | Solo tackles     | 3 × 1   | 3.0   |
+      | Sacks            | 2.5 × 2 | 5.0   |
+      | TFL              | 3 × 1   | 3.0   |
+      | Forced fumble    | 1 × 2   | 2.0   |
+    And total fantasy points = 13.0
+
+  @idp
+  Scenario: IDP big play bonus
+    Given a league has IDP big play bonuses:
+      | Stat                    | Points |
+      | Interception return TD  | 6      |
+      | Fumble return TD        | 6      |
+      | 50+ yard interception   | 2      |
+    And "Defensive Player X" has stats:
+      | Interceptions          | 1      |
+      | Interception return TD | 1      |
+      | Interception yards     | 65     |
+    When fantasy points are calculated
+    Then the scoring includes:
+      | Interception         | 1 × 3   | 3.0   |
+      | Interception TD      | 1 × 6   | 6.0   |
+      | 50+ yard INT bonus   | 1 × 2   | 2.0   |
+    And total fantasy points = 11.0
+
+  # ============================================================================
+  # SCORE RECALCULATION
+  # ============================================================================
+
+  @recalculation
+  Scenario: Recalculate scores after stat correction
+    Given Week 5 scores have been calculated and finalized
+    And the NFL issues a stat correction for "Player X"
+      | stat           | original | corrected |
+      | Rushing yards  | 102      | 98        |
+      | Rushing TDs    | 2        | 1         |
+    When the stat correction is applied
+    Then the scoring service recalculates affected player's score
+    And the original score of 22.2 becomes 15.8
+    And the score difference (-6.4) is applied to all matchups
+    And affected matchup outcomes are updated if necessary
+
+  @recalculation
+  Scenario: Recalculate scores after configuration change (future only)
+    Given a league admin changes scoring rules
+      | change              | old_value | new_value |
+      | Points per rush TD  | 6         | 8         |
+    When the configuration is saved
+    Then future week scores use the new configuration
+    And historical week scores are NOT recalculated
+    And users see a notice about the configuration change
+
+  @recalculation
+  Scenario: Bulk recalculation for entire week
+    Given a data provider error caused incorrect stats for Week 8
+    When corrected stats are received for all players
+    Then the system queues bulk recalculation for Week 8
+    And each player's score is recalculated with corrected stats
+    And all matchup outcomes are re-evaluated
+    And users are notified of any changes
+
+  @recalculation
+  Scenario: Recalculation preserves audit history
+    Given a player's score is recalculated due to stat correction
+    When the new score is saved
+    Then the original audit record is preserved with status "superseded"
+    And a new audit record is created with status "corrected"
+    And the new record references the original record
+    And both records are available for historical analysis
+
+  # ============================================================================
+  # MULTI-WEEK AGGREGATION
+  # ============================================================================
+
+  @aggregation
+  Scenario: Calculate season total points
+    Given "Player X" has weekly scores:
+      | Week | Points |
+      | 1    | 18.5   |
+      | 2    | 22.3   |
+      | 3    | 15.0   |
+      | 4    | 28.7   |
+      | 5    | 12.2   |
+    When season totals are calculated
+    Then total fantasy points = 96.7
+    And average points per game = 19.34
+
+  @aggregation
+  Scenario: Calculate playoff period points
+    Given playoffs run from Week 15 to Week 17
+    And "Player Y" has playoff scores:
+      | Week | Points |
+      | 15   | 25.0   |
+      | 16   | 32.5   |
+      | 17   | 18.3   |
+    When playoff totals are calculated
+    Then total playoff fantasy points = 75.8
+    And playoff average = 25.27
+
+  @aggregation
+  Scenario: Compare scoring across positions
+    Given the following season totals by position:
+      | Position | Top Score | Average | Median |
+      | QB       | 425.3     | 285.2   | 280.0  |
+      | RB       | 320.5     | 180.4   | 165.2  |
+      | WR       | 310.8     | 175.6   | 160.5  |
+      | TE       | 250.2     | 120.3   | 105.8  |
+      | K        | 185.0     | 145.2   | 142.0  |
+      | DEF      | 220.0     | 125.5   | 118.0  |
+    When position rankings are generated
+    Then each position has a VBD (Value Based Draft) score
+    And replacement level is calculated per position
+
+  # ============================================================================
+  # PERFORMANCE CONSIDERATIONS
+  # ============================================================================
+
+  @performance
+  Scenario: Cache compiled SpEL expressions
+    Given scoring formulas are frequently evaluated
+    When the SpEL engine is initialized
+    Then all position formulas are pre-compiled
+    And compiled expressions are cached in memory
+    And subsequent evaluations reuse cached expressions
+    And cache is invalidated only when formulas change
+
+  @performance
+  Scenario: Batch scoring calculation for entire week
+    Given Week 10 has 500 player stat records to score
+    When batch scoring is triggered
+    Then the system processes players in parallel batches
+    And each batch size is optimized for memory usage
+    And total calculation time is under 5 seconds
+    And all scores are atomically saved on success
+
+  @performance
+  Scenario: Handle concurrent scoring requests
+    Given multiple users request score recalculation simultaneously
+    When requests arrive within the same second
+    Then the system uses optimistic locking for score updates
+    And duplicate calculations are detected and deduplicated
+    And each player's score is calculated exactly once
+
+  @performance
+  Scenario: Scoring engine response time under load
+    Given 1000 concurrent score calculation requests
+    When load testing is performed
+    Then 95th percentile response time is under 100ms
+    And no requests fail due to timeout
+    And memory usage remains stable
+
+  # ============================================================================
+  # ADVANCED EDGE CASES
+  # ============================================================================
+
+  @edge-case
+  Scenario: Player changes position mid-season
+    Given "Taysom Hill" is listed as QB in weeks 1-8
+    And "Taysom Hill" is listed as TE in weeks 9-17
+    When scoring is calculated
+    Then QB rules are applied for weeks 1-8
+    And TE rules are applied for weeks 9-17
+    And season totals combine both position scores correctly
+
+  @edge-case
+  Scenario: Player traded mid-game
+    Given "Player X" is traded during a game
+    And stats are split between teams:
+      | Team | Rushing yards | Rushing TDs |
+      | A    | 45            | 1           |
+      | B    | 30            | 0           |
+    When fantasy points are calculated
+    Then all stats are combined regardless of team
+    And total rushing yards = 75
+    And total rushing TDs = 1
+    And total fantasy points = 13.5
+
+  @edge-case
+  Scenario: Two-point conversion scoring
+    Given a league scores 2-point conversions:
+      | Type              | Points |
+      | 2PC pass          | 2      |
+      | 2PC rush          | 2      |
+      | 2PC reception     | 2      |
+    And "Player X" has 2-point conversion stats:
+      | 2PC passes thrown    | 1 |
+      | 2PC receptions made  | 2 |
+    When fantasy points are calculated
+    Then the scoring includes:
+      | 2PC passes      | 1 × 2  | 2.0  |
+      | 2PC receptions  | 2 × 2  | 4.0  |
+    And total 2PC fantasy points = 6.0
+
+  @edge-case
+  Scenario: Defensive scoring against negative offensive yards
+    Given "Defense X" holds opponents to negative rushing yards
+      | Rushing yards allowed  | -5   |
+      | Passing yards allowed  | 180  |
+      | Total yards allowed    | 175  |
+    When fantasy points are calculated
+    Then yards allowed bracket = 100-199
+    And yards allowed points = 7
+    And negative rushing yards don't cause calculation errors
+
+  @edge-case
+  Scenario: Handle bye week with no stats
+    Given "Player X" is on bye in Week 7
+    When scoring is attempted for Week 7
+    Then the system returns 0 fantasy points
+    And no audit record is created for bye week
+    And the player is marked as "BYE" in the interface
+
+  @edge-case
+  Scenario: Handle COVID/injury designation with zero snaps
+    Given "Player X" is active but plays 0 snaps
+    And the player has all stats at 0
+    When fantasy points are calculated
+    Then total fantasy points = 0.0
+    And the player is marked as "ACTIVE - 0 snaps"
+    And this differs from inactive/out status
+
+  @edge-case
+  Scenario: Defensive player scores offensive touchdown
+    Given "Defensive Player X" (LB) catches a TD on fake punt
+      | Receptions        | 1    |
+      | Receiving yards   | 45   |
+      | Receiving TDs     | 1    |
+    When fantasy points are calculated for IDP scoring
+    Then offensive stats are counted with IDP scoring rules:
+      | Receiving yards  | 45/10  | 4.5   |
+      | Receiving TDs    | 1 × 6  | 6.0   |
+    And IDP stats for the same game are also counted
+    And total combines both offensive and defensive contributions
+
+  @edge-case
+  Scenario: Kicker attempts and makes 60+ yard field goal
+    Given a league has extended distance kicker scoring:
+      | FG made 50-59 yards | 5     |
+      | FG made 60+ yards   | 6     |
+    And "Justin Tucker" makes a 66-yard field goal
+    When fantasy points are calculated
+    Then the 60+ yard FG earns 6 points
+    And this is displayed as a record-breaking achievement
+
+  @edge-case
+  Scenario: Defensive touchdown on two-point conversion return
+    Given a league scores defensive 2PC returns:
+      | Defensive 2PC return TD | 2 |
+    And "Defense X" returns a 2PC attempt for a score
+    When fantasy points are calculated
+    Then the defensive 2PC return earns 2 points
+    And this is rare but valid scoring category
+
+  # ============================================================================
+  # SCORING VALIDATION AND CONSTRAINTS
+  # ============================================================================
+
+  @validation
+  Scenario: Enforce minimum scoring values
+    Given an admin attempts to configure scoring:
+      | Stat                | Value |
+      | Passing TD          | -5    |
+      | Rushing yards/point | 0     |
+    When the configuration is validated
+    Then the system rejects negative touchdown values
+    And the system rejects zero yards per point (division by zero)
+    And validation errors are clearly displayed
+
+  @validation
+  Scenario: Enforce maximum scoring values
+    Given an admin attempts to configure scoring:
+      | Stat        | Value |
+      | Passing TD  | 100   |
+    When the configuration is validated
+    Then the system warns about unusually high values
+    And the admin must confirm the unusual configuration
+    And a warning is logged for review
+
+  @validation
+  Scenario: Validate consistency of PPR settings
+    Given an admin configures PPR settings:
+      | Position | PPR Value |
+      | RB       | 1.0       |
+      | WR       | 0.5       |
+      | TE       | 1.5       |
+    When the configuration is validated
+    Then the system notes inconsistent PPR values across positions
+    And the admin is warned this is non-standard
+    And the configuration is allowed if admin confirms
+
+  @validation
+  Scenario: Prevent duplicate scoring categories
+    Given an admin configures:
+      | Stat           | Value |
+      | Passing TD     | 4     |
+      | Passing TD     | 6     |
+    When the configuration is validated
+    Then the system rejects duplicate category definitions
+    And only one value per scoring category is allowed
+
+  # ============================================================================
+  # REAL-TIME SCORING DURING GAMES
+  # ============================================================================
+
+  @realtime
+  Scenario: Calculate live scoring during game
+    Given a live NFL game is in progress
+    And "Patrick Mahomes" current game stats are:
+      | Passing yards   | 175   |
+      | Passing TDs     | 2     |
+      | Interceptions   | 0     |
+    When live fantasy points are calculated
+    Then current fantasy points = 15.0
+    And projected final score is estimated
+    And score updates every stat change
+
+  @realtime
+  Scenario: Handle stat revisions during game
+    Given live scoring shows "Player X" with 1 rushing TD
+    When the play is reviewed and overturned
+    Then the rushing TD is removed from stats
+    And fantasy points are immediately recalculated
+    And users see the score decrease in real-time
+    And a notification explains the revision
+
+  @realtime
+  Scenario: Display projected fantasy points
+    Given a game is at halftime
+    And "Player X" has first-half stats:
+      | Rushing yards  | 65   |
+      | Rushing TDs    | 1    |
+      | Current points | 12.5 |
+    When projections are calculated
+    Then projected final points = 25.0 (based on pace)
+    And confidence interval is displayed (20-30 range)
+    And projection updates as game progresses
+
+  # ============================================================================
+  # CROSS-LEAGUE SCORING COMPARISON
+  # ============================================================================
+
+  @comparison
+  Scenario: Compare player value across league formats
+    Given "Travis Kelce" has Week 10 stats:
+      | Receptions        | 8    |
+      | Receiving yards   | 85   |
+      | Receiving TDs     | 1    |
+    When scoring is compared across formats:
+      | Format      | PPR Value | Points |
+      | Standard    | 0         | 14.5   |
+      | Half-PPR    | 0.5       | 18.5   |
+      | Full PPR    | 1.0       | 22.5   |
+      | TE Premium  | 1.5       | 26.5   |
+    Then the value difference between formats is displayed
+    And TE Premium shows 12-point advantage over Standard
+
+  @comparison
+  Scenario: Generate position scarcity analysis
+    Given season scoring data for all players
+    When scarcity analysis is generated
+    Then each position shows:
+      | Position | Replacement Level | Top 5 vs Replacement |
+      | QB       | QB12              | +5.2 pts/week        |
+      | RB       | RB24              | +8.1 pts/week        |
+      | WR       | WR30              | +6.5 pts/week        |
+      | TE       | TE12              | +4.8 pts/week        |
+    And this informs draft and trade strategy

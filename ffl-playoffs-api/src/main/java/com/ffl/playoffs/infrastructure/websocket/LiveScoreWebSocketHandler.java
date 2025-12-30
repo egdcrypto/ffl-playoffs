@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ffl.playoffs.application.dto.LiveScoreDTO;
 import com.ffl.playoffs.application.dto.WebSocketMessageDTO;
 import com.ffl.playoffs.application.service.LiveScoringService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -28,11 +28,15 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class LiveScoreWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper;
     private final LiveScoringService liveScoringService;
+
+    public LiveScoreWebSocketHandler(ObjectMapper objectMapper, @Lazy LiveScoringService liveScoringService) {
+        this.objectMapper = objectMapper;
+        this.liveScoringService = liveScoringService;
+    }
 
     // All connected sessions
     private final Set<WebSocketSession> sessions = new CopyOnWriteArraySet<>();

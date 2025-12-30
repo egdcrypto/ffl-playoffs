@@ -8,9 +8,13 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+
+import java.time.Duration;
 
 /**
  * Base class for integration tests with embedded MongoDB using Testcontainers.
@@ -22,12 +26,16 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public abstract class IntegrationTestBase {
 
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
-            .withExposedPorts(27017);
+    static GenericContainer<?> mongoDBContainer = new GenericContainer<>(DockerImageName.parse("mongo:6.0"))
+            .withExposedPorts(27017)
+            .waitingFor(Wait.forListeningPort().withStartupTimeout(Duration.ofMinutes(2)));
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
+        registry.add("spring.data.mongodb.uri", () ->
+            String.format("mongodb://%s:%d/test",
+                mongoDBContainer.getHost(),
+                mongoDBContainer.getMappedPort(27017)));
     }
 
     @Autowired

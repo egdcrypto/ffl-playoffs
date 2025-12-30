@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.*;
  * Tests complete end-to-end flow with MongoDB persistence
  */
 @DisplayName("CreateSuperAdminUseCase Integration Tests")
-class CreateSuperAdminUseCaseTest extends IntegrationTestBase {
+class CreateSuperAdminUseCaseIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private UserRepository userRepository;

@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.*;
  * Tests complete end-to-end flow with MongoDB persistence
  */
 @DisplayName("CreateBootstrapPATUseCase Integration Tests")
-class CreateBootstrapPATUseCaseTest extends IntegrationTestBase {
+class CreateBootstrapPATUseCaseIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private PersonalAccessTokenRepository patRepository;

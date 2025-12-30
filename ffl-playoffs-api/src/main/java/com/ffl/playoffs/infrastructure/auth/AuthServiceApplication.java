@@ -19,13 +19,15 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
  * - Main API (localhost:8080)
  * - Envoy sidecar (pod IP:443)
  */
-@SpringBootApplication
-@ComponentScan(basePackages = {
+@SpringBootApplication(scanBasePackages = {
         "com.ffl.playoffs.infrastructure.auth",
         "com.ffl.playoffs.infrastructure.adapter.persistence",
         "com.ffl.playoffs.domain"
 })
-@EnableMongoRepositories(basePackages = "com.ffl.playoffs.infrastructure.adapter.persistence.repository")
+@EnableMongoRepositories(basePackages = {
+        "com.ffl.playoffs.infrastructure.adapter.persistence.repository",
+        "com.ffl.playoffs.infrastructure.persistence.mongodb.repository"
+})
 public class AuthServiceApplication {
 
     public static void main(String[] args) {

@@ -72,10 +72,43 @@ dependencies {
 }
 
 tasks.named('test') {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Exclude integration tests and Cucumber tests from default test task
+        excludeTags 'integration'
+    }
+
+    // Exclude by pattern - integration and cucumber tests
+    exclude '**/bdd/**'
+    exclude '**/*IntegrationTest*'
+    exclude '**/*IT*'
 
     // JVM args for Mockito compatibility with Java 21+
     jvmArgs '-XX:+EnableDynamicAgentLoading'
     jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
     jvmArgs '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
+}
+
+// Integration test task
+tasks.register('integrationTest', Test) {
+    description = 'Run integration tests'
+    group = 'verification'
+
+    useJUnitPlatform()
+
+    // Include only integration tests
+    include '**/*IntegrationTest*'
+    include '**/bdd/**'
+    include '**/*IT*'
+
+    // JVM args for Mockito compatibility with Java 21+
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
+    jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+    jvmArgs '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
+
+    // Testcontainers configuration for Colima
+    systemProperty 'testcontainers.ryuk.disabled', 'true'
+    environment 'TESTCONTAINERS_RYUK_DISABLED', 'true'
+    environment 'DOCKER_HOST', 'unix:///Users/ericdiana/.colima/default/docker.sock'
+
+    shouldRunAfter test
 }

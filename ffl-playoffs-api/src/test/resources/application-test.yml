@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   data:
     mongodb:
       # MongoDB URI is provided dynamically by Testcontainers via @DynamicPropertySource

@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.*;
  * Tests PAT validation including expiration, revocation, and scope checking
  */
 @DisplayName("ValidatePATUseCase Integration Tests")
-class ValidatePATUseCaseTest extends IntegrationTestBase {
+class ValidatePATUseCaseIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private PersonalAccessTokenRepository tokenRepository;

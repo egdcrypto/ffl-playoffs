@@ -22,7 +22,7 @@ import static org.assertj.core.api.Assertions.*;
  * Tests complete end-to-end flow with MongoDB persistence
  */
 @DisplayName("CreatePATUseCase Integration Tests")
-class CreatePATUseCaseTest extends IntegrationTestBase {
+class CreatePATUseCaseIntegrationTest extends IntegrationTestBase {
 
     @Autowired
     private PersonalAccessTokenRepository patRepository;

@@ -49,7 +49,7 @@ public class SpelScoringEngine {
         "fg0to39Missed", "fg40to49Missed",
 
         // Defensive stats
-        "sacks", "interceptions", "fumbleRecoveries",
+        "sacks", "defensiveInterceptions", "fumbleRecoveries",
         "defensiveTDs", "safeties", "pointsAllowed", "yardsAllowed",
 
         // League configuration variables

@@ -50,3 +50,33 @@ logging:
   level:
     com.ffl.playoffs: INFO
     org.springframework: WARN
+
+# NFL Data API Rate Limiting Configuration
+nfl-data:
+  rate-limit:
+    enabled: true
+    # Token bucket settings (30 requests per minute as per SportsData.io Free tier)
+    bucket-capacity: 30
+    refill-tokens: 30
+    refill-period-seconds: 60
+    # Queue settings
+    max-queue-size: 100
+    # Alert when 80% of bucket consumed (6 tokens remaining)
+    alert-threshold-percent: 80
+    # Distributed rate limiting via Redis
+    distributed-enabled: ${DISTRIBUTED_RATE_LIMIT:false}
+    redis-key-prefix: "ffl:ratelimit:"
+    instance-count: ${INSTANCE_COUNT:1}
+    # Backoff settings
+    backoff:
+      initial-backoff-ms: 2000
+      max-backoff-ms: 60000
+      multiplier: 2.0
+      permanent-reduction-threshold: 5
+      permanent-reduction-percent: 80
+    # API tier settings
+    tier:
+      current: ${NFL_API_TIER:FREE}
+      free-limit: 30
+      starter-limit: 60
+      paid-limit: 600

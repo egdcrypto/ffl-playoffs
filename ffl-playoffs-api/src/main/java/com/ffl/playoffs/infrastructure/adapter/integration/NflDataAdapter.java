@@ -33,4 +33,10 @@ public class NflDataAdapter implements NflDataProvider {
         // TODO: Implement API call to check if team is playing
         return false;
     }
+
+    @Override
+    public Map<String, Object> getPlayerStats(Long playerId, int week) {
+        // TODO: Implement API call to fetch individual player statistics
+        return Map.of();
+    }
 }

@@ -71,6 +71,13 @@ public class SportsDataIoFantasyAdapter implements NflDataProvider {
         return true;
     }
 
+    @Override
+    public java.util.Map<String, Object> getPlayerStats(Long playerId, int week) {
+        // Stub implementation - return empty map
+        log.debug("getPlayerStats for player: {} week: {}", playerId, week);
+        return new java.util.HashMap<>();
+    }
+
     // NOTE: The following methods were removed because they don't exist in the current NflDataProvider interface:
     // - getTeamScore, getAvailableTeamsForWeek, isTeamInPlayoffs
     // - getPlayerById, getPlayerWeeklyStats, getWeeklyStats, getPlayerNews, getPlayerInjuryStatus

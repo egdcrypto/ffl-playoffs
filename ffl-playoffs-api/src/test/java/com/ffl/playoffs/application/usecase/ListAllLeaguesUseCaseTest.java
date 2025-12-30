@@ -147,7 +147,7 @@ class ListAllLeaguesUseCaseTest {
         League league = createLeague("Test League", "TEST");
         league.setStatus(LeagueStatus.ACTIVE);
         league.setCurrentWeek(2);
-        league.setNumberOfWeeks(4);
+        league.setNumberOfWeeks(4, java.time.LocalDateTime.now());
 
         when(leagueRepository.findAll()).thenReturn(List.of(league));
 

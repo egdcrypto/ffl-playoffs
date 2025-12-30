@@ -2,8 +2,12 @@ package com.ffl.playoffs.infrastructure.adapter.rest;
 
 import com.ffl.playoffs.application.dto.GameHealthDTO;
 import com.ffl.playoffs.application.dto.LeagueDTO;
+import com.ffl.playoffs.application.dto.RosterConfigurationDTO;
+import com.ffl.playoffs.application.dto.ScoringRulesDTO;
 import com.ffl.playoffs.application.usecase.*;
 import com.ffl.playoffs.domain.aggregate.League;
+import com.ffl.playoffs.domain.model.PPRScoringRules;
+import com.ffl.playoffs.domain.model.Position;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;
 import com.ffl.playoffs.domain.port.LeagueRepository;
@@ -13,6 +17,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -112,8 +118,7 @@ public class LeagueController {
             @PathVariable UUID leagueId,
             @Valid @RequestBody LeagueDTO leagueDTO) {
 
-        // TODO: Get ownerId from authentication context
-        UUID ownerId = UUID.randomUUID(); // Placeholder - should come from authentication
+        UUID ownerId = getCurrentUserId();
         ConfigureLeagueUseCase.ConfigureLeagueCommand command =
                 new ConfigureLeagueUseCase.ConfigureLeagueCommand(leagueId, ownerId);
 
@@ -257,16 +262,93 @@ public class LeagueController {
         return dto;
     }
 
-    private RosterConfiguration mapToRosterConfiguration(com.ffl.playoffs.application.dto.RosterConfigurationDTO dto) {
-        // Map DTO to domain model
-        // Note: This is a simplified version - implement proper mapping based on RosterConfiguration structure
-        return RosterConfiguration.standardRoster(); // TODO: Implement proper mapping
+    private RosterConfiguration mapToRosterConfiguration(RosterConfigurationDTO dto) {
+        if (dto == null) {
+            return RosterConfiguration.standardRoster();
+        }
+
+        RosterConfiguration config = new RosterConfiguration();
+
+        if (dto.getQbCount() != null && dto.getQbCount() > 0) {
+            config.setPositionSlots(Position.QB, dto.getQbCount());
+        }
+        if (dto.getRbCount() != null && dto.getRbCount() > 0) {
+            config.setPositionSlots(Position.RB, dto.getRbCount());
+        }
+        if (dto.getWrCount() != null && dto.getWrCount() > 0) {
+            config.setPositionSlots(Position.WR, dto.getWrCount());
+        }
+        if (dto.getTeCount() != null && dto.getTeCount() > 0) {
+            config.setPositionSlots(Position.TE, dto.getTeCount());
+        }
+        if (dto.getFlexCount() != null && dto.getFlexCount() > 0) {
+            config.setPositionSlots(Position.FLEX, dto.getFlexCount());
+        }
+        if (dto.getKCount() != null && dto.getKCount() > 0) {
+            config.setPositionSlots(Position.K, dto.getKCount());
+        }
+        if (dto.getDefenseCount() != null && dto.getDefenseCount() > 0) {
+            config.setPositionSlots(Position.DEF, dto.getDefenseCount());
+        }
+        // Bench slots are tracked but not validated as a position
+
+        config.calculateTotalSlots();
+        return config;
     }
 
-    private ScoringRules mapToScoringRules(com.ffl.playoffs.application.dto.ScoringRulesDTO dto) {
-        // Map DTO to domain model
-        // Note: This is a simplified version - implement proper mapping based on ScoringRules structure
-        return new ScoringRules(); // TODO: Implement proper mapping
+    private ScoringRules mapToScoringRules(ScoringRulesDTO dto) {
+        if (dto == null) {
+            return ScoringRules.defaultRules();
+        }
+
+        // Build PPR scoring rules from DTO
+        PPRScoringRules pprRules = new PPRScoringRules(
+                dto.getReceptions() != null ? dto.getReceptions() : 1.0,
+                dto.getRushingYards() != null ? 10.0 / dto.getRushingYards() : 10.0, // Convert points per yard to yards per point
+                dto.getReceivingYards() != null ? 10.0 / dto.getReceivingYards() : 10.0,
+                dto.getRushingTouchdowns() != null ? dto.getRushingTouchdowns() : 6.0,
+                dto.getReceivingTouchdowns() != null ? dto.getReceivingTouchdowns() : 6.0,
+                dto.getTwoPointConversions() != null ? dto.getTwoPointConversions() : 2.0,
+                dto.getFumblesLost() != null ? dto.getFumblesLost() : 2.0
+        );
+
+        return ScoringRules.builder()
+                .passingYardsPerPoint(dto.getPassingYards() != null ? 1.0 / dto.getPassingYards() : 25.0)
+                .passingTouchdownPoints(dto.getPassingTouchdowns() != null ? dto.getPassingTouchdowns() : 4.0)
+                .interceptionPenalty(dto.getInterceptions() != null ? Math.abs(dto.getInterceptions()) : 2.0)
+                .pprScoringRules(pprRules)
+                .build();
+    }
+
+    /**
+     * Gets the current authenticated user's ID from Spring Security context
+     * @return UUID of the authenticated user, or null if not authenticated
+     */
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof String) {
+            try {
+                return UUID.fromString((String) principal);
+            } catch (IllegalArgumentException e) {
+                // Principal is not a UUID string, try to extract from claims
+                return null;
+            }
+        }
+
+        // If we have a custom User details object with userId
+        if (principal instanceof Map) {
+            Object userId = ((Map<?, ?>) principal).get("userId");
+            if (userId instanceof String) {
+                return UUID.fromString((String) userId);
+            }
+        }
+
+        return null;
     }
 
     private GameHealthDTO mapToGameHealthDTO(GetGameHealthUseCase.GameHealthStatus health) {

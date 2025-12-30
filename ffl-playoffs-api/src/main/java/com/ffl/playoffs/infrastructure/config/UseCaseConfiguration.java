@@ -1,6 +1,7 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.AdminInvitationRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -70,5 +71,43 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // Admin Invitation Use Cases
+    // ===================
+
+    @Bean
+    public CreateAdminInvitationUseCase createAdminInvitationUseCase(
+            AdminInvitationRepository invitationRepository,
+            UserRepository userRepository) {
+        return new CreateAdminInvitationUseCase(invitationRepository, userRepository);
+    }
+
+    @Bean
+    public ProcessAdminInvitationUseCase processAdminInvitationUseCase(
+            AdminInvitationRepository invitationRepository,
+            UserRepository userRepository) {
+        return new ProcessAdminInvitationUseCase(invitationRepository, userRepository);
+    }
+
+    @Bean
+    public RevokeAdminInvitationUseCase revokeAdminInvitationUseCase(
+            AdminInvitationRepository invitationRepository,
+            UserRepository userRepository) {
+        return new RevokeAdminInvitationUseCase(invitationRepository, userRepository);
+    }
+
+    @Bean
+    public ListAdminInvitationsUseCase listAdminInvitationsUseCase(
+            AdminInvitationRepository invitationRepository) {
+        return new ListAdminInvitationsUseCase(invitationRepository);
+    }
+
+    @Bean
+    public ResendAdminInvitationUseCase resendAdminInvitationUseCase(
+            AdminInvitationRepository invitationRepository,
+            UserRepository userRepository) {
+        return new ResendAdminInvitationUseCase(invitationRepository, userRepository);
     }
 }

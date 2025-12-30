@@ -369,4 +369,28 @@ public class UseCaseConfiguration {
             PlayoffRankingRepository rankingRepository) {
         return new GeneratePlayoffRankingsUseCase(bracketRepository, rankingRepository);
     }
+
+    // ===================
+    // World Management Use Cases
+    // ===================
+
+    @Bean
+    public CreateWorldUseCase createWorldUseCase(WorldRepository worldRepository) {
+        return new CreateWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public UpdateWorldUseCase updateWorldUseCase(WorldRepository worldRepository) {
+        return new UpdateWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public DeleteWorldUseCase deleteWorldUseCase(WorldRepository worldRepository) {
+        return new DeleteWorldUseCase(worldRepository);
+    }
+
+    @Bean
+    public WorldLifecycleUseCase worldLifecycleUseCase(WorldRepository worldRepository) {
+        return new WorldLifecycleUseCase(worldRepository);
+    }
 }

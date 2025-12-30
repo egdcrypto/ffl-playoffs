@@ -99,6 +99,19 @@ public class CachingNflDataDecorator implements NflDataProvider {
         return result != null ? result : false;
     }
 
+    @Override
+    public Map<String, Object> getPlayerStats(Long playerId, int week) {
+        String cacheKey = CacheTTLConfig.PLAYER_PROFILE.buildKeyMultiple("stats", String.valueOf(playerId), String.valueOf(week));
+        String cacheName = CacheTTLConfig.PLAYER_PROFILE.getCacheName();
+
+        return getWithCacheAndLock(
+                cacheName,
+                cacheKey,
+                () -> delegate.getPlayerStats(playerId, week),
+                Map.class
+        );
+    }
+
     /**
      * Get value from cache with stampede protection
      *

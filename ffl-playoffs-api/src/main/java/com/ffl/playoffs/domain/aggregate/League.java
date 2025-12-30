@@ -795,6 +795,22 @@ public class League {
     }
 
     /**
+     * Exception thrown when league validation fails.
+     */
+    public static class LeagueValidationException extends RuntimeException {
+        private final String errorCode;
+
+        public LeagueValidationException(String errorCode, String message) {
+            super(message);
+            this.errorCode = errorCode;
+        }
+
+        public String getErrorCode() {
+            return errorCode;
+        }
+    }
+
+    /**
      * Calculates the ending NFL week based on starting week and duration.
      *
      * @return The ending NFL week

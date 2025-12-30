@@ -5,9 +5,12 @@ import com.ffl.playoffs.domain.event.GameCompletedEvent;
 import com.ffl.playoffs.domain.event.LeaderboardRankChangedEvent;
 import com.ffl.playoffs.domain.event.PlayerStatsUpdatedEvent;
 import com.ffl.playoffs.domain.event.RosterScoreChangedEvent;
+import com.ffl.playoffs.domain.model.LeaguePlayer;
+import com.ffl.playoffs.domain.model.NotificationPreference;
 import com.ffl.playoffs.domain.model.RankChange;
+import com.ffl.playoffs.domain.port.LeaguePlayerRepository;
+import com.ffl.playoffs.domain.port.NotificationPreferenceRepository;
 import com.ffl.playoffs.domain.port.PushNotificationPort;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -25,10 +28,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PushNotificationService {
 
     private final PushNotificationPort notificationPort;
+    private final NotificationPreferenceRepository preferenceRepository;
+    private final LeaguePlayerRepository leaguePlayerRepository;
+
+    public PushNotificationService(
+            PushNotificationPort notificationPort,
+            NotificationPreferenceRepository preferenceRepository,
+            LeaguePlayerRepository leaguePlayerRepository) {
+        this.notificationPort = notificationPort;
+        this.preferenceRepository = preferenceRepository;
+        this.leaguePlayerRepository = leaguePlayerRepository;
+    }
 
     // Cache for notification preferences
     private final Map<String, NotificationPreferencesDTO> preferencesCache = new ConcurrentHashMap<>();
@@ -300,11 +313,48 @@ public class PushNotificationService {
      */
     public NotificationPreferencesDTO getPreferences(String userId) {
         return preferencesCache.computeIfAbsent(userId, k -> {
-            // TODO: Load from repository
-            NotificationPreferencesDTO defaults = new NotificationPreferencesDTO();
-            defaults.setUserId(userId);
-            return defaults;
+            // Load from repository or create defaults
+            return preferenceRepository.findByUserId(userId)
+                    .map(this::toDTO)
+                    .orElseGet(() -> {
+                        NotificationPreferencesDTO defaults = new NotificationPreferencesDTO();
+                        defaults.setUserId(userId);
+                        return defaults;
+                    });
         });
+    }
+
+    /**
+     * Convert domain model to DTO
+     */
+    private NotificationPreferencesDTO toDTO(NotificationPreference preference) {
+        NotificationPreferencesDTO dto = new NotificationPreferencesDTO();
+        dto.setUserId(preference.getUserId());
+        dto.setScoreMilestones(preference.isScoreMilestones());
+        dto.setRankChanges(preference.isRankChanges());
+        dto.setIndividualPlayerTDs(preference.isIndividualPlayerTDs());
+        dto.setMatchupLeadChanges(preference.isMatchupLeadChanges());
+        dto.setGameCompletion(preference.isGameCompletion());
+        dto.setQuietHoursEnabled(preference.isQuietHoursEnabled());
+        dto.setQuietHoursStart(preference.getQuietHoursStart());
+        dto.setQuietHoursEnd(preference.getQuietHoursEnd());
+        return dto;
+    }
+
+    /**
+     * Convert DTO to domain model
+     */
+    private NotificationPreference toDomain(NotificationPreferencesDTO dto) {
+        NotificationPreference preference = new NotificationPreference(dto.getUserId());
+        preference.setScoreMilestones(dto.isScoreMilestones());
+        preference.setRankChanges(dto.isRankChanges());
+        preference.setIndividualPlayerTDs(dto.isIndividualPlayerTDs());
+        preference.setMatchupLeadChanges(dto.isMatchupLeadChanges());
+        preference.setGameCompletion(dto.isGameCompletion());
+        preference.setQuietHoursEnabled(dto.isQuietHoursEnabled());
+        preference.setQuietHoursStart(dto.getQuietHoursStart());
+        preference.setQuietHoursEnd(dto.getQuietHoursEnd());
+        return preference;
     }
 
     /**
@@ -313,7 +363,23 @@ public class PushNotificationService {
     public void updatePreferences(String userId, NotificationPreferencesDTO preferences) {
         preferences.setUserId(userId);
         preferencesCache.put(userId, preferences);
-        // TODO: Persist to repository
+
+        // Load existing or create new, then update and persist
+        NotificationPreference preference = preferenceRepository.findByUserId(userId)
+                .orElseGet(() -> new NotificationPreference(userId));
+
+        preference.setScoreMilestones(preferences.isScoreMilestones());
+        preference.setRankChanges(preferences.isRankChanges());
+        preference.setIndividualPlayerTDs(preferences.isIndividualPlayerTDs());
+        preference.setMatchupLeadChanges(preferences.isMatchupLeadChanges());
+        preference.setGameCompletion(preferences.isGameCompletion());
+        preference.setQuietHoursEnabled(preferences.isQuietHoursEnabled());
+        preference.setQuietHoursStart(preferences.getQuietHoursStart());
+        preference.setQuietHoursEnd(preferences.getQuietHoursEnd());
+        preference.markUpdated();
+
+        preferenceRepository.save(preference);
+        log.debug("Persisted notification preferences for user {}", userId);
     }
 
     /**
@@ -328,8 +394,17 @@ public class PushNotificationService {
      * Get user ID for a league player
      */
     private String getUserIdForLeaguePlayer(String leaguePlayerId) {
-        // TODO: Look up user ID from league player repository
-        return leaguePlayerId;
+        try {
+            java.util.UUID leaguePlayerUuid = java.util.UUID.fromString(leaguePlayerId);
+            return leaguePlayerRepository.findById(leaguePlayerUuid)
+                    .map(LeaguePlayer::getUserId)
+                    .map(java.util.UUID::toString)
+                    .orElse(leaguePlayerId);
+        } catch (IllegalArgumentException e) {
+            // Invalid UUID format, return as-is
+            log.warn("Invalid league player ID format: {}", leaguePlayerId);
+            return leaguePlayerId;
+        }
     }
 
     private String ordinal(int i) {

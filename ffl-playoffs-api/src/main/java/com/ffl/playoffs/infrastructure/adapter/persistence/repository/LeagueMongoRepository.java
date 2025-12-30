@@ -34,4 +34,11 @@ public interface LeagueMongoRepository extends MongoRepository<LeagueDocument, S
      * @return true if code exists
      */
     boolean existsByCode(String code);
+
+    /**
+     * Find leagues by status
+     * @param status the league status (e.g., "ACTIVE")
+     * @return list of league documents with the given status
+     */
+    List<LeagueDocument> findByStatus(String status);
 }

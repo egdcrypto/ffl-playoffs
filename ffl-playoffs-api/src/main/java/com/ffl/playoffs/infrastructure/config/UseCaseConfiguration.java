@@ -1,8 +1,7 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
-import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
-import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.port.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,5 +69,39 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // Performance Monitoring Use Cases
+    // ===================
+
+    @Bean
+    public CreatePerformanceAlertUseCase createPerformanceAlertUseCase(
+            PerformanceAlertRepository alertRepository) {
+        return new CreatePerformanceAlertUseCase(alertRepository);
+    }
+
+    @Bean
+    public ManagePerformanceAlertUseCase managePerformanceAlertUseCase(
+            PerformanceAlertRepository alertRepository) {
+        return new ManagePerformanceAlertUseCase(alertRepository);
+    }
+
+    @Bean
+    public CreatePerformanceDashboardUseCase createPerformanceDashboardUseCase(
+            PerformanceDashboardRepository dashboardRepository) {
+        return new CreatePerformanceDashboardUseCase(dashboardRepository);
+    }
+
+    @Bean
+    public GetPerformanceMetricsUseCase getPerformanceMetricsUseCase(
+            PerformanceMetricRepository metricRepository) {
+        return new GetPerformanceMetricsUseCase(metricRepository);
+    }
+
+    @Bean
+    public RecordPerformanceMetricsUseCase recordPerformanceMetricsUseCase(
+            PerformanceMetricRepository metricRepository) {
+        return new RecordPerformanceMetricsUseCase(metricRepository);
     }
 }

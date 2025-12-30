@@ -1,7 +1,9 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.BillingPlanRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
+import com.ffl.playoffs.domain.port.SubscriptionRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -70,5 +72,38 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // Billing Management Use Cases
+    // ===================
+
+    @Bean
+    public CreateBillingPlanUseCase createBillingPlanUseCase(BillingPlanRepository billingPlanRepository) {
+        return new CreateBillingPlanUseCase(billingPlanRepository);
+    }
+
+    @Bean
+    public GetBillingPlansUseCase getBillingPlansUseCase(BillingPlanRepository billingPlanRepository) {
+        return new GetBillingPlansUseCase(billingPlanRepository);
+    }
+
+    @Bean
+    public CreateSubscriptionUseCase createSubscriptionUseCase(
+            SubscriptionRepository subscriptionRepository,
+            BillingPlanRepository billingPlanRepository) {
+        return new CreateSubscriptionUseCase(subscriptionRepository, billingPlanRepository);
+    }
+
+    @Bean
+    public ManageSubscriptionUseCase manageSubscriptionUseCase(
+            SubscriptionRepository subscriptionRepository,
+            BillingPlanRepository billingPlanRepository) {
+        return new ManageSubscriptionUseCase(subscriptionRepository, billingPlanRepository);
+    }
+
+    @Bean
+    public GetSubscriptionUseCase getSubscriptionUseCase(SubscriptionRepository subscriptionRepository) {
+        return new GetSubscriptionUseCase(subscriptionRepository);
     }
 }

@@ -73,4 +73,9 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+
+    // JVM args for Mockito compatibility with Java 21+
+    jvmArgs '-XX:+EnableDynamicAgentLoading'
+    jvmArgs '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+    jvmArgs '--add-opens', 'java.base/java.lang.reflect=ALL-UNNAMED'
 }

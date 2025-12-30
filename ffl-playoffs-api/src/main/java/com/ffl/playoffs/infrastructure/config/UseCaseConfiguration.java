@@ -345,8 +345,11 @@ public class UseCaseConfiguration {
     @Bean
     public CalculateScoresUseCase calculateScoresUseCase(
             ScoringService scoringService,
-            @Qualifier("sportsDataIoAdapter") NflDataProvider nflDataProvider) {
-        return new CalculateScoresUseCase(scoringService, nflDataProvider);
+            @Qualifier("sportsDataIoAdapter") NflDataProvider nflDataProvider,
+            TeamSelectionRepository teamSelectionRepository,
+            LiveScoreRepository liveScoreRepository,
+            org.springframework.context.ApplicationEventPublisher eventPublisher) {
+        return new CalculateScoresUseCase(scoringService, nflDataProvider, teamSelectionRepository, liveScoreRepository, eventPublisher);
     }
 
     @Bean

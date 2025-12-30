@@ -13,9 +13,13 @@ public class RosterDTO {
     private UUID leaguePlayerId;
     private UUID leagueId;
     private Boolean isLocked;
+    private String lockStatus;  // UNLOCKED, LOCKED, LOCKED_INCOMPLETE
+    private String lockStatusMessage;  // Human-readable status message
     private LocalDateTime lockedAt;
     private LocalDateTime rosterDeadline;
     private List<RosterSlotDTO> slots;
+    private Integer filledSlotCount;
+    private Integer totalSlotCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -94,5 +98,37 @@ public class RosterDTO {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getLockStatus() {
+        return lockStatus;
+    }
+
+    public void setLockStatus(String lockStatus) {
+        this.lockStatus = lockStatus;
+    }
+
+    public String getLockStatusMessage() {
+        return lockStatusMessage;
+    }
+
+    public void setLockStatusMessage(String lockStatusMessage) {
+        this.lockStatusMessage = lockStatusMessage;
+    }
+
+    public Integer getFilledSlotCount() {
+        return filledSlotCount;
+    }
+
+    public void setFilledSlotCount(Integer filledSlotCount) {
+        this.filledSlotCount = filledSlotCount;
+    }
+
+    public Integer getTotalSlotCount() {
+        return totalSlotCount;
+    }
+
+    public void setTotalSlotCount(Integer totalSlotCount) {
+        this.totalSlotCount = totalSlotCount;
     }
 }

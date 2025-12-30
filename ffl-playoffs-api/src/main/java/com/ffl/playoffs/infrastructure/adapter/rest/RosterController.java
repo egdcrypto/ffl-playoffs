@@ -2,6 +2,8 @@ package com.ffl.playoffs.infrastructure.adapter.rest;
 
 import com.ffl.playoffs.application.dto.RosterDTO;
 import com.ffl.playoffs.application.usecase.BuildRosterUseCase;
+import com.ffl.playoffs.application.usecase.GetRosterLockStatusReportUseCase;
+import com.ffl.playoffs.application.usecase.LockAllRostersAtDeadlineUseCase;
 import com.ffl.playoffs.application.usecase.LockRosterUseCase;
 import com.ffl.playoffs.application.usecase.ValidateRosterUseCase;
 import com.ffl.playoffs.domain.aggregate.Roster;
@@ -14,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,6 +29,8 @@ public class RosterController {
 
     private final BuildRosterUseCase buildRosterUseCase;
     private final LockRosterUseCase lockRosterUseCase;
+    private final LockAllRostersAtDeadlineUseCase lockAllRostersAtDeadlineUseCase;
+    private final GetRosterLockStatusReportUseCase getRosterLockStatusReportUseCase;
     private final ValidateRosterUseCase validateRosterUseCase;
     private final RosterRepository rosterRepository;
 
@@ -101,6 +106,34 @@ public class RosterController {
         }
     }
 
+    @PostMapping("/league/{leagueId}/lock-all")
+    @Operation(summary = "Lock all rosters at deadline",
+            description = "Locks all unlocked rosters in a league. Used when roster deadline passes.")
+    public ResponseEntity<LockAllRostersAtDeadlineUseCase.LockAllRostersResult> lockAllRostersAtDeadline(
+            @PathVariable UUID leagueId) {
+        LockAllRostersAtDeadlineUseCase.LockAllRostersCommand command =
+                new LockAllRostersAtDeadlineUseCase.LockAllRostersCommand(leagueId, LocalDateTime.now());
+
+        LockAllRostersAtDeadlineUseCase.LockAllRostersResult result =
+                lockAllRostersAtDeadlineUseCase.execute(command);
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/league/{leagueId}/lock-status")
+    @Operation(summary = "Get roster lock status report",
+            description = "Returns a report of all roster lock statuses in a league for admin view")
+    public ResponseEntity<GetRosterLockStatusReportUseCase.RosterLockStatusReport> getRosterLockStatusReport(
+            @PathVariable UUID leagueId) {
+        GetRosterLockStatusReportUseCase.GetReportCommand command =
+                new GetRosterLockStatusReportUseCase.GetReportCommand(leagueId);
+
+        GetRosterLockStatusReportUseCase.RosterLockStatusReport report =
+                getRosterLockStatusReportUseCase.execute(command);
+
+        return ResponseEntity.ok(report);
+    }
+
     // Mapping method
     private RosterDTO mapToDTO(Roster roster) {
         RosterDTO dto = new RosterDTO();
@@ -108,8 +141,13 @@ public class RosterController {
         dto.setLeaguePlayerId(roster.getLeaguePlayerId());
         dto.setLeagueId(roster.getGameId()); // Domain uses gameId for league reference
         dto.setIsLocked(roster.isLocked());
+        dto.setLockStatus(roster.getLockStatus() != null ? roster.getLockStatus().name() : null);
+        dto.setLockStatusMessage(roster.getLockStatus() != null
+                ? roster.getLockStatus().getDisplayMessage() : null);
         dto.setLockedAt(roster.getLockedAt());
         dto.setRosterDeadline(roster.getRosterDeadline());
+        dto.setFilledSlotCount(roster.getFilledSlotCount());
+        dto.setTotalSlotCount(roster.getTotalSlotCount());
         dto.setCreatedAt(roster.getCreatedAt());
         dto.setUpdatedAt(roster.getUpdatedAt());
         // TODO: Map roster slots

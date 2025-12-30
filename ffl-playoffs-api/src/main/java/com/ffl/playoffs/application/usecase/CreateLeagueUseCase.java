@@ -1,6 +1,7 @@
 package com.ffl.playoffs.application.usecase;
 
 import com.ffl.playoffs.domain.aggregate.League;
+import com.ffl.playoffs.domain.model.LeagueStatus;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;
 import com.ffl.playoffs.domain.port.LeagueRepository;
@@ -68,7 +69,8 @@ public class CreateLeagueUseCase {
             league.setFirstGameStartTime(command.getFirstGameStartTime());
         }
 
-        // Status is DRAFT by default (set in League constructor)
+        // Set status to waiting for players
+        league.setStatus(LeagueStatus.WAITING_FOR_PLAYERS);
 
         // Persist league
         return leagueRepository.save(league);

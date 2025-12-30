@@ -50,4 +50,14 @@ public interface TeamSelectionMongoRepository extends MongoRepository<TeamSelect
      * Delete all selections for a player
      */
     void deleteByPlayerId(String playerId);
+
+    /**
+     * Find all selections for a specific week
+     */
+    List<TeamSelectionDocument> findByWeekId(String weekId);
+
+    /**
+     * Count selections for a specific week
+     */
+    long countByWeekId(String weekId);
 }

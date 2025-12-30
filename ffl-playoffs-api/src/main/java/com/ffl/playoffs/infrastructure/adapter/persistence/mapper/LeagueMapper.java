@@ -65,7 +65,7 @@ public class LeagueMapper {
         league.setDescription(document.getDescription());
         league.setCode(document.getCode());
         league.setOwnerId(document.getOwnerId() != null ? UUID.fromString(document.getOwnerId()) : null);
-        league.setStatus(document.getStatus() != null ? League.LeagueStatus.valueOf(document.getStatus()) : null);
+        league.setStatus(document.getStatus() != null ? LeagueStatus.valueOf(document.getStatus()) : null);
         // setStartingWeek and setNumberOfWeeks require LocalDateTime parameter in League model
         // Use setStartingWeekAndDuration instead
         if (document.getStartingWeek() != null && document.getNumberOfWeeks() != null) {

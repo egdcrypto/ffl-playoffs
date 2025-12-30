@@ -1,5 +1,6 @@
 package com.ffl.playoffs.domain.aggregate;
 
+import com.ffl.playoffs.domain.model.LeagueStatus;
 import com.ffl.playoffs.domain.model.Player;
 import com.ffl.playoffs.domain.model.RosterConfiguration;
 import com.ffl.playoffs.domain.model.ScoringRules;
@@ -41,6 +42,13 @@ public class League {
     private LocalDateTime configurationLockedAt;
     private String lockReason;
     private LocalDateTime firstGameStartTime;
+
+    // Lifecycle tracking
+    private String cancellationReason;
+    private LocalDateTime completedAt;
+    private LocalDateTime pausedAt;
+    private LocalDateTime archivedAt;
+    private Integer minPlayers = 2; // Default minimum players
 
     // Players
     private List<Player> players;
@@ -100,48 +108,52 @@ public class League {
      * Validates week configuration according to NFL calendar constraints.
      *
      * Validation rules:
-     * - startingWeek must be between 1 and 18 (NFL regular season)
+     * - startingWeek must be between 1 and 22
      * - numberOfWeeks must be between 1 and 17
-     * - startingWeek + numberOfWeeks - 1 must be <= 18
+     * - startingWeek + numberOfWeeks - 1 must be <= 22
      *
      * @param startingWeek NFL week to start
      * @param numberOfWeeks Duration of league
-     * @throws LeagueValidationException if validation fails
+     * @throws IllegalArgumentException if validation fails
      */
     private void validateWeekConfiguration(Integer startingWeek, Integer numberOfWeeks) {
         if (startingWeek == null || numberOfWeeks == null) {
-            throw new LeagueValidationException("INVALID_CONFIGURATION",
-                "Starting week and number of weeks cannot be null");
+            throw new IllegalArgumentException("Starting week and number of weeks cannot be null");
         }
 
-        if (startingWeek < 1 || startingWeek > 18) {
-            throw new LeagueValidationException("INVALID_STARTING_WEEK",
-                String.format("Starting week must be between 1 and 18, got: %d", startingWeek));
+        if (startingWeek < 1 || startingWeek > 22) {
+            throw new IllegalArgumentException(
+                String.format("Starting week must be between 1 and 22, got: %d", startingWeek)
+            );
         }
 
         if (numberOfWeeks < 1 || numberOfWeeks > 17) {
-            throw new LeagueValidationException("INVALID_NUMBER_OF_WEEKS",
-                String.format("Number of weeks must be between 1 and 17, got: %d", numberOfWeeks));
+            throw new IllegalArgumentException(
+                String.format("Number of weeks must be between 1 and 17, got: %d", numberOfWeeks)
+            );
         }
 
         int endWeek = startingWeek + numberOfWeeks - 1;
-        if (endWeek > 18) {
-            throw new LeagueValidationException("LEAGUE_EXCEEDS_NFL_SEASON",
-                String.format("startingWeek (%d) + numberOfWeeks (%d) - 1 exceeds NFL week 18",
-                    startingWeek, numberOfWeeks));
+        if (endWeek > 22) {
+            throw new IllegalArgumentException(
+                String.format(
+                    "League duration exceeds NFL calendar. Starting week %d + %d weeks would end at week %d (max: 22)",
+                    startingWeek, numberOfWeeks, endWeek
+                )
+            );
         }
     }
 
     /**
      * Adds a player to the league.
-     * Players can only be added before the league is archived.
+     * Players can only be added before the league starts.
      *
      * @param player The player to add
-     * @throws IllegalStateException if league is archived
+     * @throws IllegalStateException if league has already started
      */
     public void addPlayer(Player player) {
-        if (this.status == LeagueStatus.ARCHIVED) {
-            throw new IllegalStateException("Cannot add players to an archived league");
+        if (this.status != LeagueStatus.DRAFT && this.status != LeagueStatus.WAITING_FOR_PLAYERS) {
+            throw new IllegalStateException("Cannot add players to a league that has started");
         }
         this.players.add(player);
         this.updatedAt = LocalDateTime.now();
@@ -149,30 +161,29 @@ public class League {
 
     /**
      * Activates the league.
-     * Requires at least 2 players and valid configuration.
-     * Configuration becomes locked after activation.
+     * Requires minimum players and valid configuration.
      *
-     * @throws LeagueValidationException if league cannot be activated
+     * @throws IllegalStateException if league cannot be activated
      */
     public void activate() {
-        if (this.status != LeagueStatus.DRAFT) {
-            throw new LeagueValidationException("INVALID_STATUS",
-                "League can only be activated from DRAFT status. Current status: " + this.status);
+        if (!this.status.canActivate()) {
+            throw new IllegalStateException("League cannot be activated in current status: " + this.status);
         }
-        if (this.players.size() < 2) {
-            throw new LeagueValidationException("INSUFFICIENT_PLAYERS",
-                "League requires at least 2 players to activate");
+        if (this.players.size() < this.minPlayers) {
+            throw new InsufficientPlayersException(
+                "At least " + this.minPlayers + " players required to activate league",
+                this.minPlayers,
+                this.players.size()
+            );
         }
         if (this.rosterConfiguration == null) {
-            this.rosterConfiguration = RosterConfiguration.standardRoster();
+            throw new IncompleteConfigurationException("League requires roster configuration to activate");
         }
         if (this.scoringRules == null) {
-            this.scoringRules = new ScoringRules();
+            throw new IncompleteConfigurationException("League requires scoring rules to activate");
         }
 
-        if (this.rosterConfiguration != null) {
-            this.rosterConfiguration.validate();
-        }
+        this.rosterConfiguration.validate();
         this.status = LeagueStatus.ACTIVE;
         this.configurationLocked = true;
         this.configurationLockedAt = LocalDateTime.now();
@@ -181,46 +192,102 @@ public class League {
     }
 
     /**
-     * Deactivates the league.
-     * Players can no longer make new team selections.
+     * Starts the league (alias for activate for backward compatibility).
+     * Requires minimum players and valid configuration.
      *
-     * @throws IllegalStateException if league is not active
+     * @throws IllegalStateException if league cannot be started
+     */
+    public void start() {
+        activate();
+    }
+
+    /**
+     * Deactivates an active league.
+     * Players cannot make new selections, but existing selections are preserved.
+     *
+     * @throws IllegalStateException if league cannot be deactivated
      */
     public void deactivate() {
-        if (this.status != LeagueStatus.ACTIVE) {
-            throw new IllegalStateException("League can only be deactivated from ACTIVE status. Current status: " + this.status);
+        if (!this.status.canDeactivate()) {
+            throw new IllegalStateException("League cannot be deactivated in current status: " + this.status);
         }
         this.status = LeagueStatus.INACTIVE;
         this.updatedAt = LocalDateTime.now();
     }
 
     /**
-     * Archives the league.
-     * League data is preserved for historical viewing but no modifications are allowed.
+     * Reactivates an inactive league.
+     * Players can make selections again from the current week.
      *
-     * @throws IllegalStateException if league status doesn't allow archiving
+     * @throws IllegalStateException if league cannot be reactivated
      */
-    public void archive() {
-        if (this.status == LeagueStatus.ARCHIVED) {
-            throw new IllegalStateException("League is already archived");
+    public void reactivate() {
+        if (this.status != LeagueStatus.INACTIVE) {
+            throw new IllegalStateException("Only INACTIVE leagues can be reactivated, current status: " + this.status);
         }
-        if (this.status == LeagueStatus.DRAFT) {
-            throw new IllegalStateException("Cannot archive a league in DRAFT status. Activate first or cancel.");
-        }
-        this.status = LeagueStatus.ARCHIVED;
+        this.status = LeagueStatus.ACTIVE;
         this.updatedAt = LocalDateTime.now();
     }
 
     /**
-     * @deprecated Use activate() instead
-     * Starts the league.
-     * Requires at least 2 players and valid configuration.
+     * Pauses an active league.
+     * All deadlines are suspended, players cannot make selections.
      *
-     * @throws IllegalStateException if league cannot be started
+     * @throws IllegalStateException if league cannot be paused
      */
-    @Deprecated
-    public void start() {
-        activate();
+    public void pause() {
+        if (!this.status.canPause()) {
+            throw new IllegalStateException("League cannot be paused in current status: " + this.status);
+        }
+        this.status = LeagueStatus.PAUSED;
+        this.pausedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Resumes a paused league.
+     * Deadlines should be recalculated based on current date.
+     *
+     * @throws IllegalStateException if league cannot be resumed
+     */
+    public void resume() {
+        if (!this.status.canResume()) {
+            throw new IllegalStateException("League cannot be resumed in current status: " + this.status);
+        }
+        this.status = LeagueStatus.ACTIVE;
+        this.pausedAt = null;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Cancels the league with a reason.
+     * All selections are preserved for reference, no further actions allowed.
+     *
+     * @param reason The reason for cancellation
+     * @throws IllegalStateException if league cannot be cancelled
+     */
+    public void cancel(String reason) {
+        if (!this.status.canCancel()) {
+            throw new IllegalStateException("League cannot be cancelled in current status: " + this.status);
+        }
+        this.status = LeagueStatus.CANCELLED;
+        this.cancellationReason = reason;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Archives a completed league.
+     * Data is preserved for historical viewing, no modifications allowed.
+     *
+     * @throws IllegalStateException if league cannot be archived
+     */
+    public void archive() {
+        if (!this.status.canArchive()) {
+            throw new IllegalStateException("League cannot be archived in current status: " + this.status);
+        }
+        this.status = LeagueStatus.ARCHIVED;
+        this.archivedAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     /**
@@ -244,17 +311,99 @@ public class League {
     }
 
     /**
-     * Completes the league by archiving it.
-     * Can only complete leagues that are active or inactive.
+     * Completes the league.
+     * Can only complete leagues that are active.
      *
-     * @throws IllegalStateException if league is not active or inactive
+     * @throws IllegalStateException if league is not active
      */
     public void complete() {
-        if (this.status != LeagueStatus.ACTIVE && this.status != LeagueStatus.INACTIVE) {
-            throw new IllegalStateException("Can only complete leagues that are active or inactive");
+        if (this.status != LeagueStatus.ACTIVE) {
+            throw new IllegalStateException("Can only complete leagues that are active");
         }
-        this.status = LeagueStatus.ARCHIVED;
+        this.status = LeagueStatus.COMPLETED;
+        this.completedAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * Checks if the league can be deleted.
+     * Only DRAFT leagues with no players can be deleted.
+     *
+     * @return true if the league can be deleted
+     */
+    public boolean canDelete() {
+        return this.status.canDelete() && (this.players == null || this.players.isEmpty());
+    }
+
+    /**
+     * Validates that the league can be deleted and throws exception if not.
+     *
+     * @throws IllegalStateException if league cannot be deleted
+     */
+    public void validateCanDelete() {
+        if (!this.status.canDelete()) {
+            throw new CannotDeleteLeagueException(
+                "Cannot delete league in status " + this.status + ". Only DRAFT leagues can be deleted."
+            );
+        }
+        if (this.players != null && !this.players.isEmpty()) {
+            throw new CannotDeleteLeagueException(
+                "Cannot delete league with players. League has " + this.players.size() + " players."
+            );
+        }
+    }
+
+    /**
+     * Gets the game week number for a given NFL week.
+     *
+     * @param nflWeekNumber the NFL week number
+     * @return the game week number (1-based) or null if NFL week is not in range
+     */
+    public Integer getGameWeekForNflWeek(Integer nflWeekNumber) {
+        if (nflWeekNumber == null || startingWeek == null || numberOfWeeks == null) {
+            return null;
+        }
+        if (nflWeekNumber < startingWeek || nflWeekNumber > getEndingWeek()) {
+            return null;
+        }
+        return nflWeekNumber - startingWeek + 1;
+    }
+
+    /**
+     * Gets the NFL week number for a given game week.
+     *
+     * @param gameWeekNumber the game week number (1-based)
+     * @return the NFL week number or null if game week is out of range
+     */
+    public Integer getNflWeekForGameWeek(Integer gameWeekNumber) {
+        if (gameWeekNumber == null || startingWeek == null || numberOfWeeks == null) {
+            return null;
+        }
+        if (gameWeekNumber < 1 || gameWeekNumber > numberOfWeeks) {
+            return null;
+        }
+        return startingWeek + gameWeekNumber - 1;
+    }
+
+    /**
+     * Checks if the league is on its final week.
+     *
+     * @return true if current week is the last week
+     */
+    public boolean isOnFinalWeek() {
+        return this.currentWeek != null && this.currentWeek.equals(getEndingWeek());
+    }
+
+    /**
+     * Gets the current game week number (1-based).
+     *
+     * @return the current game week number
+     */
+    public Integer getCurrentGameWeek() {
+        if (this.currentWeek == null || this.startingWeek == null) {
+            return null;
+        }
+        return this.currentWeek - this.startingWeek + 1;
     }
 
     // ==================== Configuration Lock Methods ====================
@@ -556,18 +705,33 @@ public class League {
         this.updatedAt = updatedAt;
     }
 
-    // ==================== Enums ====================
+    // ==================== New Field Getters/Setters ====================
 
-    /**
-     * League status enumeration
-     */
-    public enum LeagueStatus {
-        DRAFT,                // League created, configuration can be modified
-        ACTIVE,               // League in progress, players can make selections
-        INACTIVE,             // League temporarily paused, no new selections allowed
-        ARCHIVED,             // League completed and preserved for historical viewing
-        CANCELLED             // League cancelled
+    public String getCancellationReason() {
+        return cancellationReason;
     }
+
+    public LocalDateTime getCompletedAt() {
+        return completedAt;
+    }
+
+    public LocalDateTime getPausedAt() {
+        return pausedAt;
+    }
+
+    public LocalDateTime getArchivedAt() {
+        return archivedAt;
+    }
+
+    public Integer getMinPlayers() {
+        return minPlayers;
+    }
+
+    public void setMinPlayers(Integer minPlayers) {
+        this.minPlayers = minPlayers;
+    }
+
+    // ==================== Exception Classes ====================
 
     /**
      * Custom exception for configuration lock violations
@@ -579,18 +743,54 @@ public class League {
     }
 
     /**
-     * Custom exception for league validation errors with error codes
+     * Exception thrown when trying to activate a league with insufficient players.
      */
-    public static class LeagueValidationException extends RuntimeException {
-        private final String errorCode;
+    public static class InsufficientPlayersException extends RuntimeException {
+        private final int required;
+        private final int actual;
 
-        public LeagueValidationException(String errorCode, String message) {
+        public InsufficientPlayersException(String message, int required, int actual) {
             super(message);
-            this.errorCode = errorCode;
+            this.required = required;
+            this.actual = actual;
+        }
+
+        public int getRequired() {
+            return required;
+        }
+
+        public int getActual() {
+            return actual;
         }
 
         public String getErrorCode() {
-            return errorCode;
+            return "INSUFFICIENT_PLAYERS";
+        }
+    }
+
+    /**
+     * Exception thrown when trying to activate a league with incomplete configuration.
+     */
+    public static class IncompleteConfigurationException extends RuntimeException {
+        public IncompleteConfigurationException(String message) {
+            super(message);
+        }
+
+        public String getErrorCode() {
+            return "INCOMPLETE_CONFIGURATION";
+        }
+    }
+
+    /**
+     * Exception thrown when trying to delete a league that cannot be deleted.
+     */
+    public static class CannotDeleteLeagueException extends RuntimeException {
+        public CannotDeleteLeagueException(String message) {
+            super(message);
+        }
+
+        public String getErrorCode() {
+            return "CANNOT_DELETE_ACTIVE_LEAGUE";
         }
     }
 
@@ -607,31 +807,6 @@ public class League {
     }
 
     /**
-     * Gets all NFL weeks covered by this league.
-     *
-     * @return List of NFL week numbers
-     */
-    public java.util.List<Integer> getCoveredWeeks() {
-        if (startingWeek == null || numberOfWeeks == null) {
-            return java.util.Collections.emptyList();
-        }
-        java.util.List<Integer> weeks = new ArrayList<>();
-        for (int i = 0; i < numberOfWeeks; i++) {
-            weeks.add(startingWeek + i);
-        }
-        return weeks;
-    }
-
-    /**
-     * Checks if the league is in draft mode.
-     *
-     * @return true if league is in draft status, false otherwise
-     */
-    public boolean isDraft() {
-        return LeagueStatus.DRAFT.equals(this.status);
-    }
-
-    /**
      * Checks if the league is currently active.
      *
      * @return true if league is active, false otherwise
@@ -641,30 +816,12 @@ public class League {
     }
 
     /**
-     * Checks if the league is inactive.
+     * Checks if the league has been completed.
      *
-     * @return true if league is inactive, false otherwise
+     * @return true if league is completed, false otherwise
      */
-    public boolean isInactive() {
-        return LeagueStatus.INACTIVE.equals(this.status);
-    }
-
-    /**
-     * Checks if the league has been archived.
-     *
-     * @return true if league is archived, false otherwise
-     */
-    public boolean isArchived() {
-        return LeagueStatus.ARCHIVED.equals(this.status);
-    }
-
-    /**
-     * Gets the number of players in the league.
-     *
-     * @return The player count
-     */
-    public int getPlayerCount() {
-        return this.players != null ? this.players.size() : 0;
+    public boolean isCompleted() {
+        return LeagueStatus.COMPLETED.equals(this.status);
     }
 
     @Override

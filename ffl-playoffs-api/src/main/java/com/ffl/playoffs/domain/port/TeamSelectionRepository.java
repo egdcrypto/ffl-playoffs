@@ -90,4 +90,18 @@ public interface TeamSelectionRepository {
      * @param playerId the player ID
      */
     void deleteByPlayerId(UUID playerId);
+
+    /**
+     * Count selections for a specific week
+     * @param weekId the week ID
+     * @return number of selections for that week
+     */
+    long countByWeekId(UUID weekId);
+
+    /**
+     * Find all selections for a specific week
+     * @param weekId the week ID
+     * @return list of all team selections for the week
+     */
+    List<TeamSelection> findByWeekId(UUID weekId);
 }

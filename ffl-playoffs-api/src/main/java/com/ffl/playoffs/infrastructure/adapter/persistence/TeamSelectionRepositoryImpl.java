@@ -88,4 +88,17 @@ public class TeamSelectionRepositoryImpl implements TeamSelectionRepository {
     public void deleteByPlayerId(UUID playerId) {
         mongoRepository.deleteByPlayerId(playerId.toString());
     }
+
+    @Override
+    public long countByWeekId(UUID weekId) {
+        return mongoRepository.countByWeekId(weekId.toString());
+    }
+
+    @Override
+    public List<TeamSelection> findByWeekId(UUID weekId) {
+        return mongoRepository.findByWeekId(weekId.toString())
+                .stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
 }

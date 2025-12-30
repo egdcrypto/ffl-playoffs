@@ -218,10 +218,10 @@ public class ScoringServiceImpl implements ScoringService {
             previousScore = score.getTotalScore();
 
             // Update audit record with rank
-            final int finalRank = currentRank;
+            final int rankForLambda = currentRank;
             auditRepository.findByPlayerIdAndWeekId(score.getPlayerId(), score.getWeekId())
                     .ifPresent(audit -> {
-                        audit.setRank(finalRank);
+                        audit.setRank(rankForLambda);
                         auditRepository.save(audit);
                     });
         }

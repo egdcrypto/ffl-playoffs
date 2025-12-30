@@ -23,6 +23,13 @@ public class LeaguePlayer {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    // Denormalized fields for leaderboard display
+    private String displayName;
+    private String email;
+    private Double totalScore;
+    private Integer rank;
+    private Boolean isEliminated;
+
     public LeaguePlayer() {
         this.id = UUID.randomUUID();
         this.status = LeaguePlayerStatus.INVITED;
@@ -235,6 +242,48 @@ public class LeaguePlayer {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // Leaderboard display getters and setters
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Double getTotalScore() {
+        return totalScore;
+    }
+
+    public void setTotalScore(Double totalScore) {
+        this.totalScore = totalScore;
+    }
+
+    public Integer getRank() {
+        return rank;
+    }
+
+    public void setRank(Integer rank) {
+        this.rank = rank;
+    }
+
+    public Boolean getIsEliminated() {
+        return isEliminated;
+    }
+
+    public void setIsEliminated(Boolean isEliminated) {
+        this.isEliminated = isEliminated;
     }
 
     /**

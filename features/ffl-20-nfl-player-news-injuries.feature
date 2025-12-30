@@ -382,3 +382,389 @@ Feature: NFL Player News and Injuries via nflreadpy
     Then news from unreliable sources is filtered out
     And only verified sources are displayed
     And users see accurate information
+
+  # Injured Reserve (IR) Designations
+
+  Scenario: Handle Injured Reserve designation
+    Given "Player A" is placed on Injured Reserve
+    When the IR transaction is processed
+    Then the player's status is set to "IR"
+    And the player is marked as out for minimum 4 games
+    And the system calculates earliest return date
+    And notifies roster owners:
+      """
+      ⚠️ Player A has been placed on Injured Reserve.
+      Earliest return: Week 12 (November 24, 2024)
+      Consider moving to IR slot if available.
+      """
+
+  Scenario: Track player returning from IR
+    Given "Player B" has been on IR since Week 5
+    And the current week is Week 10
+    When the team activates "Player B" from IR
+    Then the player's status changes from "IR" to "Active"
+    And the return date is recorded
+    And roster owners are notified of return
+    And the player becomes eligible for starting lineup
+
+  Scenario: Handle IR-designated to return (IR-DTR)
+    Given "Player C" is on IR-Designated to Return
+    When the 21-day practice window opens
+    Then the system tracks the 21-day window countdown
+    And displays "Practice Window: Day 5 of 21"
+    And alerts owner when window is about to expire
+    And tracks practice participation during window
+
+  Scenario: Season-ending IR designation
+    Given "Player D" suffers a significant injury
+    When the player is placed on season-ending IR
+    Then the player's status is set to "IR (Season)"
+    And projected points for remaining weeks are 0.0
+    And the system suggests permanent replacement
+    And removes player from weekly lineup considerations
+
+  # Physically Unable to Perform (PUP) List
+
+  Scenario: Handle PUP list designation (preseason)
+    Given "Player E" is on the PUP list
+    And the season has not started
+    When roster owners view their team
+    Then the player is marked with "PUP" indicator
+    And the earliest activation date is shown
+    And projected Week 1 availability is "Unlikely"
+
+  Scenario: Track PUP list activation
+    Given "Player F" has been on PUP list
+    When the team activates the player from PUP
+    Then the player becomes practice eligible
+    And the 21-day activation window begins
+    And roster owners are notified of impending return
+    And practice reports are closely monitored
+
+  # Non-Football Injury (NFI) List
+
+  Scenario: Handle Non-Football Injury designation
+    Given "Player G" is on NFI list
+    When roster owners view their team
+    Then the player is marked with "NFI" indicator
+    And the system tracks recovery timeline
+    And shows different rules than standard injury
+
+  # Expected Return Dates
+
+  Scenario: Display estimated return timeline
+    Given "Player H" has a Grade 2 MCL sprain
+    When the injury is classified
+    Then the system estimates recovery time: "4-6 weeks"
+    And calculates estimated return week: "Week 14"
+    And displays timeline with confidence level
+    And updates as new information becomes available
+
+  Scenario: Track return date changes
+    Given "Player I" was expected to return Week 12
+    When the medical update indicates setback
+    Then the estimated return is pushed to Week 15
+    And roster owners are notified of delayed return
+    And the change is logged in injury history
+
+  Scenario: Player returns earlier than expected
+    Given "Player J" was expected to return Week 14
+    When the player is activated in Week 12
+    Then the system updates status immediately
+    And sends positive news notification
+    And recommends adding back to starting lineup
+
+  # Injury Risk Scoring
+
+  Scenario: Calculate injury risk score for player
+    Given "Player K" has:
+      | Injuries last 2 seasons | 3       |
+      | Games missed last year  | 5       |
+      | Current age             | 29      |
+      | Position                | RB      |
+      | Workload last season    | Heavy   |
+    When the system calculates injury risk
+    Then the injury risk score is "High Risk"
+    And the risk score is displayed on player profile
+    And factors contributing to risk are shown
+
+  Scenario: Display injury-prone player warning
+    Given "Player L" has injury risk score > 70
+    When a user considers drafting or trading for the player
+    Then a warning is displayed: "⚠️ Injury-prone: 3 significant injuries in last 2 years"
+    And the warning includes games missed statistics
+    And shows comparison to position average
+
+  Scenario: Recommend handcuff for injury-prone player
+    Given "Player M" is a starting RB with high injury risk
+    When the system analyzes roster
+    Then the system recommends handcuff: "Consider rostering backup RB"
+    And shows the backup's projected value if starter misses time
+    And calculates "insurance value" for handcuff
+
+  # Snap Count Tracking
+
+  Scenario: Track snap count after injury return
+    Given "Player N" returned from hamstring injury
+    When Week 1 post-injury ends
+    Then the system tracks snap count percentage:
+      | Week       | Snap % |
+      | Pre-injury | 85%    |
+      | Return     | 45%    |
+    And displays "Snap count limited - easing back in"
+    And projects gradual increase in workload
+
+  Scenario: Alert on concerning snap count drop
+    Given "Player O" typically plays 90% of snaps
+    When the latest game shows only 40% snap count
+    And no injury was reported pre-game
+    Then the system flags potential "unreported injury"
+    And monitors news for updates
+    And alerts roster owners to watch Wednesday practice report
+
+  Scenario: Track snap count trend over multiple weeks
+    Given "Player P" is returning from injury
+    When snap counts over 4 weeks are:
+      | Week 1 | 30% |
+      | Week 2 | 50% |
+      | Week 3 | 70% |
+      | Week 4 | 85% |
+    Then the system shows "Workload increasing - on track for full snap count"
+    And projects return to full workload by Week 5
+    And adjusts fantasy projections accordingly
+
+  # Practice Squad and Injury Designations
+
+  Scenario: Track practice squad player with injury
+    Given "Player Q" is on practice squad
+    When the player is designated with injury
+    Then the player is not eligible for game-day activation
+    And roster owners are notified if elevated previously
+    And tracks separately from active roster injuries
+
+  # Multi-Source News Aggregation
+
+  Scenario: Aggregate news from multiple sources
+    Given news about "Player R" is published by:
+      | Source       | Time     |
+      | ESPN         | 10:00 AM |
+      | NFL.com      | 10:05 AM |
+      | Team Website | 10:02 AM |
+    When the system aggregates the news
+    Then duplicates are detected and merged
+    And the earliest source is credited
+    And the most detailed report is prioritized
+    And users see one consolidated news item
+
+  Scenario: Prioritize official team sources
+    Given a beat reporter tweets injury speculation
+    And the official team account confirms the injury
+    When both are displayed
+    Then the official team source is marked as "Verified"
+    And prioritized above speculation
+    And the user can see both with credibility labels
+
+  # Fantasy Impact Calculator
+
+  Scenario: Calculate fantasy impact of injury
+    Given "Player S" is ruled out for Week 10
+    And the player averages 18.5 PPG
+    When the system calculates fantasy impact
+    Then the roster owner's projected weekly score drops by 18.5
+    And the league standings projection is recalculated
+    And recommendations are provided for replacement
+
+  Scenario: Calculate injury impact on opponent's team
+    Given "Player T" on opponent's team is ruled out
+    When the matchup is analyzed
+    Then the user sees "Opponent injury advantage: +15.2 projected points"
+    And matchup win probability is recalculated
+    And displayed on matchup preview
+
+  Scenario: Calculate cumulative injury impact on season
+    Given a team has multiple injured players:
+      | Player | Status | Avg PPG |
+      | RB1    | Out    | 18.5    |
+      | WR2    | Doubtful| 12.3   |
+      | TE1    | Questionable | 9.8 |
+    When the system calculates cumulative impact
+    Then the total potential loss is "40.6 points"
+    And playoff probability impact is shown
+    And season outlook is recalculated
+
+  # Historical Injury Patterns
+
+  Scenario: Analyze recurrence risk for soft tissue injury
+    Given "Player U" has hamstring strain
+    And the player had a hamstring injury 8 months ago
+    When the system analyzes injury history
+    Then recurrence risk is flagged as "Elevated"
+    And the message shows "Same injury area - 30% higher recurrence rate"
+    And recommends monitoring practice reports closely
+
+  Scenario: Display position-specific injury patterns
+    Given the user is researching RB injuries
+    When viewing injury statistics
+    Then the system shows position-specific data:
+      | Injury Type   | RB Average | League Average |
+      | Soft tissue   | 45%        | 35%            |
+      | Ankle/Foot    | 25%        | 20%            |
+      | Concussion    | 10%        | 12%            |
+    And helps users understand position injury risks
+
+  # Weather and Field Condition Impact
+
+  Scenario: Alert for weather-related injury risk
+    Given "Player V" is recovering from knee injury
+    And the upcoming game has wet/cold conditions
+    When the game conditions are analyzed
+    Then the system flags "Increased risk on wet turf"
+    And displays weather advisory
+    And notes knee injuries are sensitive to cold
+
+  Scenario: Track turf-related injuries
+    Given a game is played on artificial turf
+    And multiple players are injured during the game
+    When the system tracks injury data
+    Then turf-related injury statistics are updated
+    And displayed for future games on that field
+    And factored into injury risk assessments
+
+  # Combine and Physical Metrics
+
+  Scenario: Track post-injury athletic testing
+    Given "Player W" is returning from ACL surgery
+    When post-surgery testing shows:
+      | Metric     | Pre-Injury | Post-Injury | Recovery % |
+      | 40-yard    | 4.45s      | 4.52s       | 98.5%      |
+      | Vertical   | 38"        | 35"         | 92.1%      |
+      | Shuttle    | 4.10s      | 4.25s       | 96.5%      |
+    Then the system displays "Physical recovery: 95.7%"
+    And projects return to full capability timeline
+    And updates fantasy projections accordingly
+
+  # Injury Report Deadlines
+
+  Scenario: Alert for Friday injury report deadline
+    Given it is Friday at 3:30 PM ET
+    And the official injury report is due at 4:00 PM ET
+    When the injury report is published
+    Then the system immediately processes all updates
+    And sends push notifications for status changes
+    And updates all affected user rosters
+    And refreshes projected scores
+
+  Scenario: Track injury report submission for all teams
+    Given it is Friday at 4:30 PM ET
+    When the system checks injury reports
+    Then the system verifies all 32 teams have submitted
+    And flags any missing reports
+    And displays "All teams reported" confirmation
+    And allows final roster decisions
+
+  # Bye Week and Injury Overlap
+
+  Scenario: Alert for post-bye injury risk
+    Given "Player X" was injured before bye week
+    And the bye week allowed recovery time
+    When the team returns from bye
+    Then the system checks for practice report updates
+    And provides "Post-bye outlook" assessment
+    And tracks whether extra rest helped recovery
+
+  Scenario: Display injury and bye week combined impact
+    Given a user's roster has:
+      | Player | Status    | Week Status |
+      | RB1    | Healthy   | BYE         |
+      | WR1    | Out       | Playing     |
+      | TE1    | Questionable | Playing  |
+    When viewing weekly roster
+    Then combined unavailability is clearly shown
+    And total projected loss is calculated
+    And backup recommendations account for both
+
+  # Player Load Management
+
+  Scenario: Detect load management vs injury
+    Given "Veteran Player Y" sits out practice
+    And no injury is reported
+    And player is over 30 years old
+    When the system analyzes the situation
+    Then it flags as potential "Veteran rest day"
+    And indicates player still expected to play Sunday
+    And distinguishes from actual injury concern
+
+  Scenario: Track workload and injury correlation
+    Given "Player Z" had high snap count in Week 8
+    When Week 9 injury report shows soft tissue injury
+    Then the system correlates workload to injury
+    And displays "Heavy workload may have contributed"
+    And updates future workload risk assessments
+
+  # International Games and Travel
+
+  Scenario: Track injury impact from international game
+    Given a team plays in London
+    When the team returns and practices resume
+    Then the system monitors for travel-related issues
+    And flags any unusual injury reports post-travel
+    And accounts for jet lag in practice participation
+
+  # Notification Preferences
+
+  Scenario: Configure injury alert preferences
+    Given a user wants to customize notifications
+    When the user configures preferences:
+      | Alert Type           | Setting  |
+      | Push for Out status  | Enabled  |
+      | Push for Questionable| Enabled  |
+      | Email daily digest   | Enabled  |
+      | SMS for game-time    | Disabled |
+    Then notifications follow user preferences
+    And quiet hours are respected
+    And only critical alerts bypass quiet hours
+
+  Scenario: Escalate critical injury alerts
+    Given a user's starting QB is ruled out 30 minutes before game
+    And user has quiet hours enabled
+    When the critical injury is detected
+    Then the alert bypasses quiet hours
+    And is marked as "Critical - Immediate Action Required"
+    And provides backup options with one-tap swap
+
+  # Data Validation
+
+  Scenario Outline: Validate injury status values
+    Given a player has injury status "<Status>"
+    When the status is processed
+    Then the status is classified as "<Classification>"
+    And the projected points multiplier is <Multiplier>
+
+    Examples:
+      | Status          | Classification | Multiplier |
+      | Out             | Inactive       | 0.0        |
+      | Doubtful        | Likely Inactive| 0.2        |
+      | Questionable    | Uncertain      | 0.7        |
+      | Probable        | Likely Active  | 0.95       |
+      | Healthy         | Active         | 1.0        |
+      | IR              | Inactive       | 0.0        |
+      | PUP             | Inactive       | 0.0        |
+      | NFI             | Inactive       | 0.0        |
+      | Suspended       | Inactive       | 0.0        |
+
+  # API and Integration
+
+  Scenario: Handle nflreadpy library update
+    Given a new version of nflreadpy is released
+    When the system detects API changes
+    Then compatibility is verified automatically
+    And any breaking changes are logged
+    And fallback to previous version if needed
+    And administrators are notified
+
+  Scenario: Monitor nflreadpy rate limits
+    Given the system is fetching news frequently
+    When approaching rate limits
+    Then fetch frequency is automatically reduced
+    And critical updates are prioritized
+    And rate limit status is displayed in admin dashboard

@@ -35,7 +35,9 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
       | 108 | Justin Tucker     | K        | BAL  |
       | 109 | SF 49ers Defense  | DEF      | SF   |
 
-  # Basic Draft Scenarios
+  # ============================================================================
+  # BASIC DRAFT SCENARIOS
+  # ============================================================================
 
   Scenario: League player successfully drafts NFL player to standard position
     Given my roster is empty
@@ -66,7 +68,28 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And the error message should be "Patrick Mahomes (QB) cannot be drafted to RB position"
     And my roster should remain empty
 
-  # FLEX Position Scenarios
+  Scenario: League player completes full roster draft
+    Given my roster is empty
+    When I draft the following complete roster:
+      | nflPlayerId | position   |
+      | 101         | QB         |
+      | 103         | RB         |
+      | 104         | RB         |
+      | 105         | WR         |
+      | 106         | WR         |
+      | 107         | TE         |
+      | 108         | K          |
+      | 109         | DEF        |
+      | 110         | FLEX       |
+      | 102         | SUPERFLEX  |
+    Then all drafts should succeed
+    And my roster completion should be "10/10"
+    And my roster status should be "COMPLETE"
+    And I should receive confirmation "Your roster is complete and ready for the season"
+
+  # ============================================================================
+  # FLEX POSITION SCENARIOS
+  # ============================================================================
 
   Scenario: League player drafts Running Back to FLEX position
     Given my roster is empty
@@ -74,10 +97,10 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
       | nflPlayerId | position |
       | 103         | RB       |
       | 104         | RB       |
-    When I draft NFL player "Derrick Henry" (id: 110) to position "FLEX"
-    And "Derrick Henry" has position "RB"
+    When I draft NFL player "Jahmyr Gibbs" (id: 120) to position "FLEX"
+    And "Jahmyr Gibbs" has position "RB"
     Then the draft should succeed
-    And my roster should have "Derrick Henry" in position "FLEX"
+    And my roster should have "Jahmyr Gibbs" in position "FLEX"
 
   Scenario: League player drafts Wide Receiver to FLEX position
     Given my roster is empty
@@ -107,7 +130,16 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And I should receive error "POSITION_NOT_ELIGIBLE_FOR_FLEX"
     And the error message should be "K is not eligible for FLEX position (accepts: RB, WR, TE)"
 
-  # SUPERFLEX Position Scenarios
+  Scenario: League player cannot draft Defense to FLEX position
+    Given my roster is empty
+    When I attempt to draft NFL player "SF 49ers Defense" (id: 109) to position "FLEX"
+    Then the draft should fail
+    And I should receive error "POSITION_NOT_ELIGIBLE_FOR_FLEX"
+    And the error message should be "DEF is not eligible for FLEX position (accepts: RB, WR, TE)"
+
+  # ============================================================================
+  # SUPERFLEX POSITION SCENARIOS
+  # ============================================================================
 
   Scenario: League player drafts Quarterback to SUPERFLEX position
     Given my roster is empty
@@ -151,7 +183,9 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And I should receive error "POSITION_NOT_ELIGIBLE_FOR_SUPERFLEX"
     And the error message should be "DEF is not eligible for SUPERFLEX position (accepts: QB, RB, WR, TE)"
 
-  # Duplicate Player Prevention
+  # ============================================================================
+  # DUPLICATE PLAYER PREVENTION
+  # ============================================================================
 
   Scenario: League player cannot draft same NFL player twice to different positions
     Given I have already drafted "Travis Kelce" (id: 107) to position "TE"
@@ -178,7 +212,9 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And "player1" should still have "Patrick Mahomes"
     And "player2" should have "Josh Allen"
 
-  # No Ownership Model - Multiple League Players Can Select Same NFL Player
+  # ============================================================================
+  # NO OWNERSHIP MODEL - MULTIPLE PLAYERS CAN SELECT SAME NFL PLAYER
+  # ============================================================================
 
   Scenario: Multiple league players can draft the same NFL player (no ownership model)
     Given all NFL players are available
@@ -190,6 +226,13 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And league player "player2" roster should have "Patrick Mahomes"
     And "Patrick Mahomes" should be available to all other league members
     And there is NO exclusive ownership of NFL players
+
+  Scenario: All 12 league players can draft the same elite NFL player
+    Given the league has 12 league players
+    When all 12 league players draft "Patrick Mahomes" (id: 101) to their QB position
+    Then all 12 drafts should succeed
+    And all 12 league players should have "Patrick Mahomes" on their roster
+    And the system supports unlimited concurrent drafts of the same player
 
   Scenario: League player views ALL NFL players filtered by position (no availability filtering)
     Given league player "player1" has drafted:
@@ -223,7 +266,15 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And I should NOT see DEF players
     And all FLEX-eligible players remain available to all league members
 
-  # Roster Validation
+  Scenario: View popularity of NFL players across league
+    Given 8 out of 12 league players have drafted "Patrick Mahomes"
+    When I view the player list with popularity information
+    Then "Patrick Mahomes" should show "Selected by 8 of 12 players"
+    And this is informational only and does not affect my ability to draft him
+
+  # ============================================================================
+  # ROSTER VALIDATION
+  # ============================================================================
 
   Scenario: League player cannot exceed position limit
     Given I have already drafted 2 Running Backs:
@@ -272,7 +323,32 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And I should receive message "Roster is complete (10/10)"
     And my roster status should be "READY"
 
-  # Draft Order Scenarios
+  Scenario: Roster validation shows detailed breakdown
+    Given I have drafted 7 out of 10 required positions:
+      | position   | filled |
+      | QB         | Yes    |
+      | RB         | 2/2    |
+      | WR         | 1/2    |
+      | TE         | Yes    |
+      | K          | No     |
+      | DEF        | Yes    |
+      | FLEX       | No     |
+      | SUPERFLEX  | No     |
+    When I request roster validation
+    Then the validation should show:
+      | position   | status      |
+      | QB         | FILLED      |
+      | RB         | FILLED      |
+      | WR         | 1/2 NEEDED  |
+      | TE         | FILLED      |
+      | K          | EMPTY       |
+      | DEF        | FILLED      |
+      | FLEX       | EMPTY       |
+      | SUPERFLEX  | EMPTY       |
+
+  # ============================================================================
+  # DRAFT ORDER SCENARIOS
+  # ============================================================================
 
   Scenario: Snake draft order - Round 1 forward, Round 2 backward
     Given the league uses "SNAKE" draft order
@@ -322,7 +398,46 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
       | onTheClock        | player9           |
       | nextUp            | player10, player11|
 
-  # Dropping/Replacing Players (ONLY BEFORE ROSTER LOCK)
+  Scenario: Draft timer countdown is displayed
+    Given the league has a 90-second draft timer
+    And it is my turn to draft
+    When I view the draft room
+    Then I should see a countdown timer starting at 90 seconds
+    And the timer should count down in real-time
+    And at 30 seconds, the timer should turn yellow
+    And at 10 seconds, the timer should turn red
+
+  Scenario: Draft order randomization before draft starts
+    Given the league has 12 league players
+    And draft order has not been set
+    When the commissioner initiates draft order randomization
+    Then a random order should be generated
+    And all 12 players should be assigned a unique draft position
+    And the order should be visible to all league players
+
+  # ============================================================================
+  # OPEN SELECTION MODEL (NON-DRAFT)
+  # ============================================================================
+
+  Scenario: League uses open selection instead of snake draft
+    Given the league uses "OPEN_SELECTION" draft mode
+    And no draft order is enforced
+    When any league player wants to draft an NFL player
+    Then they can draft at any time before the roster lock deadline
+    And there are no turns or timers
+    And multiple players can draft simultaneously
+
+  Scenario: Open selection allows last-minute roster changes
+    Given the league uses "OPEN_SELECTION" draft mode
+    And the roster lock deadline is "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 12:55:00 ET"
+    When I drop and re-draft a player
+    Then the changes should be saved
+    And I can make unlimited changes until the deadline
+
+  # ============================================================================
+  # DROPPING/REPLACING PLAYERS (ONLY BEFORE ROSTER LOCK)
+  # ============================================================================
 
   Scenario: League player drops NFL player before first game starts
     Given the first game starts at "2025-01-12 13:00:00 ET"
@@ -355,7 +470,22 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And "Travis Kelce" remains available to all other league players
     And "George Kittle" remains available to all other league players
 
-  # Roster Lock and Deadline (PERMANENT LOCK - NO CHANGES FOR ENTIRE SEASON)
+  Scenario: League player swaps players between positions before lock
+    Given the first game starts at "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 10:00:00 ET"
+    And I have drafted:
+      | nflPlayerId | position |
+      | 107         | TE       |
+      | 110         | FLEX     |
+    And "Travis Kelce" (id: 107) is TE and "Mark Andrews" (id: 110) is TE
+    When I swap "Travis Kelce" to FLEX and "Mark Andrews" to TE
+    Then the swap should succeed
+    And "Travis Kelce" should be in FLEX position
+    And "Mark Andrews" should be in TE position
+
+  # ============================================================================
+  # ROSTER LOCK AND DEADLINE (PERMANENT LOCK)
+  # ============================================================================
 
   Scenario: Roster PERMANENTLY locks when first game starts
     Given the first game of the season starts at "2025-01-12 13:00:00 ET"
@@ -406,7 +536,25 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     Then all requests should return HTTP 403 Forbidden
     And error message should be "ROSTER_PERMANENTLY_LOCKED"
 
-  # Multiple RB/WR Slot Scenarios
+  Scenario: Lock countdown displayed on all roster pages
+    Given the first game starts at "2025-01-12 13:00:00 ET"
+    And the current time is "2025-01-12 10:30:00 ET"
+    When I view any roster-related page
+    Then I should see a countdown timer showing "2 hours 30 minutes until lock"
+    And the countdown should update in real-time
+    And at 1 hour remaining, the warning should become more prominent
+    And at 15 minutes remaining, an urgent alert should be displayed
+
+  Scenario: Lock state is permanent and irreversible
+    Given the roster was locked at "2025-01-12 13:00:00 ET"
+    When the commissioner attempts to unlock rosters
+    Then the unlock should fail
+    And the error message should be "Roster lock is permanent and cannot be reversed"
+    And the one-time draft model is strictly enforced
+
+  # ============================================================================
+  # MULTIPLE RB/WR SLOT SCENARIOS
+  # ============================================================================
 
   Scenario: League player fills first RB slot, then second RB slot
     Given my roster is empty
@@ -431,7 +579,102 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
       | RB (2)   | Christian McCaffrey, Derrick Henry   |
       | WR (2)   | Tyreek Hill, CeeDee Lamb             |
 
-  # Edge Cases and Validations
+  Scenario: League player reorders players within same position type
+    Given I have drafted:
+      | position | slot | nflPlayer           |
+      | RB       | 1    | Derrick Henry       |
+      | RB       | 2    | Christian McCaffrey |
+    When I reorder RB players to swap slot 1 and slot 2
+    Then the reorder should succeed
+    And "Christian McCaffrey" should be in RB slot 1
+    And "Derrick Henry" should be in RB slot 2
+
+  # ============================================================================
+  # DRAFT ROOM FEATURES
+  # ============================================================================
+
+  Scenario: Live draft room shows all picks in real-time
+    Given the league is in active draft mode
+    When any league player makes a pick
+    Then all connected players should see the pick immediately
+    And the pick should show:
+      | drafter         | player_name     | position | round | pick_number |
+      | player5         | Patrick Mahomes | QB       | 1     | 5           |
+
+  Scenario: Draft room shows recent picks history
+    Given 10 picks have been made
+    When I view the draft room
+    Then I should see the last 10 picks in chronological order
+    And I should be able to scroll to see all picks
+    And completed picks should be clearly marked
+
+  Scenario: Draft room shows each player's roster in real-time
+    Given the draft is in progress
+    When I click on "player5" in the draft room
+    Then I should see their current roster:
+      | position | player              |
+      | QB       | Patrick Mahomes     |
+      | RB       | (empty)             |
+      | RB       | (empty)             |
+    And I can see their draft needs at a glance
+
+  Scenario: Draft room chat functionality
+    Given the draft is in progress
+    When I send a message "Nice pick!" in the draft chat
+    Then all league players should see my message
+    And the message should include my username and timestamp
+
+  Scenario: Commissioner can pause the draft
+    Given the draft is in progress
+    And I am the commissioner
+    When I pause the draft
+    Then all draft timers should stop
+    And a "DRAFT PAUSED" message should display to all players
+    And no picks should be allowed until resumed
+
+  Scenario: Commissioner can resume a paused draft
+    Given the draft is paused
+    And I am the commissioner
+    When I resume the draft
+    Then the current player's timer should restart at full time
+    And all players should see "DRAFT RESUMED" message
+
+  # ============================================================================
+  # NOTIFICATIONS
+  # ============================================================================
+
+  Scenario: League player receives notification when it's their turn
+    Given the draft is in progress
+    When it becomes my turn to draft
+    Then I should receive a push notification "It's your turn to draft!"
+    And I should receive an email notification
+    And the draft room should highlight that it's my turn
+
+  Scenario: League player receives reminder before roster lock
+    Given the roster lock deadline is in 24 hours
+    And my roster is incomplete
+    When the reminder scheduler runs
+    Then I should receive a notification
+    And the notification should say "24 hours until roster lock"
+    And it should list my unfilled positions
+
+  Scenario: League player receives urgent reminder 1 hour before lock
+    Given the roster lock deadline is in 1 hour
+    And my roster is incomplete
+    When the reminder scheduler runs
+    Then I should receive an urgent notification
+    And the notification should say "URGENT: 1 hour until permanent roster lock"
+    And it should emphasize that changes will be impossible after lock
+
+  Scenario: League player notified when roster locks
+    Given my roster is complete
+    When the roster lock deadline passes
+    Then I should receive confirmation "Your roster is now permanently locked"
+    And the notification should include a summary of my final roster
+
+  # ============================================================================
+  # EDGE CASES AND VALIDATIONS
+  # ============================================================================
 
   Scenario: League player attempts to draft non-existent NFL player
     Given NFL player with id 99999 does not exist
@@ -462,6 +705,29 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
     And I should receive warning "Aaron Rodgers is on Injured Reserve"
     And "Aaron Rodgers" should be marked with IR designation
 
+  Scenario: League player views bye week warnings during draft
+    Given NFL player "Patrick Mahomes" has a bye in week 2
+    And my league runs weeks 1-4
+    When I view "Patrick Mahomes" in the draft list
+    Then I should see warning "BYE WEEK 2 - Will score 0 points"
+    And I can still draft the player if I choose
+
+  Scenario: Concurrent draft attempts by same player
+    Given it is my turn to draft
+    When I submit two draft requests simultaneously:
+      | request1 | Patrick Mahomes |
+      | request2 | Josh Allen      |
+    Then exactly one draft should succeed
+    And the other should fail with "ALREADY_DRAFTED_THIS_PICK"
+
+  Scenario: Network disconnection during draft
+    Given it is my turn to draft
+    And I lose network connection
+    When my draft timer expires
+    Then the system should auto-draft a player for me
+    And when I reconnect, I should see the auto-drafted player
+    And I should receive notification of the auto-draft
+
   Scenario Outline: Position eligibility validation matrix
     Given NFL player "<player>" has position "<nflPosition>"
     When I attempt to draft this player to roster position "<rosterPosition>"
@@ -491,3 +757,136 @@ Feature: Player Roster Selection and Draft System (ONE-TIME DRAFT MODEL)
       | SF 49ers        | DEF         | DEF            | succeed |
       | SF 49ers        | DEF         | FLEX           | fail    |
       | SF 49ers        | DEF         | SUPERFLEX      | fail    |
+
+  # ============================================================================
+  # API ENDPOINTS
+  # ============================================================================
+
+  Scenario: Draft API returns success with roster update
+    Given it is my turn to draft
+    When I call POST /api/v1/roster/draft with:
+      | nflPlayerId | 101 |
+      | position    | QB  |
+    Then the response status should be 201 Created
+    And the response should include:
+      | rosterSlotId  | (generated UUID)   |
+      | nflPlayerId   | 101                |
+      | position      | QB                 |
+      | status        | DRAFTED            |
+
+  Scenario: Drop API returns success before lock
+    Given I have a player in my roster
+    And the roster is not locked
+    When I call DELETE /api/v1/roster/slots/{slotId}
+    Then the response status should be 200 OK
+    And the roster slot should be empty
+
+  Scenario: All draft APIs return 403 after lock
+    Given the roster is permanently locked
+    When I call any draft modification API
+    Then the response status should be 403 Forbidden
+    And the error code should be "ROSTER_PERMANENTLY_LOCKED"
+
+  Scenario: Get roster API returns full roster
+    When I call GET /api/v1/roster/me
+    Then the response should include all 10 roster slots
+    And each slot should show:
+      | position      | string          |
+      | slotNumber    | integer         |
+      | nflPlayer     | object or null  |
+      | status        | FILLED or EMPTY |
+
+  Scenario: Get available players API with pagination
+    When I call GET /api/v1/players/available?position=RB&page=0&size=20
+    Then the response should include:
+      | players       | array of 20     |
+      | totalElements | total RB count  |
+      | totalPages    | calculated      |
+      | hasNext       | boolean         |
+
+  # ============================================================================
+  # DRAFT HISTORY AND AUDIT
+  # ============================================================================
+
+  Scenario: Complete draft history is preserved
+    Given the draft has completed
+    When I view the draft history
+    Then I should see all 120 picks (12 players x 10 rounds)
+    And each pick should show:
+      | pickNumber    | 1-120           |
+      | round         | 1-10            |
+      | leaguePlayer  | player name     |
+      | nflPlayer     | player drafted  |
+      | position      | roster position |
+      | timestamp     | when picked     |
+
+  Scenario: Audit trail for roster changes before lock
+    Given I made the following roster changes before lock:
+      | action  | player1         | player2      | timestamp           |
+      | DRAFT   | Patrick Mahomes | -            | 2025-01-10 10:00:00 |
+      | DROP    | Patrick Mahomes | -            | 2025-01-11 09:00:00 |
+      | DRAFT   | Josh Allen      | -            | 2025-01-11 09:30:00 |
+    When I view my roster audit trail
+    Then I should see all 3 actions in chronological order
+    And the trail should be immutable after roster lock
+
+  Scenario: Commissioner can view all league roster changes
+    Given I am the commissioner
+    When I view the league audit log
+    Then I should see all roster changes from all players
+    And changes should be sortable by player, action, or time
+
+  # ============================================================================
+  # LOCK STATE PERSISTENCE
+  # ============================================================================
+
+  Scenario: Lock state persists across system restarts
+    Given the roster was locked at "2025-01-12 13:00:00 ET"
+    When the system restarts
+    Then the roster should still be locked
+    And the lock timestamp should be preserved
+    And no roster modifications should be possible
+
+  Scenario: Lock state is verified on every roster operation
+    Given the roster is locked
+    When any roster modification request is received
+    Then the system checks lock state from database
+    And cached lock state is validated
+    And the operation is rejected if locked
+
+  # ============================================================================
+  # MOBILE AND ACCESSIBILITY
+  # ============================================================================
+
+  Scenario: Draft room is accessible on mobile devices
+    Given I am using a mobile device
+    When I view the draft room
+    Then the interface should be responsive
+    And I should be able to make picks with touch
+    And the timer should be clearly visible
+    And my roster should be scrollable
+
+  Scenario: Screen reader announces draft events
+    Given I use a screen reader
+    When a pick is made
+    Then the screen reader should announce:
+      | "Player 5 selected Patrick Mahomes, Quarterback, to QB position" |
+    And it should announce when it's my turn
+
+  # ============================================================================
+  # TESTING AND SIMULATION
+  # ============================================================================
+
+  Scenario: Commissioner can reset draft in test mode
+    Given the league is in test mode
+    And I am the commissioner
+    When I reset the draft
+    Then all picks should be cleared
+    And all rosters should be empty
+    And the draft should restart from pick 1
+
+  Scenario: Simulate auto-draft for inactive players
+    Given 3 league players have not made picks in test mode
+    When the commissioner runs auto-draft simulation
+    Then all 3 players should have complete rosters
+    And auto-drafted players should be highest ranked available

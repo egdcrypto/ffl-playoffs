@@ -21,6 +21,9 @@ public class TeamSelectionDocument {
     private UUID playerId;
     private String teamName;
     private Integer weekNumber;
+    private Integer week;
+    private String weekId;
+    private String gameId;
     private LocalDateTime selectedAt;
     private Boolean isEliminated;
 }

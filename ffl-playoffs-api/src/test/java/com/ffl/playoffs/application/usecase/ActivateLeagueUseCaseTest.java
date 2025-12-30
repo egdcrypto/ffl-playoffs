@@ -66,7 +66,6 @@ class ActivateLeagueUseCaseTest {
         // Given
         when(leagueRepository.findById(leagueId)).thenReturn(Optional.of(league));
         when(weekRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(weekRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(leagueRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When
@@ -126,7 +125,6 @@ class ActivateLeagueUseCaseTest {
         // Given
         when(leagueRepository.findById(leagueId)).thenReturn(Optional.of(league));
         when(weekRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
-        when(weekRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         when(leagueRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // When

@@ -22,7 +22,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public abstract class IntegrationTestBase {
 
     @Container
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.0.10")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(27017);
 
     @DynamicPropertySource

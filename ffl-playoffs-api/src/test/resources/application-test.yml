@@ -1,14 +1,13 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/ffl-playoffs-test
-      database: ffl-playoffs-test
+      # MongoDB URI is provided dynamically by Testcontainers via @DynamicPropertySource
       auto-index-creation: true
 
-  # Use embedded MongoDB for tests
-  mongodb:
-    embedded:
-      version: 4.0.2
+  # Disable Redis for tests
+  data.redis.repositories.enabled: false
+  cache:
+    type: simple
 
 google:
   oauth:

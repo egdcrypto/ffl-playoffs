@@ -48,15 +48,8 @@ public class ActivateLeagueUseCase {
         // Create week entities for the league
         List<Week> weeks = createWeeksForLeague(league);
 
-        // Save weeks
+        // Save weeks (first week is already set to ACTIVE in createWeeksForLeague)
         List<Week> savedWeeks = weekRepository.saveAll(weeks);
-
-        // Activate the first week if it's the current NFL week
-        if (!savedWeeks.isEmpty()) {
-            Week firstWeek = savedWeeks.get(0);
-            firstWeek.activate();
-            weekRepository.save(firstWeek);
-        }
 
         // Save the league
         League savedLeague = leagueRepository.save(league);

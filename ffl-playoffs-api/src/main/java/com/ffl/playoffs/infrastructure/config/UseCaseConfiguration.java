@@ -1,6 +1,7 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.CharacterRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
 import org.springframework.context.annotation.Bean;
@@ -70,5 +71,33 @@ public class UseCaseConfiguration {
             PersonalAccessTokenRepository tokenRepository,
             UserRepository userRepository) {
         return new DeletePATUseCase(tokenRepository, userRepository);
+    }
+
+    // ===================
+    // Character Lifecycle Use Cases
+    // ===================
+
+    @Bean
+    public CreateCharacterUseCase createCharacterUseCase(
+            CharacterRepository characterRepository) {
+        return new CreateCharacterUseCase(characterRepository);
+    }
+
+    @Bean
+    public ActivateCharacterUseCase activateCharacterUseCase(
+            CharacterRepository characterRepository) {
+        return new ActivateCharacterUseCase(characterRepository);
+    }
+
+    @Bean
+    public EliminateCharacterUseCase eliminateCharacterUseCase(
+            CharacterRepository characterRepository) {
+        return new EliminateCharacterUseCase(characterRepository);
+    }
+
+    @Bean
+    public GetCharacterUseCase getCharacterUseCase(
+            CharacterRepository characterRepository) {
+        return new GetCharacterUseCase(characterRepository);
     }
 }

@@ -6,15 +6,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/players")
 @RequiredArgsConstructor
 public class PlayerController {
     private final ApplicationService applicationService;
-    
+
     @PostMapping("/{playerId}/selections")
     public ResponseEntity<TeamSelectionDTO> selectTeam(
-            @PathVariable Long playerId,
+            @PathVariable UUID playerId,
             @RequestBody SelectTeamRequest request) {
         TeamSelectionDTO selection = applicationService.selectTeam(
                 playerId,
@@ -26,11 +28,11 @@ public class PlayerController {
 }
 
 class SelectTeamRequest {
-    private Long weekId;
+    private UUID weekId;
     private String nflTeam;
-    
-    public Long getWeekId() { return weekId; }
-    public void setWeekId(Long weekId) { this.weekId = weekId; }
+
+    public UUID getWeekId() { return weekId; }
+    public void setWeekId(UUID weekId) { this.weekId = weekId; }
     public String getNflTeam() { return nflTeam; }
     public void setNflTeam(String nflTeam) { this.nflTeam = nflTeam; }
 }

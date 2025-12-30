@@ -59,6 +59,21 @@ public class UseCaseConfiguration {
         return new AssignRoleUseCase(userRepository);
     }
 
+    @Bean
+    public RevokeAdminUseCase revokeAdminUseCase(UserRepository userRepository) {
+        return new RevokeAdminUseCase(userRepository);
+    }
+
+    @Bean
+    public ListAdminsUseCase listAdminsUseCase(UserRepository userRepository) {
+        return new ListAdminsUseCase(userRepository);
+    }
+
+    @Bean
+    public ListAllLeaguesUseCase listAllLeaguesUseCase(LeagueRepository leagueRepository) {
+        return new ListAllLeaguesUseCase(leagueRepository);
+    }
+
     // ===================
     // Personal Access Token (PAT) Management Use Cases
     // ===================

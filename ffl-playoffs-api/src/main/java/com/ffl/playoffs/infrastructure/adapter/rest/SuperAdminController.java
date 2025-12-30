@@ -34,10 +34,9 @@ public class SuperAdminController {
     private final RevokePATUseCase revokePATUseCase;
     private final RotatePATUseCase rotatePATUseCase;
     private final DeletePATUseCase deletePATUseCase;
-    // TODO: Inject other use cases when implemented:
-    // - RevokeAdminUseCase
-    // - ListAdminsUseCase
-    // - ListAllLeaguesUseCase
+    private final RevokeAdminUseCase revokeAdminUseCase;
+    private final ListAdminsUseCase listAdminsUseCase;
+    private final ListAllLeaguesUseCase listAllLeaguesUseCase;
 
     // ========================
     // Bootstrap Setup
@@ -110,26 +109,38 @@ public class SuperAdminController {
 
     @DeleteMapping("/admins/{adminId}")
     @Operation(summary = "Revoke admin", description = "Revokes admin privileges from a user. Only SUPER_ADMIN can perform this action.")
-    public ResponseEntity<Map<String, String>> revokeAdmin(
+    public ResponseEntity<RevokeAdminResponse> revokeAdmin(
             @PathVariable UUID adminId,
             @RequestAttribute("userId") UUID currentUserId) {
-        // TODO: Implement RevokeAdminUseCase
-        // - Verify current user is SUPER_ADMIN
-        // - Find admin user by ID
-        // - Change role to PLAYER
-        // - Return success response
-        return ResponseEntity.ok(Map.of("message", "TODO: Implement RevokeAdminUseCase"));
+
+        RevokeAdminUseCase.RevokeAdminCommand command = new RevokeAdminUseCase.RevokeAdminCommand(
+                adminId,
+                currentUserId
+        );
+
+        RevokeAdminUseCase.RevokeAdminResult result = revokeAdminUseCase.execute(command);
+
+        RevokeAdminResponse response = new RevokeAdminResponse(
+                result.getUserId(),
+                result.getEmail(),
+                result.getName(),
+                result.getRevokedAt(),
+                "Admin privileges revoked successfully"
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/admins")
     @Operation(summary = "List admins", description = "Lists all admin users in the system")
-    public ResponseEntity<?> listAdmins(
+    public ResponseEntity<ListAdminsUseCase.ListAdminsResult> listAdmins(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        // TODO: Implement ListAdminsUseCase
-        // - Query all users with ADMIN role
-        // - Return paginated list with: id, email, name, created_at, last_login_at
-        return ResponseEntity.ok(Map.of("message", "TODO: Implement ListAdminsUseCase"));
+
+        ListAdminsUseCase.ListAdminsCommand command = new ListAdminsUseCase.ListAdminsCommand(page, size);
+        ListAdminsUseCase.ListAdminsResult result = listAdminsUseCase.execute(command);
+
+        return ResponseEntity.ok(result);
     }
 
     // ========================
@@ -138,13 +149,14 @@ public class SuperAdminController {
 
     @GetMapping("/leagues")
     @Operation(summary = "View all leagues", description = "Lists all leagues in the system. Only SUPER_ADMIN has access.")
-    public ResponseEntity<?> listAllLeagues(
+    public ResponseEntity<ListAllLeaguesUseCase.ListAllLeaguesResult> listAllLeagues(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        // TODO: Implement ListAllLeaguesUseCase
-        // - Query all leagues across the system
-        // - Return paginated list with: id, name, admin_id, player_count, created_at, status
-        return ResponseEntity.ok(Map.of("message", "TODO: Implement ListAllLeaguesUseCase"));
+
+        ListAllLeaguesUseCase.ListAllLeaguesCommand command = new ListAllLeaguesUseCase.ListAllLeaguesCommand(page, size);
+        ListAllLeaguesUseCase.ListAllLeaguesResult result = listAllLeaguesUseCase.execute(command);
+
+        return ResponseEntity.ok(result);
     }
 
     // ========================
@@ -479,6 +491,43 @@ public class SuperAdminController {
 
         public String getExpiresAt() {
             return expiresAt;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+
+    public static class RevokeAdminResponse {
+        private final UUID userId;
+        private final String email;
+        private final String name;
+        private final LocalDateTime revokedAt;
+        private final String message;
+
+        public RevokeAdminResponse(UUID userId, String email, String name,
+                                  LocalDateTime revokedAt, String message) {
+            this.userId = userId;
+            this.email = email;
+            this.name = name;
+            this.revokedAt = revokedAt;
+            this.message = message;
+        }
+
+        public UUID getUserId() {
+            return userId;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public LocalDateTime getRevokedAt() {
+            return revokedAt;
         }
 
         public String getMessage() {

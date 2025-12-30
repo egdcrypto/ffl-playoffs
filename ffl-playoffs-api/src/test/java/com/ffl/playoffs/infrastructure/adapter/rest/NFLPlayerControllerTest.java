@@ -55,8 +55,7 @@ class NFLPlayerControllerTest {
                 List.of(testPlayer),
                 0,
                 20,
-                1L,
-                1
+                1L
         );
     }
 
@@ -85,7 +84,7 @@ class NFLPlayerControllerTest {
     @WithMockUser
     void listPlayersWithPaginationShouldUseParams() throws Exception {
         // Arrange
-        Page<NFLPlayerDTO> pagedResult = new Page<>(List.of(testPlayer), 2, 10, 25L, 3);
+        Page<NFLPlayerDTO> pagedResult = new Page<>(List.of(testPlayer), 2, 10, 25L);
         when(playerService.getAllPlayers(2, 10)).thenReturn(pagedResult);
 
         // Act & Assert

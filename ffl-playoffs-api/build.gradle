@@ -11,6 +11,10 @@ java {
     sourceCompatibility = '17'
 }
 
+springBoot {
+    mainClass = 'com.ffl.playoffs.FflPlayoffsApplication'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

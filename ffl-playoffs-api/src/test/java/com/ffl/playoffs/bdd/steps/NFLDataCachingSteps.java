@@ -681,11 +681,6 @@ public class NFLDataCachingSteps {
         assertThat(cachedData.get("news:latest")).isNotNull();
     }
 
-    @Then("it is cached with key {string}")
-    public void itIsCachedWithKey(String key) {
-        cacheKeys.add(key);
-    }
-
     @Then("the TTL is set to {int} minutes \\({int} seconds)")
     public void theTTLIsSetToMinutesSeconds(Integer minutes, Integer seconds) {
         String key = cacheKeys.get(cacheKeys.size() - 1);

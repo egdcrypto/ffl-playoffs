@@ -75,7 +75,7 @@ class PlayerStatsControllerTest {
     @WithMockUser
     void getStatsByWeekPagedShouldReturnPaginatedStats() throws Exception {
         // Arrange
-        Page<PlayerStatsDTO> testPage = new Page<>(List.of(testStats), 0, 50, 1L, 1);
+        Page<PlayerStatsDTO> testPage = new Page<>(List.of(testStats), 0, 50, 1L);
         when(statsService.getStatsByWeek(2024, 15, 0, 50)).thenReturn(testPage);
 
         // Act & Assert

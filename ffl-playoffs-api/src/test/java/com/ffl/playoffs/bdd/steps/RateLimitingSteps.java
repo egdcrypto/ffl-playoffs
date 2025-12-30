@@ -842,7 +842,7 @@ public class RateLimitingSteps {
     }
 
     @Given("the rate limit is {int} requests\\/minute")
-    public void theRateLimitIsRequestsPerMinute(int limit) {
+    public void givenTheRateLimitIsRequestsPerMinute(int limit) {
         bucketCapacity = limit;
     }
 

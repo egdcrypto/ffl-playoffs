@@ -34,13 +34,13 @@ public abstract class IntegrationTestBase {
     protected MongoTemplate mongoTemplate;
 
     @BeforeEach
-    void baseSetUp() {
+    protected void baseSetUp() {
         // Ensure clean state before each test
         cleanDatabase();
     }
 
     @AfterEach
-    void baseTearDown() {
+    protected void baseTearDown() {
         // Clean up after each test
         cleanDatabase();
     }

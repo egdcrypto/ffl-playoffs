@@ -93,7 +93,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.READ_ONLY,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -121,7 +121,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.READ_ONLY,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -150,7 +150,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.ADMIN,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -178,7 +178,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -205,7 +205,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -232,7 +232,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().minusDays(1),  // Expired yesterday
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -259,7 +259,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         pat.revoke();
         tokenRepository.save(pat);
@@ -322,7 +322,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -356,7 +356,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().minusDays(1),  // Expired
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -384,7 +384,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 null,  // No expiration
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -411,7 +411,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.WRITE,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 
@@ -438,7 +438,7 @@ class ValidatePATUseCaseTest extends IntegrationTestBase {
                 "hash_of_token",
                 PATScope.ADMIN,
                 LocalDateTime.now().plusDays(30),
-                testUserId
+                testUserId.toString()
         );
         tokenRepository.save(pat);
 

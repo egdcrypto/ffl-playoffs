@@ -54,8 +54,7 @@ class NFLGameControllerTest {
                 List.of(testGame),
                 0,
                 20,
-                1L,
-                1
+                1L
         );
     }
 

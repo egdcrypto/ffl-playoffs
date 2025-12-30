@@ -1030,7 +1030,7 @@ public class NFLDataResilienceSteps {
     }
 
     @When("the request is retried")
-    public void theRequestIsRetried() {
+    public void whenTheRequestIsRetried() {
         requestRetried = true;
         retryCount++;
         log.debug("Request retried");
@@ -1399,7 +1399,7 @@ public class NFLDataResilienceSteps {
     // ========== Circuit Breaker Alert ==========
 
     @Given("the circuit breaker opens")
-    public void theCircuitBreakerOpens() {
+    public void givenTheCircuitBreakerOpens() {
         circuitBreakerState = CircuitBreakerState.OPEN;
         circuitOpenedAt = LocalDateTime.now();
         log.debug("Circuit breaker opened");
@@ -1870,7 +1870,7 @@ public class NFLDataResilienceSteps {
     // ========== Runbook ==========
 
     @When("ops team is alerted")
-    public void opsTeamIsAlerted() {
+    public void whenOpsTeamIsAlerted() {
         opsAlertSent = true;
         log.warn("Ops team alerted");
     }

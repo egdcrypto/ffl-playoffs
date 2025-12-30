@@ -1,5 +1,6 @@
 package com.ffl.playoffs.infrastructure.auth;
 
+import com.ffl.playoffs.application.usecase.CreateUserOnFirstLoginUseCase;
 import com.ffl.playoffs.domain.model.PersonalAccessToken;
 import com.ffl.playoffs.domain.aggregate.User;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
@@ -7,11 +8,14 @@ import com.ffl.playoffs.domain.port.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
  * Implementation of TokenValidator
  * Delegates to specific validators for Google JWT and PAT tokens
+ *
+ * Supports auto-creation of users on first OAuth login when enabled.
  */
 @Component
 public class TokenValidatorImpl implements TokenValidator {
@@ -22,17 +26,23 @@ public class TokenValidatorImpl implements TokenValidator {
     private final PATValidator patValidator;
     private final UserRepository userRepository;
     private final PersonalAccessTokenRepository patRepository;
+    private final CreateUserOnFirstLoginUseCase createUserOnFirstLoginUseCase;
+
+    @Value("${auth.auto-create-users:false}")
+    private boolean autoCreateUsers;
 
     @Autowired
     public TokenValidatorImpl(
             GoogleJwtValidator googleJwtValidator,
             PATValidator patValidator,
             UserRepository userRepository,
-            PersonalAccessTokenRepository patRepository) {
+            PersonalAccessTokenRepository patRepository,
+            CreateUserOnFirstLoginUseCase createUserOnFirstLoginUseCase) {
         this.googleJwtValidator = googleJwtValidator;
         this.patValidator = patValidator;
         this.userRepository = userRepository;
         this.patRepository = patRepository;
+        this.createUserOnFirstLoginUseCase = createUserOnFirstLoginUseCase;
     }
 
     @Override
@@ -51,8 +61,33 @@ public class TokenValidatorImpl implements TokenValidator {
                     .orElse(null);
 
             if (user == null) {
-                logger.warn("User not found for Google ID: {}", claims.getGoogleId());
-                return AuthenticationResult.failure("User not found");
+                // Check if auto-create is enabled
+                if (autoCreateUsers) {
+                    logger.info("Auto-creating user for first-time OAuth login: {}", claims.getEmail());
+                    try {
+                        CreateUserOnFirstLoginUseCase.OAuthLoginCommand command =
+                                new CreateUserOnFirstLoginUseCase.OAuthLoginCommand(
+                                        claims.getEmail(),
+                                        claims.getGoogleId(),
+                                        claims.getName(),
+                                        null // picture URL not available from claims
+                                );
+                        CreateUserOnFirstLoginUseCase.FirstLoginResult result =
+                                createUserOnFirstLoginUseCase.execute(command);
+                        user = result.getUser();
+
+                        if (result.isNewUserCreated()) {
+                            logger.info("Created new user {} with {} accepted invitations",
+                                    user.getId(), result.getAcceptedInvitations().size());
+                        }
+                    } catch (Exception e) {
+                        logger.error("Failed to auto-create user: {}", e.getMessage());
+                        return AuthenticationResult.failure("Failed to create user account");
+                    }
+                } else {
+                    logger.warn("User not found for Google ID: {} (auto-create disabled)", claims.getGoogleId());
+                    return AuthenticationResult.failure("User not found");
+                }
             }
 
             if (!user.isActive()) {

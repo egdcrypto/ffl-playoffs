@@ -1,8 +1,11 @@
 package com.ffl.playoffs.infrastructure.config;
 
 import com.ffl.playoffs.application.usecase.*;
+import com.ffl.playoffs.domain.port.LeaguePlayerRepository;
 import com.ffl.playoffs.domain.port.PersonalAccessTokenRepository;
+import com.ffl.playoffs.domain.port.PlayerInvitationRepository;
 import com.ffl.playoffs.domain.port.UserRepository;
+import com.ffl.playoffs.domain.service.ResourceOwnershipValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,6 +28,20 @@ public class UseCaseConfiguration {
     @Bean
     public InviteAdminUseCase inviteAdminUseCase(UserRepository userRepository) {
         return new InviteAdminUseCase(userRepository);
+    }
+
+    @Bean
+    public CreateUserOnFirstLoginUseCase createUserOnFirstLoginUseCase(
+            UserRepository userRepository,
+            PlayerInvitationRepository invitationRepository,
+            LeaguePlayerRepository leaguePlayerRepository) {
+        return new CreateUserOnFirstLoginUseCase(userRepository, invitationRepository, leaguePlayerRepository);
+    }
+
+    @Bean
+    public ValidateResourceOwnershipUseCase validateResourceOwnershipUseCase(
+            ResourceOwnershipValidator ownershipValidator) {
+        return new ValidateResourceOwnershipUseCase(ownershipValidator);
     }
 
     // ===================

@@ -274,11 +274,15 @@ class RotatePATUseCaseTest {
             // Assert
             String token = result.getNewPlaintextToken();
             assertTrue(token.startsWith("pat_"));
-            String[] parts = token.split("_");
-            assertEquals(3, parts.length);
-            assertEquals("pat", parts[0]);
-            assertEquals(32, parts[1].length()); // UUID without hyphens
-            assertTrue(parts[2].length() >= 64); // Base64 encoded random bytes
+            // Format: pat_<identifier>_<random>
+            // Note: Base64 URL-safe encoding may contain underscores, so we parse carefully
+            String withoutPrefix = token.substring(4);  // Remove "pat_"
+            int firstUnderscore = withoutPrefix.indexOf('_');
+            assertTrue(firstUnderscore > 0, "Token should have underscore separator");
+            String identifier = withoutPrefix.substring(0, firstUnderscore);
+            String randomPart = withoutPrefix.substring(firstUnderscore + 1);
+            assertEquals(32, identifier.length(), "Identifier should be 32 characters"); // UUID without hyphens
+            assertTrue(randomPart.length() >= 64, "Random part should be at least 64 characters"); // Base64 encoded random bytes
         }
     }
 
